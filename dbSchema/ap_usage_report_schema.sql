@@ -181,24 +181,47 @@ CREATE TABLE IF NOT EXISTS APIRoutePrice (
 );
 
 
+/* ====================================================================================================
+Description: This table stored the error types
+
+*/
+CREATE TABLE IF NOT EXISTS ErrorType (
+	ErrorTypeId INT NOT NULL,
+    Name VARCHAR(30) NOT NULL,
+    Description VARCHAR(100) NOT NULL,
+	CONSTRAINT PK_APIUsageError PRIMARY KEY (ErrorTypeId)
+);
+
+INSERT INTO ErrorType (ErrorTypeId, Name, Description)
+VALUES (1, 'ExternalError', 'External Error from client');
+INSERT INTO ErrorType (ErrorTypeId, Name, Description)
+VALUES (2, 'ValidationError', 'Request data validation error');
+INSERT INTO ErrorType (ErrorTypeId, Name, Description)
+VALUES (3, 'InternalProcessingError', 'Internal processing error');
+
 
 /* ====================================================================================================
 Description: This table records any errors with an API invoke. 
 It is used to track errors from API as well as internal errors. Any errors during processing should
 be entered here.
 
-IMPORTANT NOTE: Internal errors have to be re-processed manually accordingly.
+ErrorId : error code from teh client
+ErrorTypeId : Default external error
+InputData : The inout JSON object as string
 
 */
 CREATE TABLE IF NOT EXISTS APIError (
 	APIErrorId INT NOT NULL AUTO_INCREMENT,
+    ErrorTypeId INT NOT NULL DEFAULT 1,
     ErrorId INT NULL,
     ErrorMessage VARCHAR(1000) NOT NULL,
-    IsInternal TINYINT NOT NULL DEFAULT 0,
     InputData VARCHAR(2000) NULL,
-    InternalErrorStatus TINYINT NOT NULL DEFAULT 0,
-	CONSTRAINT PK_APIUsageError PRIMARY KEY (APIErrorId)
+    ErrorStatus TINYINT NOT NULL DEFAULT 1,
+	CONSTRAINT PK_APIUsageError PRIMARY KEY (APIErrorId),
+    CONSTRAINT FK_APIError_ErrorTypeId FOREIGN KEY (ErrorTypeId) REFERENCES ErrorType(ErrorTypeId)
 );
+
+
 
 /* ====================================================================================================
 Descirption: This table stores the usage
