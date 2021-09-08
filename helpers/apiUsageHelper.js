@@ -13,10 +13,9 @@ exports.getAPIUsageAttributes = function (req, res, result) {
     apiUsageObject.APIKey = req.headers.api_key
     apiUsageObject.APINameId = result.APINameId
     apiUsageObject.APIVersion = req.body.apiDetails.apiVersion
-    apiUsageObject.EndPointName = result.EndPointName
+    apiUsageObject.EndPointName = req.body.apiDetails.endPointName
     apiUsageObject.ClientIPAddress = req.body.apiDetails.clientIpAddress
     apiUsageObject.HttpStatusCode = req.body.apiDetails.httpStatusCode
-    apiUsageObject.RequestDate = moment().format("YYYY-MM-DD HH:MM:SS")
     apiUsageObject.PricePerCall = result.BasePricePerCall ? result.BasePricePerCall : 0;
     apiUsageObject.TimeTakenMilliseconds = req.body.apiDetails.executionTime
 

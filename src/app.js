@@ -2,14 +2,14 @@ const express = require("express"),
     bodyParser = require("body-parser"),
     app = express(),
     router = express.Router(),
-    routes = require("./routes"),
+    routes = require("../routes"),
     morgan = require("morgan"),
-    portConfiguration = require('./portConfiguration.json'),
-    envFile = require('./env.json');
+    portConfiguration = require('../portConfiguration.json'),
+    envFile = require('../env.json');
 
-var ErrorMod = require('./customnodemodules/error_node_module/errors');
+var ErrorMod = require('../customnodemodules/error_node_module/errors');
 var customeError = new ErrorMod();
-const apiUsageValidator = require('./validation/apiUsageValidation')
+const apiUsageValidator = require('../validation/apiUsageValidation')
 // const apiUsageDao = require('./dao/apiUsageDAO')
 
 
