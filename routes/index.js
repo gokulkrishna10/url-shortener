@@ -12,3 +12,8 @@ exports.updateAPIUsage = (req, res) => {
         }
     })
 }
+
+exports.apiUsageRequestValidation = function (req, res) {
+    //todo: check if the input API key is registered in the APIRouteSubscription table
+    res.send("Done").status(200)
+}
