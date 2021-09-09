@@ -10,7 +10,7 @@ const express = require("express"),
 var ErrorMod = require('../customnodemodules/error_node_module/errors');
 var customeError = new ErrorMod();
 const apiUsageValidator = require('../validation/apiUsageValidation')
-// const apiUsageDao = require('./dao/apiUsageDAO')
+const apiUsageRequestValidator = require('../routes/index')
 
 
 app.use(
@@ -63,6 +63,7 @@ router.all("*", function (req, res, next) {
 
 
 router.post('/v1/api-usage', apiUsageValidator.apiUsageValidation, routes.updateAPIUsage);
+router.post('/v1/validate-api-usage', apiUsageRequestValidator.apiUsageRequestValidation)
 
 
 router.all('/*', function (req, res) {
