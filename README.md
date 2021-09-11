@@ -2,8 +2,62 @@
 
 This microservice helps to track the API Usage (requests and errors) and also helps in monetizing the APIs
 
+# How to Configure Clients of API Usage
+### config.js changes
+Add the following variables to each section (dev,pre-prod & prod) of config.json. For example, the dev section will have the following entries.<br/>
+	"API_USAGE_UPDATE_URL": "http://127.0.0.1:7100/v1/api-usage", <br/>
+    "API_USAGE_VALIDATE_URL": "http://127.0.0.1:7100/v1/validate-api-usage", <br/>
+    "API_USAGE_SELF_API_NAME": "Half-Hourly-Meter-History", <br/>
+
+### app.js changes
+- Add the following router middleware - finalPostEndpointProcessor - after the end point call <br/>
+	router.get('/v1/periodic-data', apiUsage.validateRequest, requestValidation.validatePeriodicQuery, routes.getPeriodicData, finalPostEndpointProcessor);
+
+- Add the following block of code that implements this middle <br/>
+	//This should be the last router middle ware, all post-processing activities can 
+	// be invoked from here.    
+	function finalPostProcessing(req, res) {
+		//IMPORTANT: apiUsage middle ware should be the first middleware to be invoked 
+		// after the method to be logged for usage so as to keep track of execution time.
+		apiUsage.updateApiUsage(req,res);
+		s3logger.uploadLogsToS3(req, res);
+	}
+
+### router/index.js changes
+- install node module : perf_hooks
+- Insert the following code at the beginning of the function
+	req.startTime = performance.now();
+- Example Codes for implementation
+	- Promise pattern
+		exports.getPeriodicData = (req, res, next) => {
+		req.startTime = performance.now();
+		sqlQueries.getPeriodicDataFromDB(req, res)
+		.then((response) => {
+			res.responseData = response;
+			res.send(200, response);
+			next();
+		}).catch(err => {
+			next(err, req, res, next)
+		})
+}
+	- Callback pattern
+		exports.evComparison = (req, res, next) =>{
+		req.startTime = performance.now();
+		evData.evCompareData(req, (err, vehicleMOTData) => {
+			if (err) {
+				res.status(err.code).send(err.msg);
+				updateResponseData(req, res, err, "evCompare", "getEVComparisonData");
+				next();
+			} else {
+				res.status(200).send(vehicleMOTData);
+				updateResponseData(req, res, err, "evCompare", "getEVComparisonData");
+				next();
+			}
+		})
+	}
 
 # APIUsage API Design
+
 
 ## MIDDLEWARE DESIGN
 
