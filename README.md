@@ -43,18 +43,20 @@ Add the following variables to each section (dev,pre-prod & prod) of config.json
 	- Promise pattern
 	```
 		exports.getPeriodicData = (req, res, next) => {
-		req.startTime = performance.now();
-		sqlQueries.getPeriodicDataFromDB(req, res)
-		.then((response) => {
-			res.responseData = response;
-			res.send(200, response);
-			next();
-		}).catch(err => {
-			next(err, req, res, next)
-		})
+			req.startTime = performance.now();
+			sqlQueries.getPeriodicDataFromDB(req, res)
+			.then((response) => {
+				res.responseData = response;
+				res.send(200, response);
+				next();
+			}).catch(err => {
+				next(err, req, res, next)
+			})
+	}
 	```
-}
+
 	- Callback pattern
+
 	```
 		exports.evComparison = (req, res, next) =>{
 			req.startTime = performance.now();
@@ -72,7 +74,8 @@ Add the following variables to each section (dev,pre-prod & prod) of config.json
 		}
 	```
 - NOTES:
-	- Make 
+	- Make sure to call next() immediately after res.send()
+
 
 # APIUsage API Design
 
@@ -99,12 +102,14 @@ Add the following variables to each section (dev,pre-prod & prod) of config.json
         - Insert to APIUsage table : <br/>
 				- apiCustomerId, apiRouteid, apiKey, apiName, apiVersion, 
 				endPointName, clientIPAdress, httpStatusCode, pricePerCall, TimeTakenInMilliSeconds
-```
     <br/>
 	Validation:<br/>
 		- All parameters are required, error params required in case of error only.<br/>
+```
+
 
 2. All Client API Endpoint Validation:<br/>
+
 ```
     POST validateRequest<br/>
         Url : v1/validateRequest<br/>
@@ -115,6 +120,8 @@ Add the following variables to each section (dev,pre-prod & prod) of config.json
 <br/>  
 
 3. Record internal errors in the API during processing to the APIError table<br/>
+
+```
 	- Any errors during processing have to be logged as internal errors in the APIError <br/>table<br/>
 		ErrorTypeId - 1 (External by default)<br/>
 		ErrorId - errorCode from input <br/>
@@ -123,12 +130,14 @@ Add the following variables to each section (dev,pre-prod & prod) of config.json
 		ErrorStatus -  0 - no action required
         			   1 - active, need to be resolved, when ErrorType = Internal <br/>
 		ErrorMessage - Details of the error occured<br/>
+```
 <br/>
 <br/>
 
 ## USAGE DATA RETRIEVAL<br/>
 <br/>
 1. GET usage<br/>
+
 ```
 	Header : apiKey, apiVersion<br/>
 	Query Params : intervalType ,endPointName = null, fromDate, toDate = null<br/>
@@ -140,7 +149,9 @@ Add the following variables to each section (dev,pre-prod & prod) of config.json
 			=> d : If difference between date > x days, give an error: Please provide a range less than 60 days<br/>
 		- fromDate & toDate : dateTime values, format : YYYY-MM-DD:HH:MM:SS<br/>
 ```
+
 2. GET errors<br/>
+
 ```
 	Header : apiKey, apiVersion<br/>
 	Query Params : intervalType ,endPointName = null, fromDate, toDate = null<br/>
