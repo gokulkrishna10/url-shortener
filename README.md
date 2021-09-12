@@ -1,19 +1,25 @@
 # api-usage-ms
 
-This microservice helps to track the API Usage (requests and errors) and also helps in monetizing the APIs
+This microservice helps to track the API Usage (requests and errors) and also helps in monetizing the APIs.
 
-# How to Configure Clients of API Usage
+# How to Configure Clients for API Usage
+If you want an API to make use of API Usage Microservice to keep track of usage, errors for monitoring or monetizing purpose, the following changes are required in the client API. <br/>
 ### config.js changes
-Add the following variables to each section (dev,pre-prod & prod) of config.json. For example, the dev section will have the following entries.<br/>
+Add the following variables to each section (dev,pre-prod & prod) of config.json. For example, the dev section will have the following entries. <br/>
+```
 	"API_USAGE_UPDATE_URL": "http://127.0.0.1:7100/v1/api-usage", <br/>
     "API_USAGE_VALIDATE_URL": "http://127.0.0.1:7100/v1/validate-api-usage", <br/>
     "API_USAGE_SELF_API_NAME": "Half-Hourly-Meter-History", <br/>
+```
 
 ### app.js changes
 - Add the following router middleware - finalPostEndpointProcessor - after the end point call <br/>
+```
 	router.get('/v1/periodic-data', apiUsage.validateRequest, requestValidation.validatePeriodicQuery, routes.getPeriodicData, finalPostEndpointProcessor);
+```
 
 - Add the following block of code that implements this middle <br/>
+```
 	//This should be the last router middle ware, all post-processing activities can 
 	// be invoked from here.    
 	function finalPostProcessing(req, res) {
@@ -22,11 +28,14 @@ Add the following variables to each section (dev,pre-prod & prod) of config.json
 		apiUsage.updateApiUsage(req,res);
 		s3logger.uploadLogsToS3(req, res);
 	}
+```
 
 ### router/index.js changes
 - install node module : perf_hooks
 - Insert the following code at the beginning of the function
+```
 	req.startTime = performance.now();
+```
 - Example Codes for implementation
 	- Promise pattern
 		exports.getPeriodicData = (req, res, next) => {
