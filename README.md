@@ -77,7 +77,7 @@ Add the following variables to each section (dev,pre-prod & prod) of config.json
 	- Make sure to call next() immediately after res.send()
 
 
-# APIUsage API Design
+# APIUsage Design
 
 
 ## MIDDLEWARE DESIGN
