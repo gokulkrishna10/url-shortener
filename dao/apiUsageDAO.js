@@ -24,7 +24,7 @@ exports.getCustomerAPIDetails = function (req, res, callback) {
         }
     } else {
         options = {
-            sql: "SELECT ars.APINameId,ars.APICustomerId, ars.APIPricingPlanId, arp.BasePricePerCall, ar.APIRouteId, ar.EndPointName " +
+            sql: "SELECT ars.APINameId,ars.APICustomerId, arp.APIPricingPlanId, arp.BasePricePerCall, ar.APIRouteId, ar.EndPointName " +
                 "FROM APIRouteSubscription ars " +
                 "JOIN APIRoute ar on ar.APINameId = ars.APINameId " +
                 "JOIN APIRoutePrice arp on ar.APIRouteId = arp.APIRouteId " +
