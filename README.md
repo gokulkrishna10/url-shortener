@@ -1,9 +1,84 @@
 # api-usage-ms
 
-This microservice helps to track the API Usage (requests and errors) and also helps in monetizing the APIs
+This microservice helps to track the API Usage (requests and errors) and also helps in monetizing the APIs.
+
+# How to Configure Clients for API Usage
+If you want an API to make use of API Usage Microservice to keep track of usage, errors for monitoring or monetizing purpose, the following changes are required in the client API. <br/>
+### config.js changes
+Add the following variables to each section (dev,pre-prod & prod) of config.json. For example, the dev section will have the following entries. <br/>
+```
+	"API_USAGE_UPDATE_URL": "http://127.0.0.1:7100/v1/api-usage", <br/>
+    "API_USAGE_VALIDATE_URL": "http://127.0.0.1:7100/v1/validate-api-usage", <br/>
+    "API_USAGE_SELF_API_NAME": "Half-Hourly-Meter-History", <br/>
+```
+
+### app.js changes
+- Add the following router middleware - finalPostEndpointProcessor - after the end point call <br/>
+```
+	router.get('/v1/periodic-data', apiUsage.validateRequest, requestValidation.validatePeriodicQuery, routes.getPeriodicData, finalPostEndpointProcessor);
+```
+
+- Add the following block of code that implements this middle <br/>
+```
+	//This should be the last router middle ware, all post-processing activities can 
+	// be invoked from here.    
+	function finalPostProcessing(req, res) {
+		//IMPORTANT: apiUsage middle ware should be the first middleware to be invoked 
+		// after the method to be logged for usage so as to keep track of execution time.
+		apiUsage.updateApiUsage(req,res);
+		s3logger.uploadLogsToS3(req, res);
+	}
+```
+
+### router/index.js changes
+- install node module : perf_hooks
+```
+	npm i perf_hooks
+```
+- The only change you need to make is to insert the following code at the beginning of the function.
+```
+	req.startTime = performance.now();
+```
+- Example Codes for implementation
+	- Promise pattern
+	```
+		exports.getPeriodicData = (req, res, next) => {
+			req.startTime = performance.now();
+			sqlQueries.getPeriodicDataFromDB(req, res)
+			.then((response) => {
+				res.responseData = response;
+				res.send(200, response);
+				next();
+			}).catch(err => {
+				next(err, req, res, next)
+			})
+	}
+	```
+
+	- Callback pattern
+
+	```
+		exports.evComparison = (req, res, next) =>{
+			req.startTime = performance.now();
+			evData.evCompareData(req, (err, vehicleMOTData) => {
+				if (err) {
+					res.status(err.code).send(err.msg);
+					updateResponseData(req, res, err, "evCompare", "getEVComparisonData");
+					next();
+				} else {
+					res.status(200).send(vehicleMOTData);
+					updateResponseData(req, res, err, "evCompare", "getEVComparisonData");
+					next();
+				}
+			})
+		}
+	```
+- NOTES:
+	- Make sure to call next() immediately after res.send()
 
 
-# APIUsage API Design
+# APIUsage Design
+
 
 ## MIDDLEWARE DESIGN
 
@@ -15,6 +90,7 @@ This microservice helps to track the API Usage (requests and errors) and also he
 ## USAGE DATA INJECTION
 
 1. The middleware module will POST to the following method of this micro service:
+```
 	POST usage <br/>
 	    Url : v1/usage<br/>
 	    Header : apiKey<br/>
@@ -29,27 +105,40 @@ This microservice helps to track the API Usage (requests and errors) and also he
     <br/>
 	Validation:<br/>
 		- All parameters are required, error params required in case of error only.<br/>
+```
+
 
 2. All Client API Endpoint Validation:<br/>
+
+```
     POST validateRequest<br/>
         Url : v1/validateRequest<br/>
         Header : apiKey<br/>
         Body (JSON) :  <br/>
 		- Check if the customer has valid subscription based on the APIKey<br/>
+```
 <br/>  
 
 3. Record internal errors in the API during processing to the APIError table<br/>
+
+```
 	- Any errors during processing have to be logged as internal errors in the APIError <br/>table<br/>
-		IsInternal - true<br/>
-		InputData - Inouts to the POST usage endpoint<br/>
-		InternalErrorStatus - 0 (not resolved)<br/>
+		ErrorTypeId - 1 (External by default)<br/>
+		ErrorId - errorCode from input <br/>
+		ErrorMessage - errorDescription from input <br/>
+		InputData - Inout JSON object to the usage end point
+		ErrorStatus -  0 - no action required
+        			   1 - active, need to be resolved, when ErrorType = Internal <br/>
 		ErrorMessage - Details of the error occured<br/>
+```
 <br/>
 <br/>
 
 ## USAGE DATA RETRIEVAL<br/>
 <br/>
 1. GET usage<br/>
+
+```
 	Header : apiKey, apiVersion<br/>
 	Query Params : intervalType ,endPointName = null, fromDate, toDate = null<br/>
 	intervalType : d, m or y<br/>
@@ -59,7 +148,11 @@ This microservice helps to track the API Usage (requests and errors) and also he
 		- usageType (Jaipal)<br/>
 			=> d : If difference between date > x days, give an error: Please provide a range less than 60 days<br/>
 		- fromDate & toDate : dateTime values, format : YYYY-MM-DD:HH:MM:SS<br/>
+```
+
 2. GET errors<br/>
+
+```
 	Header : apiKey, apiVersion<br/>
 	Query Params : intervalType ,endPointName = null, fromDate, toDate = null<br/>
 	intervalType : d, m or y<br/>
@@ -69,6 +162,7 @@ This microservice helps to track the API Usage (requests and errors) and also he
 		- usageType (Jaipal)<br/>
 			=> d : If difference between date > x days, give an error: Please provide a range less than 60 days<br/>
 		- fromDate & toDate : dateTime values, format : YYYY-MM-DD:HH:MM:SS<br/>
+```
 <br/>
 
 

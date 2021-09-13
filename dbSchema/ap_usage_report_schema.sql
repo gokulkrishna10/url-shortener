@@ -48,6 +48,7 @@ Description: This table contains the APIName details
 CREATE TABLE IF NOT EXISTS APIName (
 	APINameId INT NOT NULL,
     Name VARCHAR(100) NOT NULL,
+    DisplayName VARCHAR(100) NOT NULL,
     Description VARCHAR(100) NOT NULL,
 	CreateDate DATETIME NOT NULL DEFAULT NOW(),
     CONSTRAINT PK_APIName PRIMARY KEY (APINameid)
@@ -216,7 +217,7 @@ CREATE TABLE IF NOT EXISTS APIError (
     ErrorId INT NULL,
     ErrorMessage VARCHAR(1000) NOT NULL,
     InputData VARCHAR(2000) NULL,
-    ErrorStatus TINYINT NOT NULL DEFAULT 1,
+    ErrorStatus TINYINT NOT NULL DEFAULT 0,
 	CONSTRAINT PK_APIUsageError PRIMARY KEY (APIErrorId),
     CONSTRAINT FK_APIError_ErrorTypeId FOREIGN KEY (ErrorTypeId) REFERENCES ErrorType(ErrorTypeId)
 );
@@ -245,7 +246,7 @@ CREATE TABLE IF NOT EXISTS APIUsage (
     EndpointName VARCHAR(100) NOT NULL,
 	ClientIPAddress VARCHAR(30) NOT NULL,
 	HttpStatusCode INT NOT NULL,
-    RequestDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    RequestDate DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP,
     PricePerCall DECIMAL(4,2) NOT NULL,
     TimeTakenMilliseconds INT NOT NULL,
     CONSTRAINT PK_APIUsage PRIMARY KEY (APIUsageId),
@@ -259,14 +260,22 @@ CREATE TABLE IF NOT EXISTS APIUsage (
 
 
 /*--------------------SELECT----------------------
+Select * from APIName;
 Select * from APICustomer; 
 Select * from APIRoute; 
 Select * from APIPricingPlan; 
 Select * from APIRouteSubscription; 
 Select * from APIQuotaLimit; 
 Select * from APIRoutePrice; 
-Select * from APIError; 
-Select * from APIUsage; 
+Select * from ErrorType;
+
+Select * from APIError
+order by APIErrorId desc
+LIMIT 5; 
+
+Select * from APIUsage
+order by APIUsageId desc
+LIMIT 5; 
 
 */
 
@@ -276,6 +285,7 @@ USE api_usage_report_dev;
 
 Drop table APIUsage;
 Drop table APIError;
+Drop table ErrorType;
 Drop table APIRoutePrice;
 Drop table APIQuotaLimit;
 Drop table APIRouteSubscription;
@@ -293,8 +303,8 @@ Drop table APIName;
 
 ------------Onboard an API--------------------
 #------API 
-INSERT INTO APIName (APINameId, Name, Description)
-VALUES (1, 'Half-Hourly-Meter-Hisotory', 'Half-Hourly-Meter-Hisotory');
+INSERT INTO APIName (APINameId, Name, DisplayName, Description)
+VALUES (1, 'Half-Hourly-Meter-Hisotory', 'Half Hourly Meter Hisotory',  'Half-Hourly-Meter-Hisotory');
 
 #--ROUTE1
 INSERT INTO APIRoute (APIRouteId, APINameId, APIVersion, EndpointName)
