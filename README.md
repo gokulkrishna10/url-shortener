@@ -19,12 +19,13 @@ Add the following config variables to each section (dev, preprod & prod) of conf
 ```
 
 ### app.js changes
-- Add the following router middleware - finalPostResponseProcessor - after the end point call <br/>
+1. Add the middleware - apiUsage.validateRequest - to the beginning of the router middlewares. <br/>
+2. Add the router middleware - finalPostResponseProcessor - after the end point call <br/>
 ```
 	router.get('/v1/periodic-data', apiUsage.validateRequest, requestValidation.validatePeriodicQuery, routes.getPeriodicData, finalPostResponseProcessor);
 ```
 
-- Add the following block of code that implements this middleware <br/>
+3. Add the following block of code that implements this middleware <br/>
 Please note the following <br/>
 	- The updateApiUsage module should be the first module to be invoked
 	- Add the module - uploadLogsToS3 - only if your module implements S3 Logging.
@@ -38,7 +39,7 @@ Please note the following <br/>
 		s3logger.uploadLogsToS3(req, res);
 	}
 ```
-- Add the usage update and S3 Logging from the error handler in app.js too
+4. Add the usage update and S3 Logging from the error handler in app.js too
 Please note the following <br/>
 	- The updateApiUsage module should be the first module to be invoked
 	- Add the module - uploadLogsToS3 - only if your module implements S3 Logging.
@@ -55,15 +56,15 @@ Please note the following <br/>
 ```
 
 ### router/index.js changes
-- install node module : perf_hooks
+1. Install node module : perf_hooks
 ```
 	npm i perf_hooks
 ```
-- The only change you need to make is to insert the following code at the beginning of the function.
+2. The only change you need to make is to insert the following code at the beginning of the function.
 ```
 	req.startTime = performance.now();
 ```
-- Example Codes for implementation
+- Sample code with proper implementation <br/>
 	You just need to add the above line before the call begins. <br/>
 	But also make sure you are calling next() correctly, depending on success or error sccenario. <br/>
 	- Promise pattern
