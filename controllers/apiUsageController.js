@@ -7,7 +7,7 @@ exports.updateAPIUsage = function (req, res, mainCallback) {
 
     async.waterfall([
             function updateErrorDetails(callback) {
-                if (req.isValidationError) {
+                if (req.isValidationError) {  // insert into error table only in case of an internal validation error or internal processing error
                     apiUsageDao.insertErrorDetails(req, res, function (err, dbResponse) {
                         if (err) {
                             mainCallback(err, null)
@@ -55,6 +55,7 @@ exports.updateAPIUsage = function (req, res, mainCallback) {
                     })
                 } else {
                     //update error table
+                    // insert into error table only in case of an internal validation error or internal processing error
                     if (!req.body.apiDetails && !req.body.apiDetails.errorCode && !req.body.apiDetails.errorDescription) {
                         apiUsageDao.insertErrorDetails(req, res, (err, response) => {
                             if (err) {
