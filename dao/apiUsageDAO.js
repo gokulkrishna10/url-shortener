@@ -90,3 +90,26 @@ exports.insertErrorDetails = function (req, res, callback) {
         }
     })
 }
+
+
+exports.validateApiKeyAndName = function (req, res, callback) {
+
+    let options = {
+        sql: "SELECT * from APIRouteSubscription ars " +
+            "INNER JOIN APIName apn on ars.APINameId = apn.APINameId " +
+            "WHERE Name = ? AND APIKey = ?",
+        values: [req.body.apiName, req.headers.api_key]
+    }
+
+    db.queryWithOptions(options, function (error, dbResponse) {
+        if (error) {
+            callback(customError.dbError(error), null)
+        } else {
+            if (dbResponse && dbResponse.length > 0) {
+                callback(null, dbResponse)
+            } else {
+                callback(null, null)
+            }
+        }
+    })
+}
