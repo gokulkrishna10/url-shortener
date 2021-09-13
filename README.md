@@ -4,21 +4,30 @@ This microservice helps to track the API Usage (requests and errors) and also he
 
 # How to Configure Clients for API Usage
 If you want an API to make use of API Usage Microservice to keep track of usage, errors for monitoring or monetizing purpose, the following changes are required in the client API. <br/>
+
+### Copy apiUsage module to your project
+Path : mh-api-ms/apiUsage/apiUsage.js
+<br/>
+
 ### config.js changes
-Add the following variables to each section (dev,pre-prod & prod) of config.json. For example, the dev section will have the following entries. <br/>
+Add the following config variables to each section (dev, preprod & prod) of config.json. For example, the local section will have the following entries to the dev section. <br/>
 ```
-	"API_USAGE_UPDATE_URL": "http://127.0.0.1:7100/v1/api-usage", <br/>
-    "API_USAGE_VALIDATE_URL": "http://127.0.0.1:7100/v1/validate-api-usage", <br/>
+	DEV: 
+	"API_USAGE_UPDATE_URL": "http://34.249.3.126:7100/v1/api-usage",
+    "API_USAGE_VALIDATE_URL": "http://34.249.3.126:7100/v1/validate-api-usage", <br/>
     "API_USAGE_SELF_API_NAME": "Half-Hourly-Meter-History", <br/>
 ```
 
 ### app.js changes
-- Add the following router middleware - finalPostEndpointProcessor - after the end point call <br/>
+- Add the following router middleware - finalPostResponseProcessor - after the end point call <br/>
 ```
-	router.get('/v1/periodic-data', apiUsage.validateRequest, requestValidation.validatePeriodicQuery, routes.getPeriodicData, finalPostEndpointProcessor);
+	router.get('/v1/periodic-data', apiUsage.validateRequest, requestValidation.validatePeriodicQuery, routes.getPeriodicData, finalPostResponseProcessor);
 ```
 
-- Add the following block of code that implements this middle <br/>
+- Add the following block of code that implements this middleware <br/>
+Please note the following <br/>
+	- The updateApiUsage module should be the first module to be invoked
+	- Add the module - uploadLogsToS3 - only if your module implements S3 Logging.
 ```
 	//This should be the last router middle ware, all post-processing activities can 
 	// be invoked from here.    
@@ -28,6 +37,21 @@ Add the following variables to each section (dev,pre-prod & prod) of config.json
 		apiUsage.updateApiUsage(req,res);
 		s3logger.uploadLogsToS3(req, res);
 	}
+```
+- Add the usage update and S3 Logging from the error handler in app.js too
+Please note the following <br/>
+	- The updateApiUsage module should be the first module to be invoked
+	- Add the module - uploadLogsToS3 - only if your module implements S3 Logging.
+```
+	app.use(function error_handler(err, req, res, next) {
+    res.header("Content-Type", "application/json; charset=utf-8");
+    res.status(err.code || 500).send(err)
+    
+    apiUsage.updateApiUsage(req, err, next);
+    var errData = {};
+    errData.responseData = err;
+    s3logger.uploadLogsToS3(req, errData, next);
+});
 ```
 
 ### router/index.js changes
@@ -40,6 +64,8 @@ Add the following variables to each section (dev,pre-prod & prod) of config.json
 	req.startTime = performance.now();
 ```
 - Example Codes for implementation
+	You just need to add the above line before the call begins. <br/>
+	But also make sure you are calling next() correctly, depending on success or error sccenario. <br/>
 	- Promise pattern
 	```
 		exports.getPeriodicData = (req, res, next) => {
@@ -73,8 +99,22 @@ Add the following variables to each section (dev,pre-prod & prod) of config.json
 			})
 		}
 	```
-- NOTES:
-	- Make sure to call next() immediately after res.send()
+
+## Testing the Changes
+After implementing the above changes, you can check the results from the following DB. <br/>
+--Connetion details <br/>
+server: openenergy.crjdegsnxmp2.eu-west-1.rds.amazonaws.com <br/>
+Schema : api_usage_report_dev <br/>
+userName:  api_usasge_report_devuser <br/>
+password: 891f5b0d-6873-4b5f-a0ae-9b890ed0739d <br/>
+
+
+Query: <br/>
+Select * from APIUsage
+order by APIUsageId desc
+LIMIT 5; 
+
+
 
 
 # APIUsage Design
