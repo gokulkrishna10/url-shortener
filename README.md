@@ -19,16 +19,15 @@ Add the following config variables to each section (dev, preprod & prod) of conf
 ```
 
 ### app.js changes
-1. Add the middleware - apiUsage.validateRequest - to the beginning of the router middlewares. <br/>
+1. Add the middleware - apiUsage.validateRequest - to the beginning of the pipeline. <br/>
 2. Add the router middleware - finalPostResponseProcessor - after the end point call <br/>
 ```
 	router.get('/v1/periodic-data', apiUsage.validateRequest, requestValidation.validatePeriodicQuery, routes.getPeriodicData, finalPostResponseProcessor);
 ```
 
-3. Add the following block of code that implements this middleware <br/>
-Please note the following <br/>
+3. Add the following middlewares for post processing of the request <br/>
 	- The updateApiUsage module should be the first module to be invoked
-	- Add the module - uploadLogsToS3 - only if your module implements S3 Logging.
+	- Add the module - uploadLogsToS3 - only if your project implements S3 Logging.
 ```
 	//This should be the last router middle ware, all post-processing activities can 
 	// be invoked from here.    
@@ -42,7 +41,7 @@ Please note the following <br/>
 4. Add the usage update and S3 Logging from the error handler in app.js too
 Please note the following <br/>
 	- The updateApiUsage module should be the first module to be invoked
-	- Add the module - uploadLogsToS3 - only if your module implements S3 Logging.
+	- Add the module - uploadLogsToS3 - only if your projct implements S3 Logging.
 ```
 	app.use(function error_handler(err, req, res, next) {
     res.header("Content-Type", "application/json; charset=utf-8");
