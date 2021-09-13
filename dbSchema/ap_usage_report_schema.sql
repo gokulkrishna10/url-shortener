@@ -28,7 +28,7 @@ Description: This table contains data for an API Customer
 */
 
 CREATE TABLE IF NOT EXISTS APICustomer (
-	APICustomerId INT NOT NULL,
+	APICustomerId INT NOT NULL AUTO_INCREMENT,
     CustomerName VARCHAR(50) NOT NULL,
     LegalName VARCHAR(100) NOT NULL,
 	Address VARCHAR(500) NULL,
@@ -46,10 +46,10 @@ Description: This table contains the APIName details
 */
 
 CREATE TABLE IF NOT EXISTS APIName (
-	APINameId INT NOT NULL,
+	APINameId INT NOT NULL AUTO_INCREMENT,
     Name VARCHAR(100) NOT NULL,
     DisplayName VARCHAR(100) NOT NULL,
-    Description VARCHAR(100) NOT NULL,
+    Description VARCHAR(200) NOT NULL,
 	CreateDate DATETIME NOT NULL DEFAULT NOW(),
     CONSTRAINT PK_APIName PRIMARY KEY (APINameid)
 );
@@ -66,10 +66,10 @@ EndpointName = / or specific endpointName, / - if you have same metering for all
 */
 
 CREATE TABLE IF NOT EXISTS APIRoute (
-	APIRouteId INT NOT NULL,
+	APIRouteId INT NOT NULL AUTO_INCREMENT,
     APINameId INT NOT NULL,
     APIVersion VARCHAR(10) NULL,
-    EndpointName VARCHAR(100) NOT NULL,
+    EndpointName VARCHAR(200) NOT NULL,
     CONSTRAINT PK_APIRoute PRIMARY KEY (APIRouteId),
     CONSTRAINT FK_APIRoute_APINameId FOREIGN KEY (APINameId) REFERENCES APIName(APINameId)
 );
@@ -84,9 +84,9 @@ DiscountPercent - Represents discusounts from the base price which is PayAsYouGo
 */
 
 CREATE TABLE IF NOT EXISTS APIPricingPlan (
-	APIPricingPlanId INT NOT NULL,
+	APIPricingPlanId INT NOT NULL AUTO_INCREMENT,
 	Name VARCHAR(100) NOT NULL,
-    Description VARCHAR(50) NOT NULL,
+    Description VARCHAR(200) NOT NULL,
     Unit VARCHAR(50) NOT NULL,
     PlanDuration VARCHAR(30) NOT NULL,
     Quantity INT NOT NULL,
@@ -95,16 +95,16 @@ CREATE TABLE IF NOT EXISTS APIPricingPlan (
 );
 
 
-INSERT INTO APIPricingPlan(APIPricingPlanId, Name, Description, Unit,PlanDuration, Quantity, DiscountPercent)
-VALUES (1, 'PayAsYouGo', 'PayAsYouGo', 'Nos','N/A', 0,0);
-INSERT INTO APIPricingPlan(APIPricingPlanId, Name, Description, Unit, PlanDuration, Quantity, DiscountPercent)
-VALUES (2, 'Bronze', 'Volume Purchase', 'Nos','Monthly', 1000000, 5);
-INSERT INTO APIPricingPlan(APIPricingPlanId, Name, Description, Unit, PlanDuration, Quantity, DiscountPercent)
-VALUES (3, 'Silver', 'Volume Purchase', 'Nos','Monthly', 2000000, 7);
-INSERT INTO APIPricingPlan(APIPricingPlanId, Name, Description, Unit, PlanDuration, Quantity, DiscountPercent)
-VALUES (4, 'SavingPlan1000', 'Pay Upfront Purchase', 'Pounds','Monthly', 1000, 4);
-INSERT INTO APIPricingPlan(APIPricingPlanId, Name, Description, Unit, PlanDuration, Quantity, DiscountPercent)
-VALUES (5, 'SavingPlan2000', 'Pay Upfront Purchase', 'Pounds','Monthly', 2000, 5);
+INSERT INTO APIPricingPlan(Name, Description, Unit,PlanDuration, Quantity, DiscountPercent)
+VALUES ('PayAsYouGo', 'PayAsYouGo', 'Nos','N/A', 0,0);
+INSERT INTO APIPricingPlan(Name, Description, Unit, PlanDuration, Quantity, DiscountPercent)
+VALUES ('Bronze', 'Volume Purchase', 'Nos','Monthly', 1000000, 5);
+INSERT INTO APIPricingPlan(Name, Description, Unit, PlanDuration, Quantity, DiscountPercent)
+VALUES ('Silver', 'Volume Purchase', 'Nos','Monthly', 2000000, 7);
+INSERT INTO APIPricingPlan(Name, Description, Unit, PlanDuration, Quantity, DiscountPercent)
+VALUES ('SavingPlan1000', 'Pay Upfront Purchase', 'Pounds','Monthly', 1000, 4);
+INSERT INTO APIPricingPlan(Name, Description, Unit, PlanDuration, Quantity, DiscountPercent)
+VALUES ('SavingPlan2000', 'Pay Upfront Purchase', 'Pounds','Monthly', 2000, 5);
 
 
 /* ====================================================================================================
@@ -114,20 +114,20 @@ APIKey : GUID string
 
 IMPORTANT NOTE: INSERT A NEW ENTRY when the pricing plan changes for a customer, so that we can track
 				the history and can be tracked. Also can be used to re-create past invoices.
+TODO: Need changes here... this can't be here.. it has to go to APIRoutePrice table
+    APIPricingPlanId INT NOT NULL,
 */
 
 CREATE TABLE IF NOT EXISTS APIRouteSubscription(
-	APIRouteSubscriptionId INT NOT NULL,
+	APIRouteSubscriptionId INT NOT NULL AUTO_INCREMENT,
 	APICustomerId INT NOT NULL,
     APINameId INT NOT NULL,
-    APIPricingPlanId INT NOT NULL,
 	APIKey VARCHAR(100) NOT NULL, 
     IsActive TINYINT NOT NULL,
 	StartDate DATETIME NOT NULL DEFAULT NOW(),
     CONSTRAINT PK_APIRouteSubscription PRIMARY KEY (APIRouteSubscriptionId),
     CONSTRAINT FK_APIRouteSubscription_APINameId FOREIGN KEY (APINameId) REFERENCES APIName(APINameId),
-    CONSTRAINT FK_APISubscription_APICustomerId FOREIGN KEY (APICustomerId) REFERENCES APICustomer(APICustomerId),
-    CONSTRAINT FK_APIRouteSubscription_APIPricingPlanId FOREIGN KEY (APIPricingPlanId) REFERENCES APIPricingPlan(APIPricingPlanId)
+    CONSTRAINT FK_APISubscription_APICustomerId FOREIGN KEY (APICustomerId) REFERENCES APICustomer(APICustomerId)
 );
 
 
@@ -139,7 +139,7 @@ PlanDuration : Daily, Weekly, Monthly
 
 Edge cases:
 1. Pay Upfront amount/Quota Limit is over for a month
-	SOL: 
+	SOLUTION: 
 		Possible options:
 		a. Customer moves to the new Pricing plan
 			SOL: Will be charged accordingly as we keep track of the PlanId pe call
@@ -300,49 +300,246 @@ Drop table APIName;
 /*
 ----------------------------------Scripts-------------------------------------------------------
 
+--TODO : learn how to get @@identity from mySQL
+
+
+declare id INT
+insert into ErrorType1 (Name)
+values ('ss');
+select @@identity;
+
+DECLARE pricing_plan_id INT
+SELECT pricing_plan_id = APIPricingPlanId FROM APIPricingPlan
+WHERE Name = 'PayAsYouGo';
+Selct pricing_plan_id;
+
+
+
+--OnBoard API
+DELIMITER //
+
+CREATE FUNCTION OnboardNewAPI ( 
+	api_name VARCHAR(100),
+    api_display_name VARCHAR(100),
+    description VARCHAR(200),
+    api_version VARCHAR(10),
+    
+)
+RETURNS INT
+
+BEGIN
+
+	DECLARE retVal INT;
+	
+    #------API 
+    DECALRE api_name_id INT;
+	INSERT INTO APIName (Name, DisplayName, Description)
+	VALUES (api_name, api_display_name,  description);
+    
+    SET api_name_id = @@identity;
+
+	#--ROOT ROUTE
+    DECALRE api_route_id INT;
+	INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
+    VALUES (api_name_id,api_version,'/');
+    SET api_route_id = @@identity;
+    
+	#-- NOTE you will only enter price for APIPricingPlanId = 1
+	INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
+	VALUES (api_route_id, 1, 1.10); 
+
+
+	SET 
+	RETURN income;
+
+END; //
+
+DELIMITER ;
+
+--On Board Customer
+CREATE FUNCTION OnboardNewCustomer ( starting_value INT )
+RETURNS INT
+
+BEGIN
+
+	DECLARE retVal INT;
+
+
+	SET 
+	RETURN income;
+
+END; //
+
+DELIMITER ;
+
+#=================TEMP - END======================
+
 
 ------------Onboard an API--------------------
 #------API 
-INSERT INTO APIName (APINameId, Name, DisplayName, Description)
-VALUES (1, 'Half-Hourly-Meter-Hisotory', 'Half Hourly Meter Hisotory',  'Half-Hourly-Meter-Hisotory');
+INSERT INTO APIName (Name, DisplayName, Description)
+VALUES ('Half-Hourly-Meter-Hisotory', 'Half Hourly Meter Hisotory',  'Half-Hourly-Meter-Hisotory');
+INSERT INTO APIName (Name, DisplayName, Description)
+VALUES ('meter-data', 'meter-data',  'meter-data');
+INSERT INTO APIName (Name, DisplayName, Description)
+VALUES ('meter-data-advanced', 'meter-data-advanced',  'meter-data-advanced');
+INSERT INTO APIName (Name, DisplayName, Description)
+VALUES ('carbon-footprint', 'carbon-footprint',  'carbon-footprint');
+INSERT INTO APIName (Name, DisplayName, Description)
+VALUES ('eveloper/meter-data', 'eveloper/meter-data',  'eveloper/meter-data');
+INSERT INTO APIName (Name, DisplayName, Description)
+VALUES ('current-energy-profile', 'current-energy-profile',  'current-energy-profile');
+INSERT INTO APIName (Name, DisplayName, Description)
+VALUES ('precovid-energy-profile', 'precovid-energy-profile',  'precovid-energy-profile');
+INSERT INTO APIName (Name, DisplayName, Description)
+VALUES ('current-energy-usage', 'current-energy-usage',  'current-energy-usage');
+INSERT INTO APIName (Name, DisplayName, Description)
+VALUES ('precovid-energy-usage', 'precovid-energy-usage',  'precovid-energy-usage');
+INSERT INTO APIName (Name, DisplayName, Description)
+VALUES ('current-energy-supplier', 'current-energy-supplier',  'current-energy-supplier');
+INSERT INTO APIName (Name, DisplayName, Description)
+VALUES ('current-supplier-details', 'current-supplier-details',  'current-supplier-details');
+INSERT INTO APIName (Name, DisplayName, Description)
+VALUES ('quote-request', 'quote-request',  'quote-request');
+INSERT INTO APIName (Name, DisplayName, Description)
+VALUES ('evCompare', 'evCompare',  'evCompare');
+INSERT INTO APIName (Name, DisplayName, Description)
+VALUES ('Neighbourhood Energy Comparison', 'Neighbourhood Energy Comparison',  'Neighbourhood Energy Comparison');
+
+
 
 #--ROUTE1
-INSERT INTO APIRoute (APIRouteId, APINameId, APIVersion, EndpointName)
-VALUES (1, 1,'v1','/');
-#-- NOTE you will only enter price for APIPricingPlanId = 1
-INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
-VALUES (1, 1, 1.10); 
+INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
+VALUES (1,'v1','/');
+INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
+VALUES (1,'v1','getCumulativeTotalData');
 
-#--ROUTE2
-INSERT INTO APIRoute (APIRouteId, APINameId, APIVersion, EndpointName)
-VALUES (2, 1,'v1','getCumulativeTotalData');
+INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
+VALUES (1,'v1','/');
+INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
+VALUES (2,'v1','/');
+INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
+VALUES (3,'v1','/');
+INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
+VALUES (4,'v1','/');
+INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
+VALUES (5,'v1','/');
+INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
+VALUES (6,'v1','/');
+INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
+VALUES (7,'v1','/');
+INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
+VALUES (8,'v1','/');
+INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
+VALUES (9,'v1','/');
+INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
+VALUES (10,'v1','/');
+INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
+VALUES (11,'v1','/');
+INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
+VALUES (12,'v1','/');
+INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
+VALUES (13,'v1','/');
+INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
+VALUES (14,'v1','/');
+
+
+
 #-- NOTE you will only enter price for APIPricingPlanId = 1
 INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
-VALUES (2, 1, 1.2); 
+VALUES (1, 1, 0.10); 
+INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
+VALUES (2, 1, 0.15); 
+
+INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
+VALUES (3, 1, 0.10); 
+INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
+VALUES (4, 1, 0.10); 
+INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
+VALUES (5, 1, 0.10); 
+INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
+VALUES (6, 1, 0.10); 
+INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
+VALUES (7, 1, 0.10); 
+INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
+VALUES (8, 1, 0.10); 
+INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
+VALUES (9, 1, 0.10); 
+INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
+VALUES (10, 1, 0.10); 
+INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
+VALUES (11, 1, 0.10); 
+INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
+VALUES (12, 1, 0.10); 
+INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
+VALUES (13, 1, 0.10); 
+INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
+VALUES (14, 1, 0.10); 
+INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
+VALUES (15, 1, 0.10); 
+INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
+VALUES (16, 1, 0.10); 
+
 
 
 #-----------Onboard a Customer -----
-INSERT INTO APICustomer (APICustomerId, CustomerName, LegalName,  Address, Email, IsActive)
-VALUES (1, 'Renewable-Exchange', 'Renewable Exchange Ltd',  NULL, 'sudheer.k@digitalapicraft.com', 1);
+INSERT INTO APICustomer (CustomerName, LegalName,  Address, Email, IsActive)
+VALUES ('Renewable-Exchange', 'Renewable Exchange Ltd',  NULL, 'sudheer.k@digitalapicraft.com', 1);
 
-#---------------API + Customer
-INSERT INTO APIRouteSubscription (APIRouteSubscriptionId, APICustomerId, APINameId, APIPricingPlanId, APIKey, IsActive)
-VALUES (1, 1, 1, 2, 'ed1ddbc9-9e1d-43ad-ba6c-dbe5ce75f6ec', 1);
+INSERT INTO APICustomer (CustomerName, LegalName,  Address, Email, IsActive)
+VALUES ('Test Customer', 'Test Customer',  NULL, 'sudheer.k@digitalapicraft.com', 1);
+
+#---------------Subcription (API + Customer)
+
+INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
+VALUES (1, 1, 'a0a07621-2379-4042-bde9-0539a84a036c', 1);
+
+INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
+VALUES (2, 2, 'LABRADOR-APIKEY', 1);
+INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
+VALUES (2, 3, 'LABRADOR-APIKEY', 1);
+INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
+VALUES (2, 4, 'LABRADOR-APIKEY', 1);
+INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
+VALUES (2, 5, 'LABRADOR-APIKEY', 1);
+INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
+VALUES (2, 6, 'LABRADOR-APIKEY', 1);
+INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
+VALUES (2, 7, 'LABRADOR-APIKEY', 1);
+INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
+VALUES (2, 8, 'LABRADOR-APIKEY', 1);
+INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
+VALUES (2, 9, 'LABRADOR-APIKEY', 1);
+INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
+VALUES (2, 10, 'LABRADOR-APIKEY', 1);
+INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
+VALUES (2, 11, 'LABRADOR-APIKEY', 1);
+INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
+VALUES (2, 12, 'LABRADOR-APIKEY', 1);
+
+INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
+VALUES (2, 13, '3f56cc00-7882-483d-b1eb-9c89070c64a7', 1);
+INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
+VALUES (2, 14, 'f6ec9f65-fa7a-4365-958c-aff0a1220631', 1);
+
 
 #--------------APIRouteId + Customer ( If there are any limits needed)
 INSERT INTO APIQuotaLimit (APINameId, APICustomerId, APIPricingPlanId, PlanDuration)
 VALUES (1, 1, 2, 'Monthly');
 
+
+
 #--------------Update Usage Queries------------------
 
+select * from APIRoute
 #-- Regular
-Select ar.APIRouteId, ar.EndPointName, ars.APINameId,ars.APICustomerId, ars.APIPricingPlanId, arp.BasePricePerCall 
+Select ar.APIRouteId, ar.EndPointName, ars.APINameId,ars.APICustomerId, arp.APIPricingPlanId, arp.BasePricePerCall 
 FROM APIRouteSubscription ars
 JOIN APIRoute ar on ar.APINameId = ars.APINameId
 JOIN APIRoutePrice arp on ar.APIRouteId = arp.APIRouteId
 where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c'
 AND ar.APIVersion = 'v1'
-AND (EndPointName = 'getCumulativeTotalData1' OR EndPointName = '/')
+AND (EndPointName = 'getCumulativeTotalData' OR EndPointName = '/')
 ORDER BY LENGTH(ar.EndPointName) DESC
 LIMIT 1;
 
