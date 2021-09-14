@@ -14,8 +14,8 @@ Add the following config variables to each section (dev, preprod & prod) of conf
 ```
 	DEV: 
 	"API_USAGE_UPDATE_URL": "http://34.249.3.126:7100/v1/api-usage",
-    "API_USAGE_VALIDATE_URL": "http://34.249.3.126:7100/v1/validate-api-usage", <br/>
-    "API_USAGE_SELF_API_NAME": "Half-Hourly-Meter-History", <br/>
+    "API_USAGE_VALIDATE_URL": "http://34.249.3.126:7100/v1/validate-api-usage",
+    "API_USAGE_SELF_API_NAME": "Half-Hourly-Meter-History"
 ```
 
 ### app.js changes
@@ -23,17 +23,17 @@ Add the following config variables to each section (dev, preprod & prod) of conf
 2. Add the router middleware - finalPostResponseProcessor - after the end point call <br/>
 ```
 	router.get('/v1/periodic-data', apiUsage.validateRequest, requestValidation.validatePeriodicQuery, routes.getPeriodicData, finalPostResponseProcessor);
+
 ```
 
 3. Add the following middlewares for post processing of the request <br/>
 	- The updateApiUsage module should be the first module to be invoked
 	- Add the module - uploadLogsToS3 - only if your project implements S3 Logging.
 ```
-	//This should be the last router middle ware, all post-processing activities can 
-	// be invoked from here.    
-	function finalPostProcessing(req, res) {
+	//This should be the last router middle ware, all post-response middlewares should be invoked from here c
+	function finalPostResponseProcessor(req, res) {
 		//IMPORTANT: apiUsage middle ware should be the first middleware to be invoked 
-		// after the method to be logged for usage so as to keep track of execution time.
+		// so as to keep track of execution time.
 		apiUsage.updateApiUsage(req,res);
 		s3logger.uploadLogsToS3(req, res);
 	}
@@ -42,6 +42,7 @@ Add the following config variables to each section (dev, preprod & prod) of conf
 Please note the following <br/>
 	- The updateApiUsage module should be the first module to be invoked
 	- Add the module - uploadLogsToS3 - only if your projct implements S3 Logging.
+	
 ```
 	app.use(function error_handler(err, req, res, next) {
     res.header("Content-Type", "application/json; charset=utf-8");
