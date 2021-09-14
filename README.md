@@ -6,7 +6,8 @@ This microservice helps to track the API Usage (requests and errors) and also he
 If you want an API to make use of API Usage Microservice to keep track of usage, errors for monitoring or monetizing purpose, the following changes are required in the client API. <br/>
 
 ### Copy apiUsage module to your project
-Path : mh-api-ms/apiUsage/apiUsage.js
+Path : mh-api-ms/apiUsage/apiUsage.js <br/>
+Project : https://gitlab.digitalapicraft.com/openutility/mh-api-ms
 <br/>
 
 ### config.js changes
@@ -42,7 +43,7 @@ Add the following config variables to each section (dev, preprod & prod) of conf
 Please note the following <br/>
 	- The updateApiUsage module should be the first module to be invoked
 	- Add the module - uploadLogsToS3 - only if your projct implements S3 Logging.
-	
+
 ```
 	app.use(function error_handler(err, req, res, next) {
     res.header("Content-Type", "application/json; charset=utf-8");
