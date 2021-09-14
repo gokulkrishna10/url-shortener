@@ -7,7 +7,7 @@ exports.updateAPIUsage = function (req, res, mainCallback) {
 
     async.waterfall([
             function updateErrorDetails(callback) {
-                if (req.isValidationError) {  // insert into error table only in case of an internal validation error or internal processing error
+                if (req.isValidationError || !(req.body.apiDetails.validationResult)) {  // insert into error table only in case of an internal validation error or internal processing error. And also in the case of apiUsage validation endpoint error
                     apiUsageDao.insertErrorDetails(req, res, function (err, dbResponse) {
                         if (err) {
                             mainCallback(err, null)
