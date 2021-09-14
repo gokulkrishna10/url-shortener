@@ -1,6 +1,3 @@
-const moment = require('moment')
-
-
 exports.getAPIUsageAttributes = function (req, res, result) {
     let apiUsageObject = {};
 
@@ -25,40 +22,31 @@ exports.getAPIUsageAttributes = function (req, res, result) {
 exports.getAPIErrorAttributes = function (req, res) {
     let apiErrorObject = {}
 
-    if (req.isValidationError) {
-        apiErrorObject.ErrorId = res.code;                                   // req data validation error
+    if (req.isValidationError) {                                              // req data validation error
+        apiErrorObject.ErrorId = res.code;
         apiErrorObject.ErrorTypeId = 2
-    } else if (req.body.apiDetails && req.body.apiDetails.errorCode) {
-        apiErrorObject.ErrorId = req.body.apiDetails.errorCode          // caller api error
+        apiErrorObject.ErrorMessage = res.error[0].message
+    } else if (req.body.apiDetails && req.body.apiDetails.errorCode) {        // caller api error
+        apiErrorObject.ErrorId = req.body.apiDetails.errorCode
         apiErrorObject.ErrorTypeId = 1
-    } else {
-        apiErrorObject.ErrorId = 9998                                   // internal data processing error
+    } else if (req.isInternalProcessingError) {                               // internal data processing error
+        apiErrorObject.ErrorId = null
         apiErrorObject.ErrorTypeId = 3
-    }
-
-
-    if (res.error && res.error.length > 0 && res.error[0].message) {
-        apiErrorObject.ErrorMessage = res.error[0].message                    // req data validation error
-    } else if (req.body.apiDetails && req.body.apiDetails.errorDescription) {
-        apiErrorObject.ErrorMessage = req.body.apiDetails.errorDescription    // caller api error
+        apiErrorObject.ErrorMessage = req.internalProcessingMessage
+        apiErrorObject.ErrorStatus = 1                                         // Needs to be resolved. Hence ErrorStatus = 1
     } else {
-        apiErrorObject.ErrorMessage = "internal data processing error"         // internal data processing error
+        apiErrorObject.ErrorId = null                                          //unknown error.
+        apiErrorObject.ErrorTypeId = 4
+        apiErrorObject.ErrorMessage = "Unhandled internal apiUsage error"
+        apiErrorObject.ErrorStatus = 1                                         //Needs to be resolved. Hence ErrorStatus = 1
     }
 
-    // attributes applicable only for internal errors
-    // if ((!req.body.apiDetails.errorCode && !req.body.apiDetails.errorDescription) && (req.isValidationError)) {
-    //     apiErrorObject.IsInternal = 1
-    //     apiErrorObject.InternalErrorStatus = 1
-    // } else if ((req.body.apiDetails.errorCode && req.body.apiDetails.errorDescription) && (!req.isValidationError)) {
-    //     apiErrorObject.IsInternal = 0
-    //     apiErrorObject.InternalErrorStatus = 0
-    // } else {
-    //     apiErrorObject.IsInternal = 1
-    //     apiErrorObject.InternalErrorStatus = 1
-    // }
+
+    if (req.body.apiDetails && req.body.apiDetails.errorDescription) {
+        apiErrorObject.ErrorMessage = apiErrorObject.ErrorMessage ? apiErrorObject.ErrorMessage +". "+ req.body.apiDetails.errorDescription : req.body.apiDetails.errorDescription;
+    }
 
     apiErrorObject.InputData = JSON.stringify(req.body.apiDetails)
-    apiErrorObject.ErrorStatus = 1
 
     return apiErrorObject
 }

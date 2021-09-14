@@ -10,7 +10,7 @@ exports.updateAPIUsage = (req, res) => {
         } else {
             console.log("updateAPIUsage succeeded")
             if (!req.isValidationError)
-                res.send(response).status(202)
+                res.send(JSON.parse(response)).status(202)
         }
     })
 }
@@ -24,11 +24,11 @@ exports.apiUsageRequestValidation = function (req, res) {
             res.send(err).status(err.code)
         } else {
             if (response && response.length > 0) {
-                console.log("{status:success, message:Validation successful}")
-                res.send(response).status(200)
+                console.log('{status:success, message:Validation successful}')
+                res.send(JSON.parse('{"status":"success", "message":"Validation successful"}')).status(200)
             } else {
-                console.log("{status:failure, message:Validation failed}")
-                res.send(response).status(200)
+                console.log('{status:failure, message:Validation failed}')
+                res.status(401).send(JSON.parse('{"status":"failure", "message":"Validation failed"}'))
             }
         }
     })
