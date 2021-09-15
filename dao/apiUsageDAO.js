@@ -8,36 +8,19 @@ exports.getCustomerAPIDetails = function (req, res, callback) {
     let apiKey = req.headers.api_key
     let apiVersion = req.body.apiDetails.apiVersion
     let endPointName = req.body.apiDetails.endPointName
-    let options;
-    if (req.body.apiDetails.errorCode && req.body.apiDetails.errorDescription) {
-        options = {
-            sql: "SELECT ars.APINameId, ars.APICustomerId, ar.APIRouteId, ar.EndPointName " +
-                "FROM APIRouteSubscription ars " +
-                "JOIN APIRoute ar on ar.APINameId = ars.APINameId " +
-                "JOIN APIName an ON an.APINameId = ars.APINameId " +
-                "where an.Name = ? " +
-                "AND (EndPointName = ? OR EndPointName = '/') " +
-                "ORDER BY LENGTH(ar.EndPointName) DESC " +
-                "LIMIT 1;",
+    let options = {
+        sql: "SELECT ars.APINameId,ars.APICustomerId, arp.APIPricingPlanId, arp.BasePricePerCall, ar.APIRouteId, ar.EndPointName " +
+            "FROM APIRouteSubscription ars " +
+            "JOIN APIRoute ar on ar.APINameId = ars.APINameId " +
+            "JOIN APIRoutePrice arp on ar.APIRouteId = arp.APIRouteId " +
+            "where APIKey = ? " +
+            "AND ar.APIVersion = ? " +
+            "AND (EndPointName = ? OR EndPointName = '/') " +
+            "ORDER BY LENGTH(ar.EndPointName) DESC " +
+            "LIMIT 1;",
 
-            values: [req.body.apiDetails.apiName, endPointName]
-        }
-    } else {
-        options = {
-            sql: "SELECT ars.APINameId,ars.APICustomerId, arp.APIPricingPlanId, arp.BasePricePerCall, ar.APIRouteId, ar.EndPointName " +
-                "FROM APIRouteSubscription ars " +
-                "JOIN APIRoute ar on ar.APINameId = ars.APINameId " +
-                "JOIN APIRoutePrice arp on ar.APIRouteId = arp.APIRouteId " +
-                "where APIKey = ? " +
-                "AND ar.APIVersion = ? " +
-                "AND (EndPointName = ? OR EndPointName = '/') " +
-                "ORDER BY LENGTH(ar.EndPointName) DESC " +
-                "LIMIT 1;",
-
-            values: [apiKey, apiVersion, endPointName]
-        }
+        values: [apiKey, apiVersion, endPointName]
     }
-
 
     db.queryWithOptions(options, function (err, dbResponse) {
         if (err) {
@@ -103,6 +86,7 @@ exports.validateApiKeyAndName = function (req, res, callback) {
 
     db.queryWithOptions(options, function (error, dbResponse) {
         if (error) {
+            console.log(error)
             callback(customError.dbError(error), null)
         } else {
             if (dbResponse && dbResponse.length > 0) {

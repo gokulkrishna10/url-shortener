@@ -3,19 +3,18 @@ const apiUsageDao = require('../dao/apiUsageDAO')
 
 exports.updateAPIUsage = function (req, res, mainCallback) {
     console.log("inside API usage")
-    let allResponse = {};
 
     async.waterfall([
             function updateErrorDetails(callback) {
-                if (req.isValidationError || !(req.body.apiDetails.validationResult)) {  // insert into error table only in case of an internal validation error or internal processing error. And also in the case of apiUsage validation endpoint error
+                if (req.isValidationError || (req.body.apiDetails && req.body.apiDetails.validationResult !== true)) {  // insert into error table only in case of an internal validation error or internal processing error. And also in the case of apiUsage validation endpoint error
                     apiUsageDao.insertErrorDetails(req, res, function (err, dbResponse) {
                         if (err) {
                             mainCallback(err, null)
                         } else {
                             if (dbResponse) {
-                                mainCallback(null, "{status:successful,message:error successfully recorded}")
+                                mainCallback(null, '{"status":"successful","message":"error successfully recorded"}')
                             } else {
-                                mainCallback(null, "{status:failure,message:failed to record the error}")
+                                mainCallback('{"status":"failure","message":"failed to record the error"}', null)
                             }
                         }
                     })
@@ -28,46 +27,43 @@ exports.updateAPIUsage = function (req, res, mainCallback) {
                     if (err) {
                         callback(err, null)
                     } else {
-                        if (req.body.apiDetails && req.body.apiDetails.errorCode && req.body.apiDetails.errorDescription) {
+                        if (result && result.length === 0) {
+                            req.isInternalProcessingError = true
+                            req.internalProcessingMessage = "Failed to get API details"
                             apiUsageDao.insertErrorDetails(req, res, (err, response) => {
                                 if (err) {
-                                    callback(err, null)
+                                    console.log('{"status":"failure","message":"failed to record the error"}')
+                                    mainCallback(err, null)
                                 } else {
-                                    callback(null, result)
+                                    console.log('{"status":"successful","message":"error successfully recorded"}')
+                                    mainCallback(null, '{"status":"successful","message":"error successfully recorded"}')
                                 }
                             })
                         } else {
-                            allResponse['customerAPIInfo'] = result[0]
                             callback(null, result)
                         }
-
                     }
                 })
             },
             function insertAPIUsageDetails(result, callback) {
-                if (result && result.length > 0) {
-                    apiUsageDao.insertAPIUsageDetails(req, res, result, function (err, response) {
-                        if (err) {
-                            callback(err, null)
-                        } else {
-                            callback(null, allResponse)
-                        }
-                    })
-                } else {
-                    //update error table
-                    // insert into error table only in case of an internal validation error or internal processing error
-                    if (!req.body.apiDetails && !req.body.apiDetails.errorCode && !req.body.apiDetails.errorDescription) {
+                apiUsageDao.insertAPIUsageDetails(req, res, result, function (err, response) {
+                    if (err) {
+                        req.isInternalProcessingError = true
+                        req.internalProcessingMessage = "Failed to insert into usage table"
                         apiUsageDao.insertErrorDetails(req, res, (err, response) => {
                             if (err) {
-                                callback(err, null)
+                                console.log('{"status":"failure","message":"failed to record the error"}')
+                                mainCallback(err, null)
                             } else {
-                                callback(null, response)
+                                console.log('{"status":"successful","message":"error successfully recorded"}')
+                                mainCallback(null, '{"status":"successful","message":"error successfully recorded"}')
                             }
                         })
                     } else {
-                        callback(null, allResponse)
+                        console.log('{"status":"successful","message":"API usage successfully recorded"}')
+                        callback(null, '{"status":"successful","message":"API usage successfully recorded"}')
                     }
-                }
+                })
             }
         ],
         function finalCallback(finalErr, finalResponse) {
