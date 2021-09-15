@@ -32,9 +32,11 @@ exports.updateAPIUsage = function (req, res, mainCallback) {
                             req.internalProcessingMessage = "Failed to get API details"
                             apiUsageDao.insertErrorDetails(req, res, (err, response) => {
                                 if (err) {
-                                    callback(err, null)
+                                    console.log('{"status":"failure","message":"failed to record the error"}')
+                                    mainCallback(err, null)
                                 } else {
-                                    callback(null, result)
+                                    console.log('{"status":"successful","message":"error successfully recorded"}')
+                                    mainCallback(null, '{"status":"successful","message":"error successfully recorded"}')
                                 }
                             })
                         } else {
@@ -50,12 +52,15 @@ exports.updateAPIUsage = function (req, res, mainCallback) {
                         req.internalProcessingMessage = "Failed to insert into usage table"
                         apiUsageDao.insertErrorDetails(req, res, (err, response) => {
                             if (err) {
-                                callback(err, null)
+                                console.log('{"status":"failure","message":"failed to record the error"}')
+                                mainCallback(err, null)
                             } else {
-                                callback(null, '{"status":"successful","message":"error successfully recorded"}')
+                                console.log('{"status":"successful","message":"error successfully recorded"}')
+                                mainCallback(null, '{"status":"successful","message":"error successfully recorded"}')
                             }
                         })
                     } else {
+                        console.log('{"status":"successful","message":"API usage successfully recorded"}')
                         callback(null, '{"status":"successful","message":"API usage successfully recorded"}')
                     }
                 })
