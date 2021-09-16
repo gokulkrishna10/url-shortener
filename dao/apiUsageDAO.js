@@ -2,6 +2,8 @@ const db = require('../customnodemodules/database_node_module/app')
 let errorMod = require('../customnodemodules/error_node_module/errors')
 let customError = new errorMod()
 const apiUsageAttributesHelper = require('../helpers/apiUsageHelper')
+const constants = require('../constants/constants')
+const moment = require('moment')
 
 exports.getCustomerAPIDetails = function (req, res, callback) {
 
@@ -91,6 +93,54 @@ exports.validateApiKeyAndName = function (req, res, callback) {
         } else {
             if (dbResponse && dbResponse.length > 0) {
                 callback(null, dbResponse)
+            } else {
+                callback(null, null)
+            }
+        }
+    })
+}
+
+exports.getAPIUsage = function (req, res, callback) {
+    let fromDate = moment(req.query.fromDate).format("YYYY-MM-DD HH:MM:SS")
+    let toDate = req.query.toDate ? moment(req.query.toDate).format("YYYY-MM-DD HH:MM:SS") : moment(new Date()).format("YYYY-MM-DD HH:MM:SS")
+    let apiKey = req.headers.api_key
+    let options;
+    if (constants.dailyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
+        options = {
+            sql: "SELECT DATE(RequestDate), APIVersion, EndpointName, Count(*) as Count " +
+                "FROM APIUsage " +
+                "where APIKey = ? " +
+                "AND DATE(RequestDate) >= DATE(?) AND DATE(RequestDate)<= DATE(?) " +
+                "GROUP BY DATE(RequestDate), APIVersion, EndpointName ",
+            values: [apiKey, fromDate, toDate]
+        }
+    } else if (constants.monthlyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
+        options = {
+            sql: "SELECT MONTHNAME(RequestDate) as Month, APIVersion, EndpointName, Count(*) as Count " +
+                "FROM APIUsage " +
+                "WHERE APIKey = ? " +
+                "AND DATE(RequestDate) >= DATE(?) AND DATE(RequestDate)<= DATE(?) " +
+                "GROUP BY MONTHNAME(RequestDate), APIVersion, EndpointName",
+            values: [apiKey, fromDate, toDate]
+        }
+    } else {
+        options = {
+            sql: "SELECT YEAR(RequestDate) as Year, APIVersion, EndpointName, Count(*) as Count " +
+                "FROM APIUsage " +
+                "WHERE APIKey = ? " +
+                "AND DATE(RequestDate) >= DATE(?) AND DATE(RequestDate)<= DATE(?) " +
+                "GROUP BY YEAR(RequestDate), APIVersion, EndpointName",
+            values: [apiKey, fromDate, toDate]
+        }
+    }
+
+
+    db.queryWithOptions(options, (dbError, dbResult) => {
+        if (dbError) {
+            callback(customError.dbError(dbError), null)
+        } else {
+            if (dbResult && dbResult.length > 0) {
+                callback(null, dbResult)
             } else {
                 callback(null, null)
             }
