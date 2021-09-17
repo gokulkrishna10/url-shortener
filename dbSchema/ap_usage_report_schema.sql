@@ -5,6 +5,10 @@ Schema : api_usage_report_dev
 userName:  api_usasge_report_devuser
 password: 891f5b0d-6873-4b5f-a0ae-9b890ed0739d
 
+Schema : api_usage_report_preprod
+userName:  api_usasge_report_preproduser
+password: 66143bb2-c284-4d58-97cc-792fe724ffd3
+
 DESIGN DECISIONS:
 -------------------
 1. Volume Quota Limits:
@@ -21,6 +25,7 @@ a discuont scheme basd on the BasePrice defined for PayAsYouGo plan.
 
 
 USE api_usage_report_dev;
+# USE api_usage_report_preprod;
 
 /* ====================================================================================================
 Description: This table contains data for an API Customer
@@ -260,6 +265,9 @@ CREATE TABLE IF NOT EXISTS APIUsage (
 
 
 /*--------------------SELECT----------------------
+USE api_usage_report_dev;
+USE api_usage_report_preprod;
+
 Select * from APIName;
 Select * from APICustomer; 
 Select * from APIRoute; 
@@ -268,6 +276,8 @@ Select * from APIRouteSubscription;
 Select * from APIQuotaLimit; 
 Select * from APIRoutePrice; 
 Select * from ErrorType;
+
+
 
 Select * from APIError
 order by APIErrorId desc
@@ -402,17 +412,18 @@ VALUES ('current-supplier-details', 'current-supplier-details',  'current-suppli
 INSERT INTO APIName (Name, DisplayName, Description)
 VALUES ('quote-request', 'quote-request',  'quote-request');
 INSERT INTO APIName (Name, DisplayName, Description)
-VALUES ('evCompare', 'evCompare',  'evCompare');
+VALUES ('ev-comparison-api', 'evCompare',  'evCompare');
 INSERT INTO APIName (Name, DisplayName, Description)
-VALUES ('Neighbourhood Energy Comparison', 'Neighbourhood Energy Comparison',  'Neighbourhood Energy Comparison');
+VALUES ('ou-neighbourhood-comparison', 'Neighbourhood Energy Comparison',  'Neighbourhood Energy Comparison');
 
 
+ 
 
 #--ROUTE1
 INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
 VALUES (1,'v1','/');
 INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
-VALUES (1,'v1','getCumulativeTotalData');
+VALUES (1,'v1','cumulative-interval-data');
 
 INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
 VALUES (1,'v1','/');
@@ -493,7 +504,7 @@ VALUES ('Test Customer', 'Test Customer',  NULL, 'sudheer.k@digitalapicraft.com'
 
 INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
 VALUES (1, 1, 'a0a07621-2379-4042-bde9-0539a84a036c', 1);
-
+	
 INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
 VALUES (2, 2, 'LABRADOR-APIKEY', 1);
 INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
@@ -523,9 +534,10 @@ INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
 VALUES (2, 14, 'f6ec9f65-fa7a-4365-958c-aff0a1220631', 1);
 
 
+
 #--------------APIRouteId + Customer ( If there are any limits needed)
-INSERT INTO APIQuotaLimit (APINameId, APICustomerId, APIPricingPlanId, PlanDuration)
-VALUES (1, 1, 2, 'Monthly');
+#INSERT INTO APIQuotaLimit (APINameId, APICustomerId, APIPricingPlanId, PlanDuration)
+#VALUES (1, 1, 2, 'Monthly');
 
 
 
@@ -539,24 +551,43 @@ JOIN APIRoute ar on ar.APINameId = ars.APINameId
 JOIN APIRoutePrice arp on ar.APIRouteId = arp.APIRouteId
 where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c'
 AND ar.APIVersion = 'v1'
-AND (EndPointName = 'getCumulativeTotalData' OR EndPointName = '/')
+AND (EndPointName = 'cumulative-interval-data1' OR EndPointName = '/')
 ORDER BY LENGTH(ar.EndPointName) DESC
 LIMIT 1;
 
 
---Error (any error scenario including Invalid API Key)
-Select ar.APIRouteId, ar.EndPointName, ars.APINameId,ars.APICustomerId
-FROM APIRouteSubscription ars
-JOIN APIRoute ar ON ar.APINameId = ars.APINameId
-JOIN APIName an ON an.APINameId = ars.APINameId
-where an.Name = 'Half-Hourly-Meter-Hisotory'
-AND (EndPointName = 'getCumulativeTotalData1' OR EndPointName = '/')
-ORDER BY LENGTH(ar.EndPointName) DESC
-LIMIT 1;
 
 # --------------ValidateRequest Query-------------------------
-Select IsActive from APIRouteSubscription
-where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c';
+SELECT * from APIRouteSubscription ars 
+INNER JOIN APIName apn on ars.APINameId = apn.APINameId 
+WHERE Name = 'ev-comparison-api' 
+AND APIKey = '3f56cc00-7882-483d-b1eb-9c89070c64a7'
+
+# -------------------------Usage - IntervalType = d----------------
+Select * from APIUsage
+
+Select RequestDate, APINameId, APIVersion, EndpointName, COunt(*) as Count from APIUsage
+where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c'
+group by RequestDate, APINameId, APIVersion, EndpointName
+
+Select date_format(date(RequestDate),'%d-%m-%Y')as RequestDate, APIVersion, EndpointName, Count(*) as Count
+FROM APIUsage
+where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c'
+group by date_format(date(RequestDate),'%d-%m-%Y'), APIVersion, EndpointName
+
+Select DATE(RequestDate), APIVersion, EndpointName, Count(*) as Count
+FROM APIUsage
+where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c'
+AND DATE(RequestDate) = '2021-09-14'
+group by DATE(RequestDate), APIVersion, EndpointName
+
+Select MONTHNAME(RequestDate) as Month, APIVersion, EndpointName, Count(*) as Count
+FROM APIUsage
+where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c'
+AND DATE(RequestDate) = '2021-09-14'
+group by MONTHNAME(RequestDate), APIVersion, EndpointName
+
+
 
 */
 
