@@ -27,7 +27,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(router);
 Error.prototype.stack = "";
-app.set("port", portConfiguration[envFile.stage] || 7100);
+app.set("port", portConfiguration[envFile.stage] || 7400);
 
 app.use(function error_handler(err, req, res, next) {
     res.header("Content-Type", "application/json; charset=utf-8");
