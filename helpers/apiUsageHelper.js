@@ -26,7 +26,7 @@ exports.getAPIErrorAttributes = function (req, res) {
         apiErrorObject.ErrorId = res.code;
         apiErrorObject.ErrorTypeId = 2
         apiErrorObject.ErrorMessage = res.error[0].message
-    } else if (req.body.apiDetails && req.body.apiDetails.errorCode) {        // caller api error
+    } else if (req.body.apiDetails && (req.body.apiDetails.errorCode || req.body.apiDetails.errorDescription)) {        // caller api error
         apiErrorObject.ErrorId = req.body.apiDetails.errorCode
         apiErrorObject.ErrorTypeId = 1
     } else if (req.isInternalProcessingError) {                               // internal data processing error

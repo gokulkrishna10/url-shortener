@@ -4,15 +4,26 @@ const apiUsageDao = require('../dao/apiUsageDAO')
 exports.updateAPIUsage = function (req, res, mainCallback) {
     console.log("inside API usage")
 
+    let apiUsageClientValidationError = (req.body.apiDetails && Boolean(req.body.apiDetails.validationResult)  && req.body.apiDetails.validationResult !== true) ;
+    let apiUsageClientError = (req.body.apiDetails && (Boolean(req.body.apiDetails.errorCode) || Boolean(req.body.apiDetails.errorDescription)));
+
     async.waterfall([
             function updateErrorDetails(callback) {
-                if (req.isValidationError || (req.body.apiDetails && req.body.apiDetails.validationResult !== true)) {  // insert into error table only in case of an internal validation error or internal processing error. And also in the case of apiUsage validation endpoint error
+                if (req.isValidationError   //api-usage input rquest validation failed
+                    || apiUsageClientValidationError  //request validation failed from client API
+                    || apiUsageClientError
+                ){  
                     apiUsageDao.insertErrorDetails(req, res, function (err, dbResponse) {
                         if (err) {
                             mainCallback(err, null)
                         } else {
                             if (dbResponse) {
-                                mainCallback(null, '{"status":"successful","message":"error successfully recorded"}')
+                                if (!req.isValidationError  && apiUsageClientError){
+                                    callback(null, req);
+                                }else{
+                                    //We donot have enough details to create an entry with APIUsage table and hence leaving after making an entry to APIError table.
+                                    mainCallback(null, '{"status":"successful","message":"error successfully recorded in APIError table"}')  
+                                }
                             } else {
                                 mainCallback('{"status":"failure","message":"failed to record the error"}', null)
                             }
