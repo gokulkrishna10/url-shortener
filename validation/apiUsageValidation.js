@@ -3,6 +3,10 @@ const ErrorMod = require('../customnodemodules/error_node_module/errors')
 const customError = new ErrorMod()
 
 exports.apiUsageValidation = function (req, res, next) {
+    //If no statuscode, put it as 500
+    if (!Boolean(req.body.apiDetails.httpStatusCode)){
+        req.body.apiDetails.httpStatusCode = 500;
+    }
     if (util.isNull(req.body) && util.isNull(req.body.apiDetails)) {
         req.isValidationError = true;
         next(customError.BadRequest("request needs a body"))
