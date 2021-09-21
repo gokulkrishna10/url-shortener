@@ -17,24 +17,6 @@
     "RDS_FAILOVER_NO_OF_CONNECTIONS": 5,
     "RDS_CONNECTION_TIMEOUT": 10000
   },
-  "preprod": {
-    "RDS_HOST": "openenergy.crjdegsnxmp2.eu-west-1.rds.amazonaws.com",
-    "RDS_USER": "api_usasge_report_preproduser",
-    "RDS_PASSWORD": "66143bb2-c284-4d58-97cc-792fe724ffd3",
-    "RDS_SCHEMA": "api_usage_report_preprod",
-    "RDS_NO_OF_CONNECTIONS": 20,
-    "RDS_FAILOVER_NO_OF_CONNECTIONS": 5,
-    "RDS_CONNECTION_TIMEOUT": 10000
-  },
-  "sandbox": {
-    "RDS_HOST": "openenergy.crjdegsnxmp2.eu-west-1.rds.amazonaws.com",
-    "RDS_USER": "api_usasge_report_preproduser",
-    "RDS_PASSWORD": "66143bb2-c284-4d58-97cc-792fe724ffd3",
-    "RDS_SCHEMA": "api_usage_report_preprod",
-    "RDS_NO_OF_CONNECTIONS": 20,
-    "RDS_FAILOVER_NO_OF_CONNECTIONS": 5,
-    "RDS_CONNECTION_TIMEOUT": 10000
-  },
   "prod": {
     "RDS_HOST": "oeprodrds.crjdegsnxmp2.eu-west-1.rds.amazonaws.com",
     "RDS_USER": "api_usasge_report_produser",

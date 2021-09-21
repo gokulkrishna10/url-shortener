@@ -22,7 +22,6 @@ a discuont scheme basd on the BasePrice defined for PayAsYouGo plan.
 
 
 USE api_usage_report_dev;
-# USE api_usage_report_preprod;
 
 /* ====================================================================================================
 Description: This table contains data for an API Customer
@@ -56,6 +55,9 @@ CREATE TABLE IF NOT EXISTS APIName (
     CONSTRAINT PK_APIName PRIMARY KEY (APINameid)
 );
 
+ALTER TABLE APIName
+ADD	CONSTRAINT UK_APIName UNIQUE(Name);
+
 
 /* ====================================================================================================
 Description: This table stores the APIRoutes for monetization. One API will have a single entry with EndPointName as "/"
@@ -76,7 +78,8 @@ CREATE TABLE IF NOT EXISTS APIRoute (
     CONSTRAINT FK_APIRoute_APINameId FOREIGN KEY (APINameId) REFERENCES APIName(APINameId)
 );
 
-
+ALTER TABLE APIRoute
+ADD	CONSTRAINT UK_APIRoute UNIQUE(APINameId, APIVersion, EndpointName);
 
 /* ====================================================================================================
 Description: This table stores the Pricing Discount types
@@ -95,6 +98,9 @@ CREATE TABLE IF NOT EXISTS APIPricingPlan (
     DiscountPercent DECIMAL(4,2) NOT NULL,
     CONSTRAINT PK_APIPricingPlan PRIMARY KEY (APIPricingPlanId)
 );
+
+ALTER TABLE APIPricingPlan
+ADD	CONSTRAINT UK_APIPricingPlan UNIQUE(Name);
 
 
 INSERT INTO APIPricingPlan(Name, Description, Unit,PlanDuration, Quantity, DiscountPercent)
@@ -132,12 +138,18 @@ CREATE TABLE IF NOT EXISTS APIRouteSubscription(
     CONSTRAINT FK_APISubscription_APICustomerId FOREIGN KEY (APICustomerId) REFERENCES APICustomer(APICustomerId)
 );
 
-
+ALTER TABLE APIRouteSubscription
+ADD	CONSTRAINT UK_APIRouteSubscription UNIQUE(APICustomerId, APINameId, APIKey, IsActive, StartDate);
 
 /* ====================================================================================================
 Description : This table stores the API Limits for a (APINameId + CustomerId). This can be used to track Volume usage as well as
 upfront usage.
 PlanDuration : Daily, Weekly, Monthly
+
+FACTS:
+1. Customer subscribes for an API and receives an APIKey
+2. An API can have single or multiple chargeable routes (each route charges differently : PricePerCall for BasePlan)
+3. API Discounts are applied though Pricing Plans, which will internallky impose quota limits
 
 Edge cases:
 1. Pay Upfront amount/Quota Limit is over for a month
@@ -158,13 +170,16 @@ CREATE TABLE IF NOT EXISTS APIQuotaLimit (
     APIPricingPlanId INT NOT NULL,
     PlanDuration VARCHAR(30) NOT NULL,
 	TotalQuotaUsage INT NOT NULL DEFAULT 0,
+    IsActive TINYINT NOT NULL DEFAULT 1,
+    StartDate DATETIME NOT NULL DEFAULT NOW(),
     CONSTRAINT PK_APIQuotaLimit PRIMARY KEY (APIQuotaLimitId),
     CONSTRAINT FK_APIQuotaLimit_APINameId FOREIGN KEY (APINameId) REFERENCES APIName(APINameId),
     CONSTRAINT FK_APIQuotaLimit_APICustomerId FOREIGN KEY (APICustomerId) REFERENCES APICustomer(APICustomerId),
     CONSTRAINT FK_APIQuotaLimit_APIPricingPlanId FOREIGN KEY (APIPricingPlanId) REFERENCES APIPricingPlan(APIPricingPlanId)
 );
 
-
+ALTER TABLE APIQuotaLimit
+ADD	CONSTRAINT UK_APIQuotaLimit UNIQUE(APINameId, APICustomerId, APIPricingPlanId, IsActive, StartDate);
 
 /* ====================================================================================================
 Description: THis table stores the price for a RouteId.
@@ -178,11 +193,12 @@ CREATE TABLE IF NOT EXISTS APIRoutePrice (
     APIPricingPlanId INT NOT NULL,
     BasePricePerCall DECIMAL(4,2)  NOT NULL,
     CONSTRAINT PK_APIRoutePrice PRIMARY KEY (APIRoutePriceId),
-    CONSTRAINT UK_APIRoutePrice UNIQUE KEY (APIPricingPlanId,APIRouteId),
     CONSTRAINT FK_APIRoutePrice_APIRouteId FOREIGN KEY (APIRouteId) REFERENCES APIRoute(APIRouteId),
     CONSTRAINT FK_APIRoutePrice_APIPricingPlanId FOREIGN KEY (APIPricingPlanId) REFERENCES APIPricingPlan(APIPricingPlanId)
 );
 
+ALTER TABLE APIRoutePrice
+ADD	CONSTRAINT UK_APIRoutePrice UNIQUE(APIRouteId, APIPricingPlanId);
 
 /* ====================================================================================================
 Description: This table stored the error types
@@ -307,85 +323,10 @@ Drop table APIName;
 /*
 ----------------------------------Scripts-------------------------------------------------------
 
---TODO : learn how to get @@identity from mySQL
-
-
-declare id INT
-insert into ErrorType1 (Name)
-values ('ss');
-select @@identity;
-
-DECLARE pricing_plan_id INT
-SELECT pricing_plan_id = APIPricingPlanId FROM APIPricingPlan
-WHERE Name = 'PayAsYouGo';
-Selct pricing_plan_id;
-
-
-
---OnBoard API
-DELIMITER //
-
-CREATE FUNCTION OnboardNewAPI ( 
-	api_name VARCHAR(100),
-    api_display_name VARCHAR(100),
-    description VARCHAR(200),
-    api_version VARCHAR(10),
-    
-)
-RETURNS INT
-
-BEGIN
-
-	DECLARE retVal INT;
-	
-    #------API 
-    DECALRE api_name_id INT;
-	INSERT INTO APIName (Name, DisplayName, Description)
-	VALUES (api_name, api_display_name,  description);
-    
-    SET api_name_id = @@identity;
-
-	#--ROOT ROUTE
-    DECALRE api_route_id INT;
-	INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
-    VALUES (api_name_id,api_version,'/');
-    SET api_route_id = @@identity;
-    
-	#-- NOTE you will only enter price for APIPricingPlanId = 1
-	INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
-	VALUES (api_route_id, 1, 1.10); 
-
-
-	SET 
-	RETURN income;
-
-END; //
-
-DELIMITER ;
-
---On Board Customer
-CREATE FUNCTION OnboardNewCustomer ( starting_value INT )
-RETURNS INT
-
-BEGIN
-
-	DECLARE retVal INT;
-
-
-	SET 
-	RETURN income;
-
-END; //
-
-DELIMITER ;
-
-#=================TEMP - END======================
-
-
 ------------Onboard an API--------------------
 #------API 
 INSERT INTO APIName (Name, DisplayName, Description)
-VALUES ('Half-Hourly-Meter-Hisotory', 'Half Hourly Meter Hisotory',  'Half-Hourly-Meter-Hisotory');
+VALUES ('Half-Hourly-Meter-History', 'Half Hourly Meter History',  'Half-Hourly-Meter-History');
 INSERT INTO APIName (Name, DisplayName, Description)
 VALUES ('meter-data', 'meter-data',  'meter-data');
 INSERT INTO APIName (Name, DisplayName, Description)
@@ -423,8 +364,6 @@ INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
 VALUES (1,'v1','cumulative-interval-data');
 
 INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
-VALUES (1,'v1','/');
-INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
 VALUES (2,'v1','/');
 INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
 VALUES (3,'v1','/');
@@ -452,6 +391,7 @@ INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
 VALUES (14,'v1','/');
 
 
+select * from APIRoute;
 
 #-- NOTE you will only enter price for APIPricingPlanId = 1
 INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
@@ -485,8 +425,7 @@ INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
 VALUES (14, 1, 0.10); 
 INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
 VALUES (15, 1, 0.10); 
-INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
-VALUES (16, 1, 0.10); 
+
 
 
 

@@ -42,6 +42,8 @@ CREATE TABLE IF NOT EXISTS APIName (
     CONSTRAINT PK_APIName PRIMARY KEY (APINameid)
 );
 
+ALTER TABLE APIName
+ADD	CONSTRAINT UK_APIName UNIQUE(Name);
 
 /* ====================================================================================================
 Description: This table stores the APIRoutes for monetization. One API will have a single entry with EndPointName as "/"
@@ -62,7 +64,8 @@ CREATE TABLE IF NOT EXISTS APIRoute (
     CONSTRAINT FK_APIRoute_APINameId FOREIGN KEY (APINameId) REFERENCES APIName(APINameId)
 );
 
-
+ALTER TABLE APIRoute
+ADD	CONSTRAINT UK_APIRoute UNIQUE(APINameId, APIVersion, EndpointName);
 
 /* ====================================================================================================
 Description: This table stores the Pricing Discount types
@@ -82,6 +85,8 @@ CREATE TABLE IF NOT EXISTS APIPricingPlan (
     CONSTRAINT PK_APIPricingPlan PRIMARY KEY (APIPricingPlanId)
 );
 
+ALTER TABLE APIPricingPlan
+ADD	CONSTRAINT UK_APIPricingPlan UNIQUE(Name);
 
 INSERT INTO APIPricingPlan(Name, Description, Unit,PlanDuration, Quantity, DiscountPercent)
 VALUES ('PayAsYouGo', 'PayAsYouGo', 'Nos','N/A', 0,0);
@@ -116,7 +121,8 @@ CREATE TABLE IF NOT EXISTS APIRouteSubscription(
     CONSTRAINT FK_APISubscription_APICustomerId FOREIGN KEY (APICustomerId) REFERENCES APICustomer(APICustomerId)
 );
 
-
+ALTER TABLE APIRouteSubscription
+ADD	CONSTRAINT UK_APIRouteSubscription UNIQUE(APICustomerId, APINameId, APIKey, IsActive, StartDate);
 
 /* ====================================================================================================
 Description : This table stores the API Limits for a (APINameId + CustomerId). This can be used to track Volume usage as well as
@@ -132,12 +138,16 @@ CREATE TABLE IF NOT EXISTS APIQuotaLimit (
     APIPricingPlanId INT NOT NULL,
     PlanDuration VARCHAR(30) NOT NULL,
 	TotalQuotaUsage INT NOT NULL DEFAULT 0,
+    IsActive TINYINT NOT NULL DEFAULT 1,
+    StartDate DATETIME NOT NULL DEFAULT NOW(),
     CONSTRAINT PK_APIQuotaLimit PRIMARY KEY (APIQuotaLimitId),
     CONSTRAINT FK_APIQuotaLimit_APINameId FOREIGN KEY (APINameId) REFERENCES APIName(APINameId),
     CONSTRAINT FK_APIQuotaLimit_APICustomerId FOREIGN KEY (APICustomerId) REFERENCES APICustomer(APICustomerId),
     CONSTRAINT FK_APIQuotaLimit_APIPricingPlanId FOREIGN KEY (APIPricingPlanId) REFERENCES APIPricingPlan(APIPricingPlanId)
 );
 
+ALTER TABLE APIQuotaLimit
+ADD	CONSTRAINT UK_APIQuotaLimit UNIQUE(APINameId, APICustomerId, APIPricingPlanId, IsActive, StartDate);
 
 
 /* ====================================================================================================
@@ -152,11 +162,12 @@ CREATE TABLE IF NOT EXISTS APIRoutePrice (
     APIPricingPlanId INT NOT NULL,
     BasePricePerCall DECIMAL(4,2)  NOT NULL,
     CONSTRAINT PK_APIRoutePrice PRIMARY KEY (APIRoutePriceId),
-    CONSTRAINT UK_APIRoutePrice UNIQUE KEY (APIPricingPlanId,APIRouteId),
     CONSTRAINT FK_APIRoutePrice_APIRouteId FOREIGN KEY (APIRouteId) REFERENCES APIRoute(APIRouteId),
     CONSTRAINT FK_APIRoutePrice_APIPricingPlanId FOREIGN KEY (APIPricingPlanId) REFERENCES APIPricingPlan(APIPricingPlanId)
 );
 
+ALTER TABLE APIRoutePrice
+ADD	CONSTRAINT UK_APIRoutePrice UNIQUE(APIRouteId, APIPricingPlanId);
 
 /* ====================================================================================================
 Description: This table stored the error types
@@ -269,7 +280,7 @@ LIMIT 5;
 ------------Onboard an API--------------------
 #------API 
 INSERT INTO APIName (Name, DisplayName, Description)
-VALUES ('Half-Hourly-Meter-Hisotory', 'Half Hourly Meter Hisotory',  'Half-Hourly-Meter-Hisotory');
+VALUES ('Half-Hourly-Meter-History', 'Half Hourly Meter History',  'Half-Hourly-Meter-History');
 INSERT INTO APIName (Name, DisplayName, Description)
 VALUES ('ev-comparison-api', 'evCompare',  'evCompare');
 INSERT INTO APIName (Name, DisplayName, Description)
