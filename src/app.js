@@ -64,6 +64,7 @@ router.all("*", function (req, res, next) {
 
 router.post('/v1/api-usage', apiUsageValidator.apiUsageValidation, routes.updateAPIUsage);
 router.post('/v1/validate-api-usage', apiUsageRequestValidator.apiUsageRequestValidation)
+router.get('/v1/usage', apiUsageValidator.getUsageValidation, apiUsageRequestValidator.getApiUsage)
 
 
 router.all('/*', function (req, res) {

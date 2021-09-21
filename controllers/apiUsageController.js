@@ -86,3 +86,14 @@ exports.updateAPIUsage = function (req, res, mainCallback) {
         })
 }
 
+
+exports.getApiUsage = function (req, res, callback) {
+    apiUsageDao.getAPIUsage(req, res, (err, response) => {
+        if (err) {
+            callback(err, null)
+        } else {
+            callback(null, response)
+        }
+    })
+}
+

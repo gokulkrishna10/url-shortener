@@ -33,3 +33,14 @@ exports.apiUsageRequestValidation = function (req, res) {
         }
     })
 }
+
+
+exports.getApiUsage = function (req, res) {
+    apiUsageDao.getAPIUsage(req, res, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err.msg)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}
