@@ -1,6 +1,4 @@
 {
   "dev": 7100,
-  "preprod": 7200,
-  "sandbox" : 7300,
   "prod": 7400
 }
