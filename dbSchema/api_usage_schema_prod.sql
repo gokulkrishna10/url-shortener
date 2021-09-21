@@ -102,10 +102,6 @@ Description: This table contains data for an APISubscription for a (API+Customer
 per (API + Customer).
 APIKey : GUID string
 
-IMPORTANT NOTE: INSERT A NEW ENTRY when the pricing plan changes for a customer, so that we can track
-				the history and can be tracked. Also can be used to re-create past invoices.
-TODO: Need changes here... this can't be here.. it has to go to APIRoutePrice table
-    APIPricingPlanId INT NOT NULL,
 */
 
 CREATE TABLE IF NOT EXISTS APIRouteSubscription(
@@ -266,24 +262,6 @@ LIMIT 5;
 # Truncate table APIRoute;
 
 */
-
-
-/*--------------------DROP----------------------
-
-
-Drop table APIUsage;
-Drop table APIError;
-Drop table ErrorType;
-Drop table APIRoutePrice;
-Drop table APIQuotaLimit;
-Drop table APIRouteSubscription;
-Drop table APIPricingPlan;
-Drop table APIRoute;
-Drop table APICustomer;
-Drop table APIName;
-
-*/
-
 
 /*
 ----------------------------------Scripts-------------------------------------------------------
