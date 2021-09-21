@@ -5,12 +5,6 @@ Schema : api_usage_report_dev
 userName:  api_usasge_report_devuser
 password: 891f5b0d-6873-4b5f-a0ae-9b890ed0739d
 
-Schema : api_usage_report_preprod
-userName:  api_usasge_report_preproduser
-password: 66143bb2-c284-4d58-97cc-792fe724ffd3
-
-
-
 
 DESIGN DECISIONS:
 -------------------
