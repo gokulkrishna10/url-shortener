@@ -4,6 +4,9 @@ let customError = new errorMod()
 const apiUsageAttributesHelper = require('../helpers/apiUsageHelper')
 const constants = require('../constants/constants')
 const moment = require('moment')
+const sqlQueries = require('./sqlQueries')
+const { parse } = require('json2csv');
+const {environment} = require('../environments')
 
 exports.getCustomerAPIDetails = function (req, res, callback) {
 
@@ -101,48 +104,134 @@ exports.validateApiKeyAndName = function (req, res, callback) {
 }
 
 exports.getAPIUsage = function (req, res, callback) {
-    let fromDate = moment(req.query.fromDate).format("YYYY-MM-DD HH:MM:SS")
-    let toDate = req.query.toDate ? moment(req.query.toDate).format("YYYY-MM-DD HH:MM:SS") : moment(new Date()).format("YYYY-MM-DD HH:MM:SS")
+    //Dont use moment.format("YYYY-MM-DD HH:MM:SS"), istead use the format : ("YYYY-MM-DD[T]HH:mm:ss"). The former, at times ,gives seconds > 60 and makes the date inmvalid creating unpredictable issues.
+    //Ref : https://github.com/moment/moment/issues/4300
+    let fromDate = moment(req.query.fromDate).format("YYYY-MM-DD[T]HH:mm:ss")
+    let toDate = req.query.toDate ? moment(req.query.toDate).format("YYYY-MM-DD[T]HH:mm:ss") : moment(new Date()).format("YYYY-MM-DD[T]HH:mm:ss")
     let apiKey = req.headers.api_key
     let options;
     if (constants.dailyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
-        options = {
-            sql: "SELECT DATE(RequestDate), APIVersion, EndpointName, Count(*) as Count " +
-                "FROM APIUsage " +
-                "where APIKey = ? " +
-                "AND DATE(RequestDate) >= DATE(?) AND DATE(RequestDate)<= DATE(?) " +
-                "GROUP BY DATE(RequestDate), APIVersion, EndpointName ",
-            values: [apiKey, fromDate, toDate]
+        if(req.query.getEndpoints){
+            options = {
+                sql: sqlQueries.GET_DAILY_USAGE_WITH_ENDPOINTS_QUERY,
+                values: [apiKey, fromDate, toDate]
+            }
+        }
+        else{
+            options = {
+                sql: sqlQueries.GET_DAILY_USAGE_WO_ENDPOINTS_QUERY,
+                values: [apiKey, fromDate, toDate]
+            }
         }
     } else if (constants.monthlyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
-        options = {
-            sql: "SELECT MONTHNAME(RequestDate) as Month, APIVersion, EndpointName, Count(*) as Count " +
-                "FROM APIUsage " +
-                "WHERE APIKey = ? " +
-                "AND DATE(RequestDate) >= DATE(?) AND DATE(RequestDate)<= DATE(?) " +
-                "GROUP BY MONTHNAME(RequestDate), APIVersion, EndpointName",
-            values: [apiKey, fromDate, toDate]
+        if(req.query.getEndpoints){
+            options = {
+                sql: sqlQueries.GET_MONTHLY_USAGE_WITH_ENDPOINTS_QUERY,
+                values: [apiKey, fromDate, toDate]
+            }
+        }
+        else{
+            options = {
+                sql: sqlQueries.GET_MONTHLY_USAGE_WO_ENDPOINTS_QUERY,
+                values: [apiKey, fromDate, toDate]
+            }
         }
     } else {
-        options = {
-            sql: "SELECT YEAR(RequestDate) as Year, APIVersion, EndpointName, Count(*) as Count " +
-                "FROM APIUsage " +
-                "WHERE APIKey = ? " +
-                "AND DATE(RequestDate) >= DATE(?) AND DATE(RequestDate)<= DATE(?) " +
-                "GROUP BY YEAR(RequestDate), APIVersion, EndpointName",
-            values: [apiKey, fromDate, toDate]
+        if(req.query.getEndpoints){
+            options = {
+                sql: sqlQueries.GET_YEARLY_USAGE_WITH_ENDPOINTS_QUERY,
+                values: [apiKey, fromDate, toDate]
+            }
+        }
+        else{
+            options = {
+                sql: sqlQueries.GET_YEARLY_USAGE_WO_ENDPOINTS_QUERY,
+                values: [apiKey, fromDate, toDate]
+            }
         }
     }
 
-
+    console.log(options);
     db.queryWithOptions(options, (dbError, dbResult) => {
         if (dbError) {
             callback(customError.dbError(dbError), null)
         } else {
             if (dbResult && dbResult.length > 0) {
-                callback(null, dbResult)
+                if (req.headers["content-type"] && req.headers["content-type"].includes("csv"))
+                {
+                    callback(null, parse(dbResult))
+                }
+                else{
+                    callback(null, dbResult)
+                }
             } else {
-                callback(null, null)
+                callback(null, "No Data")
+            }
+        }
+    })
+}
+
+exports.getAPIError = function (req, res, callback) {
+    let fromDate = moment(req.query.fromDate).format("YYYY-MM-DD[T]HH:mm:ss")
+    let toDate = req.query.toDate ? moment(req.query.toDate).format("YYYY-MM-DD[T]HH:mm:ss") : moment(new Date()).format("YYYY-MM-DD[T]HH:mm:ss")
+    let apiKey = req.headers.api_key
+    let options;
+    if (constants.dailyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
+        if(req.query.getErrorCountsOnly === 'true'){
+            options = {
+                sql: sqlQueries.GET_DAILY_ERROR_COUNT,
+                values: [apiKey, fromDate, toDate]
+            }
+        }
+        else{
+            options = {
+                sql: sqlQueries.GET_ERRORS_WITH_DETAILS,
+                values: [apiKey, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+            }
+        }
+    } else if (constants.monthlyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
+        if(req.query.getErrorCountsOnly === 'true'){
+            options = {
+                sql: sqlQueries.GET_MONTLY_ERROR_COUNT,
+                values: [apiKey, fromDate, toDate]
+            }
+        }
+        else{
+            options = {
+                sql: sqlQueries.GET_ERRORS_WITH_DETAILS,
+                values: [apiKey, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+            }
+        }
+    } else {
+        if(req.query.getErrorCountsOnly === 'true'){
+            options = {
+                sql: sqlQueries.GET_YEARLY_ERROR_COUNT,
+                values: [apiKey, fromDate, toDate]
+            }
+        }
+        else{
+            options = {
+                sql: sqlQueries.GET_ERRORS_WITH_DETAILS,
+                values: [apiKey, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+            }
+        }
+    }
+
+    console.log(options);
+    db.queryWithOptions(options, (dbError, dbResult) => {
+        if (dbError) {
+            callback(customError.dbError(dbError), null)
+        } else {
+            if (dbResult && dbResult.length > 0) {
+                if (req.headers["content-type"] && req.headers["content-type"].includes("csv"))
+                {
+                    callback(null, parse(dbResult))
+                }
+                else{
+                    callback(null, dbResult)
+                }
+            } else {
+                callback(null, "No Data")
             }
         }
     })
