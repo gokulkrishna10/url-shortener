@@ -6,7 +6,8 @@
     "RDS_SCHEMA": "api_usage_report_dev",
     "RDS_NO_OF_CONNECTIONS": 20,
     "RDS_FAILOVER_NO_OF_CONNECTIONS": 5,
-    "RDS_CONNECTION_TIMEOUT": 10000
+    "RDS_CONNECTION_TIMEOUT": 10000,
+    "MAX_ERROR_GET_COUNT" : 1000
   },
   "dev": {
     "RDS_HOST": "openenergy.crjdegsnxmp2.eu-west-1.rds.amazonaws.com",
@@ -15,7 +16,8 @@
     "RDS_SCHEMA": "api_usage_report_dev",
     "RDS_NO_OF_CONNECTIONS": 20,
     "RDS_FAILOVER_NO_OF_CONNECTIONS": 5,
-    "RDS_CONNECTION_TIMEOUT": 10000
+    "RDS_CONNECTION_TIMEOUT": 10000,
+    "MAX_ERROR_GET_COUNT" : 1000
   },
   "prod": {
     "RDS_HOST": "oeprodrds.crjdegsnxmp2.eu-west-1.rds.amazonaws.com",
@@ -24,7 +26,8 @@
     "RDS_SCHEMA": "api_usage_report_prod",
     "RDS_NO_OF_CONNECTIONS": 20,
     "RDS_FAILOVER_NO_OF_CONNECTIONS": 5,
-    "RDS_CONNECTION_TIMEOUT": 10000
+    "RDS_CONNECTION_TIMEOUT": 10000,
+    "MAX_ERROR_GET_COUNT" : 1000
   }
 }
 

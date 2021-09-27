@@ -44,3 +44,13 @@ exports.getApiUsage = function (req, res) {
         }
     })
 }
+
+exports.getAPIError = function (req, res) {
+    apiUsageDao.getAPIError(req, res, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err.msg)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}
