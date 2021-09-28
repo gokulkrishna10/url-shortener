@@ -54,3 +54,14 @@ exports.getAPIError = function (req, res) {
         }
     })
 }
+
+exports.onBoardNewApi = function (req, res) {
+    apiUsage.onBoardNewApi(req, res, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err)
+        } else {
+            res.status(201).send(response)
+        }
+    })
+}
+

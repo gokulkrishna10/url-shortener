@@ -5,7 +5,7 @@ const apiUsageAttributesHelper = require('../helpers/apiUsageHelper')
 const constants = require('../constants/constants')
 const moment = require('moment')
 const sqlQueries = require('./sqlQueries')
-const { parse } = require('json2csv');
+const {parse} = require('json2csv');
 const {environment} = require('../environments')
 
 exports.getCustomerAPIDetails = function (req, res, callback) {
@@ -111,39 +111,36 @@ exports.getAPIUsage = function (req, res, callback) {
     let apiKey = req.headers.api_key
     let options;
     if (constants.dailyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
-        if(req.query.getEndpoints){
+        if (req.query.getEndpoints) {
             options = {
                 sql: sqlQueries.GET_DAILY_USAGE_WITH_ENDPOINTS_QUERY,
                 values: [apiKey, fromDate, toDate]
             }
-        }
-        else{
+        } else {
             options = {
                 sql: sqlQueries.GET_DAILY_USAGE_WO_ENDPOINTS_QUERY,
                 values: [apiKey, fromDate, toDate]
             }
         }
     } else if (constants.monthlyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
-        if(req.query.getEndpoints){
+        if (req.query.getEndpoints) {
             options = {
                 sql: sqlQueries.GET_MONTHLY_USAGE_WITH_ENDPOINTS_QUERY,
                 values: [apiKey, fromDate, toDate]
             }
-        }
-        else{
+        } else {
             options = {
                 sql: sqlQueries.GET_MONTHLY_USAGE_WO_ENDPOINTS_QUERY,
                 values: [apiKey, fromDate, toDate]
             }
         }
     } else {
-        if(req.query.getEndpoints){
+        if (req.query.getEndpoints) {
             options = {
                 sql: sqlQueries.GET_YEARLY_USAGE_WITH_ENDPOINTS_QUERY,
                 values: [apiKey, fromDate, toDate]
             }
-        }
-        else{
+        } else {
             options = {
                 sql: sqlQueries.GET_YEARLY_USAGE_WO_ENDPOINTS_QUERY,
                 values: [apiKey, fromDate, toDate]
@@ -157,11 +154,9 @@ exports.getAPIUsage = function (req, res, callback) {
             callback(customError.dbError(dbError), null)
         } else {
             if (dbResult && dbResult.length > 0) {
-                if (req.headers["content-type"] && req.headers["content-type"].includes("csv"))
-                {
+                if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
                     callback(null, parse(dbResult))
-                }
-                else{
+                } else {
                     callback(null, dbResult)
                 }
             } else {
@@ -177,39 +172,36 @@ exports.getAPIError = function (req, res, callback) {
     let apiKey = req.headers.api_key
     let options;
     if (constants.dailyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
-        if(req.query.getErrorCountsOnly === 'true'){
+        if (req.query.getErrorCountsOnly === 'true') {
             options = {
                 sql: sqlQueries.GET_DAILY_ERROR_COUNT,
                 values: [apiKey, fromDate, toDate]
             }
-        }
-        else{
+        } else {
             options = {
                 sql: sqlQueries.GET_ERRORS_WITH_DETAILS,
                 values: [apiKey, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
             }
         }
     } else if (constants.monthlyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
-        if(req.query.getErrorCountsOnly === 'true'){
+        if (req.query.getErrorCountsOnly === 'true') {
             options = {
                 sql: sqlQueries.GET_MONTLY_ERROR_COUNT,
                 values: [apiKey, fromDate, toDate]
             }
-        }
-        else{
+        } else {
             options = {
                 sql: sqlQueries.GET_ERRORS_WITH_DETAILS,
                 values: [apiKey, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
             }
         }
     } else {
-        if(req.query.getErrorCountsOnly === 'true'){
+        if (req.query.getErrorCountsOnly === 'true') {
             options = {
                 sql: sqlQueries.GET_YEARLY_ERROR_COUNT,
                 values: [apiKey, fromDate, toDate]
             }
-        }
-        else{
+        } else {
             options = {
                 sql: sqlQueries.GET_ERRORS_WITH_DETAILS,
                 values: [apiKey, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
@@ -223,16 +215,81 @@ exports.getAPIError = function (req, res, callback) {
             callback(customError.dbError(dbError), null)
         } else {
             if (dbResult && dbResult.length > 0) {
-                if (req.headers["content-type"] && req.headers["content-type"].includes("csv"))
-                {
+                if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
                     callback(null, parse(dbResult))
-                }
-                else{
+                } else {
                     callback(null, dbResult)
                 }
             } else {
                 callback(null, "No Data")
             }
+        }
+    })
+}
+
+
+exports.insertIntoApiName = function (req, callback) {
+    let apiNameAttributes = apiUsageAttributesHelper.getAPINameAttributes(req);
+    let options = {
+        sql: "insert into APIName set ?",
+        values: [apiNameAttributes]
+    }
+
+    db.queryWithOptions(options, (dbError, dbResponse) => {
+        if (dbError) {
+            let dbErrorResponse;
+            if (dbError.code === "ER_DUP_ENTRY") {
+                dbErrorResponse = {"status": "failure", "message": "Duplicate entry", code: 400}
+            } else {
+                dbErrorResponse = {"status": "failure", "message": "API onboard failed", code: 500}
+            }
+            callback(dbErrorResponse, null)
+        } else {
+            callback(null, dbResponse)
+        }
+    })
+}
+
+exports.insertIntoApiRoute = function (req, callback) {
+    let apiRouteAttributes = apiUsageAttributesHelper.getAPIRouteAttributes(req);
+    let options = {
+        sql: "insert into APIRoute set ?",
+        values: [apiRouteAttributes]
+    }
+
+    db.queryWithOptions(options, (dbError, dbResponse) => {
+        if (dbError) {
+            let dbErrorResponse;
+            if (dbError.code === "ER_DUP_ENTRY") {
+                dbErrorResponse = {"status": "failure", "message": "Duplicate entry", code: 400}
+            } else {
+                dbErrorResponse = {"status": "failure", "message": "API onboard failed", code: 500}
+            }
+            callback(dbErrorResponse, null)
+        } else {
+            callback(null, dbResponse)
+        }
+    })
+}
+
+exports.insertIntoApiRoutePrice = function (req, callback) {
+    let apiRoutePriceAttributes = apiUsageAttributesHelper.getAPIRoutePriceAttributes(req);
+    let options = {
+        sql: "insert into APIRoutePrice set ?",
+        values: [apiRoutePriceAttributes]
+    }
+
+    db.queryWithOptions(options, (dbError, dbResponse) => {
+        if (dbError) {
+            let dbErrorResponse;
+            if (dbError.code === "ER_DUP_ENTRY") {
+                dbErrorResponse = {"status": "failure", "message": "Duplicate entry", code: 400}
+            } else {
+                dbErrorResponse = {"status": "failure", "message": "API onboard failed", code: 500}
+            }
+            callback(dbErrorResponse, null)
+        } else {
+            callback(null, dbResponse)
         }
     })
 }

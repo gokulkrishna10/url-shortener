@@ -5,7 +5,7 @@ const constants = require('../constants/constants')
 
 exports.apiUsageValidation = function (req, res, next) {
     //If no statuscode, put it as 500
-    if (!Boolean(req.body.apiDetails.httpStatusCode)){
+    if (!Boolean(req.body.apiDetails.httpStatusCode)) {
         req.body.apiDetails.httpStatusCode = 500;
     }
     if (util.isNull(req.body) && util.isNull(req.body.apiDetails)) {
@@ -70,3 +70,29 @@ exports.getErrorValidation = function (req, res, next) {
     }
 }
 
+exports.getAPIOnboardValidation = function (req, res, next) {
+    let err = null
+    if (Object.entries(req.body).length === 0) {
+        err = customError.BadRequest("request needs a body")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (util.isNull(req.body.name)) {
+        err = customError.BadRequest("request needs apiName")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (util.isNull(req.body.displayName)) {
+        err = customError.BadRequest("request needs displayName")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (util.isNull(req.body.description)) {
+        err = customError.BadRequest("request needs description")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (util.isNull(req.body.apiVersion)) {
+        err = customError.BadRequest("request needs apiVersion")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else {
+        next()
+    }
+}
