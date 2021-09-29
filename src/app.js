@@ -63,6 +63,7 @@ router.all("*", function (req, res, next) {
     next();
 });
 
+//routes
 
 router.post('/v1/api-usage', apiUsageValidator.apiUsageValidation, routes.updateAPIUsage);
 router.post('/v1/validate-api-usage', routes.apiUsageRequestValidation)
