@@ -47,6 +47,7 @@ exports.getUsageValidation = function (req, res, next) {
     }
 }
 
+//donotUpdateUsage flag is set to true to prevent the invocation of updateApiUsage api in the global error handler
 exports.getErrorValidation = function (req, res, next) {
     let err = null;
     if (util.isNull(req.headers.api_key)) {
@@ -90,6 +91,10 @@ exports.getAPIOnboardValidation = function (req, res, next) {
         next(err)
     } else if (util.isNull(req.body.apiVersion)) {
         err = customError.BadRequest("request needs apiVersion")
+        err.donotUpdateUsage = true;
+        next(err)
+    }else if (util.isNull(req.body.basePricePerCall)) {
+        err = customError.BadRequest("request needs basePricePerCall")
         err.donotUpdateUsage = true;
         next(err)
     } else {
