@@ -12,7 +12,6 @@ var customeError = new ErrorMod();
 const apiUsageValidator = require('../validation/apiUsageValidation')
 
 
-
 app.use(
     morgan(function (tokens, req, res) {
         return [
@@ -32,7 +31,7 @@ app.set("port", portConfiguration[envFile.stage] || 7400);
 app.use(function error_handler(err, req, res, next) {
     res.header("Content-Type", "application/json; charset=utf-8");
     res.status(err.code || 500).send(err)
-    if (!Boolean(err.donotUpdateUsage)){
+    if (!Boolean(err.donotUpdateUsage)) {
         var errData = {};
         errData.responseData = err;
         routes.updateAPIUsage(req, err)
@@ -68,6 +67,7 @@ router.post('/v1/api-usage', apiUsageValidator.apiUsageValidation, routes.update
 router.post('/v1/validate-api-usage', routes.apiUsageRequestValidation)
 router.get('/v1/usage', apiUsageValidator.getUsageValidation, routes.getApiUsage)
 router.get('/v1/error', apiUsageValidator.getErrorValidation, routes.getAPIError)
+router.post('/v1/onboard-api', apiUsageValidator.getAPIOnboardValidation, routes.onBoardNewApi)
 
 
 router.all('/*', function (req, res) {
