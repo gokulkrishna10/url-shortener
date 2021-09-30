@@ -43,10 +43,40 @@ exports.getAPIErrorAttributes = function (req, res) {
 
 
     if (req.body.apiDetails && req.body.apiDetails.errorDescription) {
-        apiErrorObject.ErrorMessage = apiErrorObject.ErrorMessage ? apiErrorObject.ErrorMessage +". "+ req.body.apiDetails.errorDescription : req.body.apiDetails.errorDescription;
+        apiErrorObject.ErrorMessage = apiErrorObject.ErrorMessage ? apiErrorObject.ErrorMessage + ". " + req.body.apiDetails.errorDescription : req.body.apiDetails.errorDescription;
     }
 
     apiErrorObject.InputData = JSON.stringify(req.body.apiDetails)
 
     return apiErrorObject
+}
+
+exports.getAPINameAttributes = function (req) {
+    let apiNameAttributes = {};
+
+    apiNameAttributes.Name = req.body.name
+    apiNameAttributes.DisplayName = req.body.displayName
+    apiNameAttributes.Description = req.body.description
+
+    return apiNameAttributes
+}
+
+exports.getAPIRouteAttributes = function (req) {
+    let apiRouteAttributes = {};
+
+    apiRouteAttributes.APINameId = req.apiNameId
+    apiRouteAttributes.APIVersion = req.body.apiVersion
+    apiRouteAttributes.EndpointName = req.body.endPointName ? req.body.endPointName : "/"
+
+    return apiRouteAttributes
+}
+
+exports.getAPIRoutePriceAttributes = function (req) {
+    let apiRoutePriceAttributes = {};
+
+    apiRoutePriceAttributes.APIRouteId = req.apiRouteId
+    apiRoutePriceAttributes.APIPricingPlanId = 1;
+    apiRoutePriceAttributes.BasePricePerCall = req.body.basePricePerCall
+
+    return apiRoutePriceAttributes
 }
