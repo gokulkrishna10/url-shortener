@@ -139,3 +139,35 @@ exports.onBoardNewApi = function (req, res, mainCallback) {
     })
 }
 
+
+exports.customerApiSubscription = function (req, res, mainCallback) {
+    console.log("inside customerApiSubscription")
+
+    async.waterfall([
+        function getAPICustomerAndApiNameId(callback) {
+            apiUsageDao.getAPICustomerAndApiNameId(req, (err, response) => {
+                if (err) {
+                    callback(err, null)
+                } else {
+                    callback(null, response)
+                }
+            })
+        }, function insertIntoApiRouteSubscription(response, callback) {
+            apiUsageDao.insertIntoApiRouteSubscription(response, (err, response) => {
+                if (err) {
+                    callback(err, null)
+                } else {
+                    let response = {"status": "successful", "apiName": req.body.apiName,"customerName":req.body.customerName,"apiKey":response.apiKey}
+                    callback(null, response)
+                }
+            })
+        }
+    ], function finalCallback(finalError, finalResult) {
+        if (finalError) {
+            mainCallback(finalError, null)
+        } else {
+            mainCallback(null, finalResult)
+        }
+    })
+}
+

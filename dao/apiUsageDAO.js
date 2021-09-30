@@ -293,3 +293,38 @@ exports.insertIntoApiRoutePrice = function (req, callback) {
         }
     })
 }
+
+exports.getAPICustomerAndApiNameId = function (req, callback) {
+    let options = [{
+        sql: "select APICustomerId from APICustomer where CustomerName = ?",
+        values: [req.body.customerName]
+    }, {
+        sql: "select APINameId from APIName where Name = ?",
+        values: [req.body.apiName]
+    }]
+
+    db.executeMultipleWithOptions(options, true, (dbError, dbResponse) => {
+        if (dbError) {
+            callback(dbError, null)
+        } else {
+            callback(null, dbResponse)
+        }
+    })
+}
+
+exports.insertIntoApiRouteSubscription = function (response, callback) {
+    let apiRouteSubscriptionAttributes = apiUsageAttributesHelper.getApiRouteSubscriptionAttributes(response)
+    let options = {
+        sql: "insert into APIRouteSubscription set ",
+        values: [apiRouteSubscriptionAttributes]
+    }
+
+    db.queryWithOptions(options, (dbError, dbResponse) => {
+        if (dbError) {
+            callback(dbError, null)
+        } else {
+            if(dbResponse)
+            callback(null, dbResponse)
+        }
+    })
+}
