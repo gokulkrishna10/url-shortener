@@ -93,8 +93,31 @@ exports.getAPIOnboardValidation = function (req, res, next) {
         err = customError.BadRequest("request needs apiVersion")
         err.donotUpdateUsage = true;
         next(err)
-    }else if (util.isNull(req.body.basePricePerCall)) {
+    } else if (util.isNull(req.body.basePricePerCall)) {
         err = customError.BadRequest("request needs basePricePerCall")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else {
+        next()
+    }
+}
+
+exports.getNewCustomerValidation = function (req, res, next) {
+    let err = null
+    if (Object.entries(req.body).length === 0) {
+        err = customError.BadRequest("request needs a body")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (util.isNull(req.body.customerName)) {
+        err = customError.BadRequest("request needs a customerName")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (util.isNull(req.body.legalName)) {
+        err = customError.BadRequest("request needs a legalName")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (util.isNull(req.body.email)) {
+        err = customError.BadRequest("request needs a customer email")
         err.donotUpdateUsage = true;
         next(err)
     } else {

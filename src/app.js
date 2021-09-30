@@ -69,6 +69,7 @@ router.post('/v1/validate-api-usage', routes.apiUsageRequestValidation)
 router.get('/v1/usage', apiUsageValidator.getUsageValidation, routes.getApiUsage)
 router.get('/v1/error', apiUsageValidator.getErrorValidation, routes.getAPIError)
 router.post('/v1/onboard-api', apiUsageValidator.getAPIOnboardValidation, routes.onBoardNewApi)
+router.post('/v1/customer', apiUsageValidator.getNewCustomerValidation, routes.addNewCustomer)
 
 
 router.all('/*', function (req, res) {
