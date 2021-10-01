@@ -139,3 +139,13 @@ exports.onBoardNewApi = function (req, res, mainCallback) {
     })
 }
 
+exports.addNewCustomer = function (req, res, callback) {
+    apiUsageDao.addNewCustomer(req, (err, response) => {
+        if (err) {
+            callback(err, null)
+        } else {
+            callback(null, response)
+        }
+    })
+}
+

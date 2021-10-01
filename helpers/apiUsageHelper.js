@@ -80,3 +80,16 @@ exports.getAPIRoutePriceAttributes = function (req) {
 
     return apiRoutePriceAttributes
 }
+
+
+exports.getCustomerAttributes = function (req) {
+    let customerAttributes = {};
+
+    customerAttributes.CustomerName = req.body.customerName
+    customerAttributes.LegalName = req.body.legalName;
+    customerAttributes.Address = req.body.address ? req.body.address : null
+    customerAttributes.Email = req.body.email
+    customerAttributes.IsActive = 1
+
+    return customerAttributes
+}
