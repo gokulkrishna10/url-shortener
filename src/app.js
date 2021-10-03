@@ -10,7 +10,6 @@ const express = require("express"),
 var ErrorMod = require('../customnodemodules/error_node_module/errors');
 var customeError = new ErrorMod();
 const apiUsageValidator = require('../validation/apiUsageValidation')
-const apiUsageRequestValidator = require('../routes/index')
 
 
 app.use(
@@ -32,9 +31,11 @@ app.set("port", portConfiguration[envFile.stage] || 7400);
 app.use(function error_handler(err, req, res, next) {
     res.header("Content-Type", "application/json; charset=utf-8");
     res.status(err.code || 500).send(err)
-    var errData = {};
-    errData.responseData = err;
-    routes.updateAPIUsage(req, err)
+    if (!Boolean(err.donotUpdateUsage)) {
+        var errData = {};
+        errData.responseData = err;
+        routes.updateAPIUsage(req, err)
+    }
 });
 
 router.all("*", function (req, res, next) {
@@ -61,10 +62,14 @@ router.all("*", function (req, res, next) {
     next();
 });
 
+//routes
 
 router.post('/v1/api-usage', apiUsageValidator.apiUsageValidation, routes.updateAPIUsage);
-router.post('/v1/validate-api-usage', apiUsageRequestValidator.apiUsageRequestValidation)
-router.get('/v1/usage', apiUsageValidator.getUsageValidation, apiUsageRequestValidator.getApiUsage)
+router.post('/v1/validate-api-usage', routes.apiUsageRequestValidation)
+router.get('/v1/usage', apiUsageValidator.getUsageValidation, routes.getApiUsage)
+router.get('/v1/error', apiUsageValidator.getErrorValidation, routes.getAPIError)
+router.post('/v1/onboard-api', apiUsageValidator.getAPIOnboardValidation, routes.onBoardNewApi)
+router.post('/v1/customer', apiUsageValidator.getNewCustomerValidation, routes.addNewCustomer)
 
 
 router.all('/*', function (req, res) {

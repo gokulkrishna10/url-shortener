@@ -279,7 +279,7 @@ CREATE TABLE IF NOT EXISTS APIUsage (
 
 /*--------------------SELECT----------------------
 USE api_usage_report_dev;
-USE api_usage_report_preprod;
+
 
 Select * from APIName;
 Select * from APICustomer; 
@@ -499,31 +499,98 @@ INNER JOIN APIName apn on ars.APINameId = apn.APINameId
 WHERE Name = 'ev-comparison-api' 
 AND APIKey = '3f56cc00-7882-483d-b1eb-9c89070c64a7'
 
-# -------------------------Usage - IntervalType = d----------------
-Select * from APIUsage
+# ================================Usage Queries=========================
 
-Select RequestDate, APINameId, APIVersion, EndpointName, COunt(*) as Count from APIUsage
+--get API Usage. (getEndpoints = true)
+SELECT DATE(RequestDate) as Date, an.DisplayName as APIName , APIVersion, EndpointName, Count(*) as Count 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c' 
+AND DATE(RequestDate) >= DATE('2021-09-20 00:00:00') 
+AND DATE(RequestDate)<= DATE('2021-09-24 10:09:00') 
+GROUP BY Date, an.DisplayName, APIVersion, EndpointName
+
+--get API Usage. (getEndpoints = false)
+SELECT DATE(RequestDate) as Date, an.DisplayName as APIName , APIVersion, Count(*) as Count 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c' 
+AND DATE(RequestDate) >= DATE('2021-09-20 00:00:00') 
+AND DATE(RequestDate)<= DATE('2021-09-24 10:09:00') 
+GROUP BY Date, an.DisplayName, APIVersion
+
+------------Month---------------
+--get API Usage. (getEndpoints = true)
+SELECT DATE_FORMAT(RequestDate,'%M %Y') AS Month, an.DisplayName as APIName , APIVersion, EndpointName, Count(*) as Count 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c' 
+AND DATE(RequestDate) >= DATE('2021-09-20 00:00:00') 
+AND DATE(RequestDate)<= DATE('2021-09-24 10:09:00') 
+GROUP BY Month, an.DisplayName, APIVersion, EndpointName
+
+--get API Usage. (getEndpoints = false)
+SELECT DATE_FORMAT(RequestDate,'%M %Y') AS Month, an.DisplayName as APIName , APIVersion, Count(*) as Count 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c' 
+AND DATE(RequestDate) >= DATE('2021-09-20 00:00:00') 
+AND DATE(RequestDate)<= DATE('2021-09-24 10:09:00') 
+GROUP BY Month, an.DisplayName, APIVersion
+
+-----------------------Year---------------------
+--get API Usage. (getEndpoints = true)
+SELECT YEAR(RequestDate) AS Year, an.DisplayName as APIName , APIVersion, EndpointName, Count(*) as Count 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c' 
+AND DATE(RequestDate) >= DATE('2021-09-20 00:00:00') 
+AND DATE(RequestDate)<= DATE('2021-09-24 10:09:00') 
+GROUP BY Year, an.DisplayName, APIVersion, EndpointName
+
+--get API Usage. (getEndpoints = false)
+SELECT YEAR(RequestDate) AS Year, an.DisplayName as APIName , APIVersion, Count(*) as Count 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c' 
+AND DATE(RequestDate) >= DATE('2021-09-20 00:00:00') 
+AND DATE(RequestDate)<= DATE('2021-09-24 10:09:00') 
+GROUP BY Year, an.DisplayName, APIVersion
+
+
+SELECT DATE_FORMAT(RequestDate,'%M %Y') AS Month,RequestDate,  an.DisplayName as APIName , APIVersion, Count(*) as Count 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
 where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c'
-group by RequestDate, APINameId, APIVersion, EndpointName
-
-Select date_format(date(RequestDate),'%d-%m-%Y')as RequestDate, APIVersion, EndpointName, Count(*) as Count
-FROM APIUsage
-where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c'
-group by date_format(date(RequestDate),'%d-%m-%Y'), APIVersion, EndpointName
-
-Select DATE(RequestDate), APIVersion, EndpointName, Count(*) as Count
-FROM APIUsage
-where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c'
-AND DATE(RequestDate) = '2021-09-14'
-group by DATE(RequestDate), APIVersion, EndpointName
-
-Select MONTHNAME(RequestDate) as Month, APIVersion, EndpointName, Count(*) as Count
-FROM APIUsage
-where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c'
-AND DATE(RequestDate) = '2021-09-14'
-group by MONTHNAME(RequestDate), APIVersion, EndpointName
+AND DATE(RequestDate) >= DATE('2021-09-20 00:00:00') 
+AND DATE(RequestDate)<= DATE('2021-09-25 22:09:66') 
+GROUP BY Month, an.DisplayName, APIVersion
 
 
+--=========================Errors===============================
+
+--get API Errors with Details (getErrorCountsOnly = true)
+SELECT DATE(RequestDate) as Date, an.DisplayName as APIName , APIVersion, EndpointName, HttpStatusCode, Count(*) as Count 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c' 
+AND DATE(RequestDate) >= DATE('2020-10-20 00:00:00') 
+AND DATE(RequestDate)<= DATE('2021-09-24 10:09:00') 
+AND APIErrorId IS NOT NULL
+GROUP BY Date, an.DisplayName, APIVersion, EndpointName, HttpStatusCode
+
+--get DAILY API Errors. (getErrorCountsOnly = true)
+SELECT RequestDate as DateTime, an.DisplayName as APIName , APIVersion, EndpointName, HttpStatusCode, ae.ErrorId, ae.ErrorMessage
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+JOIN APIError ae on ae.APIErrorId = au.APIErrorId
+where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c' 
+AND DATE(RequestDate) >= DATE('2020-10-20 00:00:00') 
+AND DATE(RequestDate)<= DATE('2021-09-24 10:09:00') 
+AND au.APIErrorId IS NOT NULL
+
+--get MONTHLY API Errors. (getErrorCountsOnly = true)
+--get YEARLY API Errors. (getErrorCountsOnly = true)
 
 */
 

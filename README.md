@@ -11,11 +11,11 @@ Project : https://gitlab.digitalapicraft.com/openutility/mh-api-ms
 <br/>
 
 ### config.js changes
-Add the following config variables to each section (dev, preprod & prod) of config.json. For example, the local section will have the following entries to the dev section. <br/>
+Add the following config variables to each section (dev, preprod & prod) of config.json. For example, the local section will have the following entries to the dev section. Use the following URIs (127.0.0.1) on all stages so that the micro-service woll access the usage api that is local to it's installation. <br/>
 ```
 	DEV: 
-	"API_USAGE_UPDATE_URL": "http://34.249.3.126:7100/v1/api-usage",
-    "API_USAGE_VALIDATE_URL": "http://34.249.3.126:7100/v1/validate-api-usage",
+	"API_USAGE_UPDATE_URL": "http://127.0.0.1:7100/v1/api-usage",
+    "API_USAGE_VALIDATE_URL": "http://127.0.0.1:7100/v1/validate-api-usage",
     "API_USAGE_SELF_API_NAME": "Half-Hourly-Meter-History"
 ```
 
@@ -65,7 +65,7 @@ Please note the following <br/>
 ```
 	req.startTime = performance.now();
 ```
-- Sample code with proper implementation <br/>
+- Sample code with proper implementation for index.js <br/>
 	You just need to add the above line before the call begins. <br/>
 	But also make sure you are calling next() correctly, depending on success or error sccenario. <br/>
 	- Promise pattern
