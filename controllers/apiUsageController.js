@@ -144,12 +144,20 @@ exports.customerApiSubscription = function (req, res, mainCallback) {
     console.log("inside customerApiSubscription")
 
     async.waterfall([
-        function getAPICustomerAndApiNameId(callback) {
-            apiUsageDao.getAPICustomerAndApiNameId(req, (err, response) => {
+        function getAPICustomerIdAndApiNameId(callback) {
+            apiUsageDao.getAPICustomerIdAndApiNameId(req, (err, response) => {
                 if (err) {
                     callback(err, null)
                 } else {
-                    callback(null, response)
+                    (response.code && response.code === 400) ? mainCallback(response, null) : callback(null, response)
+                }
+            })
+        }, function checkTheCustomerIdAndApiNameId(response, callback) {
+            apiUsageDao.checkTheCustomerIdAndApiNameId(response, (err, result) => {
+                if (err) {
+                    callback(err, null)
+                } else {
+                    (result && result.code && result.code === 400) ? mainCallback(result, null) : callback(null, response)
                 }
             })
         }, function insertIntoApiRouteSubscription(response, callback) {
@@ -157,8 +165,9 @@ exports.customerApiSubscription = function (req, res, mainCallback) {
                 if (err) {
                     callback(err, null)
                 } else {
-                    let response = {"status": "successful", "apiName": req.body.apiName,"customerName":req.body.customerName,"apiKey":response.apiKey}
-                    callback(null, response)
+                    response.apiName = req.body.apiName
+                    response.customerName = req.body.customerName;
+                    (response.code && response.code === 500) ? callback(response, null) : callback(null, response)
                 }
             })
         }

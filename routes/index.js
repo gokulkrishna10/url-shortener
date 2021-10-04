@@ -65,3 +65,13 @@ exports.onBoardNewApi = function (req, res) {
     })
 }
 
+exports.customerApiSubscription = function (req, res) {
+    apiUsage.customerApiSubscription(req, res, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err)
+        } else {
+            res.status(201).send(response)
+        }
+    })
+}
+

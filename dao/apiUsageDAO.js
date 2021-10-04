@@ -294,7 +294,7 @@ exports.insertIntoApiRoutePrice = function (req, callback) {
     })
 }
 
-exports.getAPICustomerAndApiNameId = function (req, callback) {
+exports.getAPICustomerIdAndApiNameId = function (req, callback) {
     let options = [{
         sql: "select APICustomerId from APICustomer where CustomerName = ?",
         values: [req.body.customerName]
@@ -307,7 +307,47 @@ exports.getAPICustomerAndApiNameId = function (req, callback) {
         if (dbError) {
             callback(dbError, null)
         } else {
-            callback(null, dbResponse)
+            let dbSuccessResponse = {};
+            if (dbResponse && dbResponse[0].length === 0) {
+                dbSuccessResponse = {
+                    "status": "failure",
+                    "message": "Requested Customer name does not match with our records",
+                    code: 400
+                }
+            } else if (dbResponse && dbResponse[1].length === 0) {
+                dbSuccessResponse = {
+                    "status": "failure",
+                    "message": "Requested API name does not match with our records",
+                    code: 400
+                }
+            } else {
+                dbSuccessResponse.APICustomerId = dbResponse[0][0].APICustomerId
+                dbSuccessResponse.APINameId = dbResponse[1][0].APINameId
+            }
+            callback(null, dbSuccessResponse)
+        }
+    })
+}
+
+exports.checkTheCustomerIdAndApiNameId = function (response, callback) {
+    let options = {
+        sql: "select APICustomerId, APINameId from APIRouteSubscription where APICustomerId = ? AND APINameId = ?",
+        values: [response.APICustomerId, response.APINameId]
+    }
+
+    db.queryWithOptions(options, (dbError, dbResponse) => {
+        if (dbError) {
+            callback(customError.dbError(dbError), null)
+        } else {
+            let dbSuccessResponse = {};
+            if (dbResponse && dbResponse.length > 0) {
+                dbSuccessResponse = {
+                    "status": "failure",
+                    "message": "This customer is already subscribed to the requested API",
+                    code: 400
+                }
+            }
+            callback(null, dbSuccessResponse)
         }
     })
 }
@@ -315,16 +355,28 @@ exports.getAPICustomerAndApiNameId = function (req, callback) {
 exports.insertIntoApiRouteSubscription = function (response, callback) {
     let apiRouteSubscriptionAttributes = apiUsageAttributesHelper.getApiRouteSubscriptionAttributes(response)
     let options = {
-        sql: "insert into APIRouteSubscription set ",
+        sql: "insert into APIRouteSubscription set ?",
         values: [apiRouteSubscriptionAttributes]
     }
 
     db.queryWithOptions(options, (dbError, dbResponse) => {
         if (dbError) {
-            callback(dbError, null)
+            callback(customError.dbError(dbError), null)
         } else {
-            if(dbResponse)
-            callback(null, dbResponse)
+            let finalResponse = {}
+            if (dbResponse && dbResponse.affectedRows > 0) {
+                finalResponse = {
+                    "status": "successful",
+                    "apiKey": apiRouteSubscriptionAttributes.APIKey
+                }
+            } else {
+                finalResponse = {
+                    "status": "failure",
+                    "message": "API route subscription failed",
+                    "code": 500
+                }
+            }
+            callback(null, finalResponse)
         }
     })
 }

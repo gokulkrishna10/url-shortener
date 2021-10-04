@@ -114,7 +114,7 @@ function getReadConnection(callback) {
 }
 
 function getFailoverReadConnection(callback) {
-    failover_read_pool.getConnection( async (err, conn)=> {
+    failover_read_pool.getConnection(async (err, conn) => {
         if (err) {
             console.log(err);
             await sleep(500);
@@ -252,7 +252,7 @@ exports.executeMultipleWithOptions = function (mOptions, isTransaction, callback
     if (!mOptions || (!(mOptions instanceof Array)) || mOptions.length <= 0) {
         callback(null, null);
     } else {
-        getWriteConnection(function (err, con) {
+        getReadConnection(function (err, con) {
             if (err) {
                 callback(err, null);
             } else {
@@ -269,10 +269,7 @@ exports.executeMultipleWithOptions = function (mOptions, isTransaction, callback
                                     commitTransaction(con, resultList, callback);
                                 }
                             });
-
-
                         }
-
                     });
                 } else {
                     var resultList = new Array(mOptions.length);
@@ -282,18 +279,14 @@ exports.executeMultipleWithOptions = function (mOptions, isTransaction, callback
                             callback(err, null);
                         } else {
                             callback(null, resultList);
-
                         }
                     });
-
-
                 }
-
             }
         });
     }
-
 };
+
 
 exports.escape = mysql.escape;
 
