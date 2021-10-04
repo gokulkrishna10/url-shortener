@@ -74,4 +74,3 @@ exports.customerApiSubscription = function (req, res) {
         }
     })
 }
-
