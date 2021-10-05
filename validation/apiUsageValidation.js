@@ -124,3 +124,23 @@ exports.getNewCustomerValidation = function (req, res, next) {
         next()
     }
 }
+
+
+exports.getCustomerApiSubscriptionValidation = function (req, res, next) {
+    let err = null
+    if (Object.entries(req.body).length === 0) {
+        err = customError.BadRequest("request needs a body")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (util.isNull(req.body.customerName)) {
+        err = customError.BadRequest("request needs customerName")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (util.isNull(req.body.apiName)) {
+        err = customError.BadRequest("request needs apiName")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else {
+        next()
+    }
+}

@@ -1,3 +1,6 @@
+const uuid = require('uuid')
+
+
 exports.getAPIUsageAttributes = function (req, res, result) {
     let apiUsageObject = {};
 
@@ -81,7 +84,6 @@ exports.getAPIRoutePriceAttributes = function (req) {
     return apiRoutePriceAttributes
 }
 
-
 exports.getCustomerAttributes = function (req) {
     let customerAttributes = {};
 
@@ -92,4 +94,15 @@ exports.getCustomerAttributes = function (req) {
     customerAttributes.IsActive = 1
 
     return customerAttributes
+}
+
+exports.getApiRouteSubscriptionAttributes = function (response) {
+    let apiRouteSubscriptionAttributes = {};
+
+    apiRouteSubscriptionAttributes.APICustomerId = response.APICustomerId
+    apiRouteSubscriptionAttributes.APINameId = response.APINameId;
+    apiRouteSubscriptionAttributes.APIKey = uuid.v4();
+    apiRouteSubscriptionAttributes.IsActive = 1
+
+    return apiRouteSubscriptionAttributes
 }

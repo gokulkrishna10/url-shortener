@@ -70,6 +70,7 @@ router.get('/v1/usage', apiUsageValidator.getUsageValidation, routes.getApiUsage
 router.get('/v1/error', apiUsageValidator.getErrorValidation, routes.getAPIError)
 router.post('/v1/onboard-api', apiUsageValidator.getAPIOnboardValidation, routes.onBoardNewApi)
 router.post('/v1/customer', apiUsageValidator.getNewCustomerValidation, routes.addNewCustomer)
+router.post('/v1/customer/api-subscription', apiUsageValidator.getCustomerApiSubscriptionValidation, routes.customerApiSubscription)
 
 
 router.all('/*', function (req, res) {

@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS APICustomer (
     CONSTRAINT PK_APICustomer PRIMARY KEY (APICustomerId)
 );
 
+ALTER TABLE APICustomer
+ADD	CONSTRAINT UK_APICustomer UNIQUE(CustomerName);
 
 /* ====================================================================================================
 Description: This table contains the APIName details
@@ -121,8 +123,20 @@ CREATE TABLE IF NOT EXISTS APIRouteSubscription(
     CONSTRAINT FK_APISubscription_APICustomerId FOREIGN KEY (APICustomerId) REFERENCES APICustomer(APICustomerId)
 );
 
+
 ALTER TABLE APIRouteSubscription
-ADD	CONSTRAINT UK_APIRouteSubscription UNIQUE(APICustomerId, APINameId, APIKey, IsActive, StartDate);
+ADD	CONSTRAINT UK_APIRouteSubscription UNIQUE(APICustomerId, APINameId, APIKey);
+
+/* TO DROP, HAD TO DROP THE FK FIRST
+ALTER TABLE APIRouteSubscription
+DROP FOREIGN KEY FK_APISubscription_APICustomerId;
+ALTER TABLE APIRouteSubscription
+DROP INDEX  UK_APIRouteSubscription;
+# Add it back after dropping the UK key
+ALTER TABLE APIRouteSubscription
+ADD CONSTRAINT FK_APISubscription_APICustomerId FOREIGN KEY (APICustomerId) REFERENCES APICustomer(APICustomerId);
+
+*/
 
 /* ====================================================================================================
 Description : This table stores the API Limits for a (APINameId + CustomerId). This can be used to track Volume usage as well as
