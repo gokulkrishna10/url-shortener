@@ -40,6 +40,8 @@ CREATE TABLE IF NOT EXISTS APICustomer (
     CONSTRAINT PK_APICustomer PRIMARY KEY (APICustomerId)
 );
 
+ALTER TABLE APICustomer
+ADD	CONSTRAINT UK_APICustomer UNIQUE(CustomerName);
 
 /* ====================================================================================================
 Description: This table contains the APIName details
@@ -139,7 +141,20 @@ CREATE TABLE IF NOT EXISTS APIRouteSubscription(
 );
 
 ALTER TABLE APIRouteSubscription
-ADD	CONSTRAINT UK_APIRouteSubscription UNIQUE(APICustomerId, APINameId, APIKey, IsActive, StartDate);
+ADD	CONSTRAINT UK_APIRouteSubscription UNIQUE(APICustomerId, APINameId, APIKey);
+
+/* TO DROP, HAD TO DROP THE FK FIRST
+ALTER TABLE APIRouteSubscription
+DROP FOREIGN KEY FK_APISubscription_APICustomerId;
+ALTER TABLE APIRouteSubscription
+DROP INDEX  UK_APIRouteSubscription;
+# Add it back after dropping the UK key
+ALTER TABLE APIRouteSubscription
+ADD CONSTRAINT FK_APISubscription_APICustomerId FOREIGN KEY (APICustomerId) REFERENCES APICustomer(APICustomerId);
+
+*/
+
+
 
 /* ====================================================================================================
 Description : This table stores the API Limits for a (APINameId + CustomerId). This can be used to track Volume usage as well as
@@ -588,6 +603,7 @@ where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c'
 AND DATE(RequestDate) >= DATE('2020-10-20 00:00:00') 
 AND DATE(RequestDate)<= DATE('2021-09-24 10:09:00') 
 AND au.APIErrorId IS NOT NULL
+LIMIT 1000;
 
 --get MONTHLY API Errors. (getErrorCountsOnly = true)
 --get YEARLY API Errors. (getErrorCountsOnly = true)
