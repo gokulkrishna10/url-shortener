@@ -139,12 +139,43 @@ exports.onBoardNewApi = function (req, res, mainCallback) {
     })
 }
 
-exports.addNewCustomer = function (req, res, callback) {
-    apiUsageDao.addNewCustomer(req, (err, response) => {
-        if (err) {
-            callback(err, null)
+
+exports.customerApiSubscription = function (req, res, mainCallback) {
+    console.log("inside customerApiSubscription")
+
+    async.waterfall([
+        function getAPICustomerIdAndApiNameId(callback) {
+            apiUsageDao.getAPICustomerIdAndApiNameId(req, (err, response) => {
+                if (err) {
+                    callback(err, null)
+                } else {
+                    (response.code && response.code === 400) ? mainCallback(response, null) : callback(null, response)
+                }
+            })
+        }, function checkTheCustomerIdAndApiNameId(response, callback) {
+            apiUsageDao.checkTheCustomerIdAndApiNameId(response, (err, result) => {
+                if (err) {
+                    callback(err, null)
+                } else {
+                    (result && result.code && result.code === 400) ? mainCallback(result, null) : callback(null, response)
+                }
+            })
+        }, function insertIntoApiRouteSubscription(response, callback) {
+            apiUsageDao.insertIntoApiRouteSubscription(response, (err, response) => {
+                if (err) {
+                    callback(err, null)
+                } else {
+                    response.apiName = req.body.apiName
+                    response.customerName = req.body.customerName;
+                    (response.code && response.code === 500) ? callback(response, null) : callback(null, response)
+                }
+            })
+        }
+    ], function finalCallback(finalError, finalResult) {
+        if (finalError) {
+            mainCallback(finalError, null)
         } else {
-            callback(null, response)
+            mainCallback(null, finalResult)
         }
     })
 }
