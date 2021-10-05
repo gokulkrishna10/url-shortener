@@ -294,6 +294,31 @@ exports.insertIntoApiRoutePrice = function (req, callback) {
     })
 }
 
+
+exports.addNewCustomer = function (req, callback) {
+    let customerObject = apiUsageAttributesHelper.getCustomerAttributes(req)
+    let options = {
+        sql: "insert into APICustomer set ?",
+        values: [customerObject]
+    }
+
+    db.queryWithOptions(options, (dbError, dbResponse) => {
+        if (dbError) {
+            let dbErrorResponse;
+            if (dbError.code === "ER_DUP_ENTRY") {
+                dbErrorResponse = {"status": "failure", "message": "Customer is already present", code: 400}
+            } else {
+                dbErrorResponse = {"status": "failure", "message": "Failed to add the customer", code: 500}
+            }
+            callback(dbErrorResponse, null)
+        } else {
+            let response = {"status": "successful", "message": "Added customer successfully"}
+            callback(null, response)
+        }
+    })
+}
+
+
 exports.getAPICustomerIdAndApiNameId = function (req, callback) {
     let options = [{
         sql: "select APICustomerId from APICustomer where CustomerName = ?",
