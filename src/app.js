@@ -72,6 +72,9 @@ router.post('/v1/onboard-api', apiUsageValidator.getAPIOnboardValidation, routes
 router.post('/v1/customer', apiUsageValidator.getNewCustomerValidation, routes.addNewCustomer)
 router.post('/v1/customer/api-subscription', apiUsageValidator.getCustomerApiSubscriptionValidation, routes.customerApiSubscription)
 
+router.get('/v1/admin/validate-api-usage', routes.adminApiUsageValidation)
+router.get('/v1/internal/api-names', routes.getAllApiNames)
+
 
 router.all('/*', function (req, res) {
     res.status(404);
