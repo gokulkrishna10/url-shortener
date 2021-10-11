@@ -36,12 +36,19 @@ exports.apiUsageValidation = function (req, res, next) {
 }
 
 exports.getUsageValidation = function (req, res, next) {
+    let err = null;
     if (util.isNull(req.headers.api_key)) {
-        next(customError.BadRequest("API key is required"))
-    } else if (util.isNull(req.query.intervalType) && !(constants.intervalTypeConstants.includes(req.query.intervalType.toUpperCase()))) {
-        next(customError.BadRequest("Interval type is required and it should be either one of daily, monthly or yearly"))
+        err = customError.BadRequest("API key is required")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (util.isNull(req.query.intervalType) || !(constants.intervalTypeConstants.includes(req.query.intervalType.toUpperCase()))) {
+        err = customError.BadRequest("Interval type is required and it should be one of daily, monthly or yearly")
+        err.donotUpdateUsage = true;
+        next(err)
     } else if (util.isNull(req.query.fromDate)) {
-        next(customError.BadRequest("FromDate is required"))
+        err = customError.BadRequest("FromDate is required")
+        err.donotUpdateUsage = true;
+        next(err)
     } else {
         next();
     }
@@ -142,5 +149,25 @@ exports.getCustomerApiSubscriptionValidation = function (req, res, next) {
         next(err)
     } else {
         next()
+    }
+}
+
+
+exports.getAdminUsageValidation = function (req, res, next) {
+    let err = null
+    if (util.isNull(req.headers.api_key)) {
+        err = customError.BadRequest("API key is required")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (util.isNull(req.query.fromDate)) {
+        err = customError.BadRequest("FromDate is required")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (util.isNull(req.query.intervalType) || !(constants.intervalTypeConstants.includes(req.query.intervalType.toUpperCase()))) {
+        err = customError.BadRequest("Interval type is required and it should be one of daily, monthly or yearly")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else {
+        next();
     }
 }
