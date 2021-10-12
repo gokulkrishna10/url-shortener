@@ -2,6 +2,7 @@ const util = require('../customnodemodules/util_node_module/utils')
 const ErrorMod = require('../customnodemodules/error_node_module/errors')
 const customError = new ErrorMod()
 const constants = require('../constants/constants')
+const {environment} = require("../environments");
 
 exports.apiUsageValidation = function (req, res, next) {
     //If no statuscode, put it as 500
@@ -145,6 +146,19 @@ exports.getCustomerApiSubscriptionValidation = function (req, res, next) {
         next(err)
     } else {
         next()
+    }
+}
+
+
+exports.adminValidation = function (req, res, next) {
+    let err = null;
+    if (req.headers && req.headers.api_key === environment.ADMIN_API_KEY) {
+        next()
+    } else {
+        err = customError.BadRequest('Invalid API key')
+        err.donotUpdateUsage = true;
+        err.code = 400;
+        next(err)
     }
 }
 

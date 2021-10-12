@@ -408,7 +408,7 @@ exports.insertIntoApiRouteSubscription = function (response, callback) {
 }
 
 
-exports.adminApiUsageValidation = function (req, callback) {
+exports.adminValidation = function (req, callback) {
     let response = {}
     if (req.headers && req.headers.api_key === environment.ADMIN_API_KEY) {
         response = {

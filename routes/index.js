@@ -88,8 +88,8 @@ exports.customerApiSubscription = function (req, res) {
 }
 
 
-exports.adminApiUsageValidation = function (req, res) {
-    apiUsageDao.adminApiUsageValidation(req, (err, response) => {
+exports.adminValidation = function (req, res) {
+    apiUsageDao.adminValidation(req, (err, response) => {
         if (err) {
             res.status(err.code).send(err)
         } else {

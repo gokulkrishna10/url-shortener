@@ -194,48 +194,20 @@ exports.customerApiSubscription = function (req, res, mainCallback) {
 }
 
 
-exports.getAllApiNames = function (req, res, mainCallback) {
-    async.waterfall([
-            function adminApiUsageValidation(callback) {
-                apiUsageDao.adminApiUsageValidation(req, (err, response) => {
-                    if (err) {
-                        callback(err, null)
-                    } else {
-                        callback(null, response)
-                    }
-                })
-            },
-            function getAllApiNames(response, callback) {
-                apiUsageDao.getAllApiNames(req, (err, response) => {
-                    if (err) {
-                        callback(err, null)
-                    } else {
-                        callback(null, response)
-                    }
-                })
-            }
-        ],
-        function finalCallback(finalErr, finalResponse) {
-            if (finalErr) {
-                mainCallback(finalErr, null)
-            } else {
-                mainCallback(null, finalResponse)
-            }
-        })
+exports.getAllApiNames = function (req, res, callback) {
+    apiUsageDao.getAllApiNames(req, (err, response) => {
+        if (err) {
+            callback(err, null)
+        } else {
+            callback(null, response)
+        }
+    })
+
 }
 
 exports.getAdminUsage = function (req, res, mainCallback) {
     async.waterfall([
-            function adminApiUsageValidation(callback) {
-                apiUsageDao.adminApiUsageValidation(req, (err, response) => {
-                    if (err) {
-                        callback(err, null)
-                    } else {
-                        callback(null, response)
-                    }
-                })
-            },
-            function getAllApiNames(response, callback) {
+            function getAllApiNames(callback) {
                 apiUsageDao.getAllApiNames(req, (err, response) => {
                     if (err) {
                         callback(err, null)
@@ -287,16 +259,7 @@ exports.getAdminUsage = function (req, res, mainCallback) {
 
 exports.getAdminError = function (req, res, mainCallback) {
     async.waterfall([
-            function adminApiUsageValidation(callback) {
-                apiUsageDao.adminApiUsageValidation(req, (err, response) => {
-                    if (err) {
-                        callback(err, null)
-                    } else {
-                        callback(null, response)
-                    }
-                })
-            },
-            function getAllApiNames(response, callback) {
+            function getAllApiNames(callback) {
                 apiUsageDao.getAllApiNames(req, (err, response) => {
                     if (err) {
                         callback(err, null)
