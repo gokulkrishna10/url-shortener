@@ -61,8 +61,8 @@ exports.getErrorValidation = function (req, res, next) {
         err = customError.BadRequest("API key is required");
         err.donotUpdateUsage = true;
         next(err)
-    } else if (util.isNull(req.query.intervalType) && !(constants.intervalTypeConstants.includes(req.query.intervalType.toUpperCase()))) {
-        err = customError.BadRequest("Interval type is required and it should be either one of daily, monthly or yearly");
+    } else if (util.isNull(req.query.intervalType) || !(constants.intervalTypeConstants.includes(req.query.intervalType.toUpperCase()))) {
+        err = customError.BadRequest("Interval type is required and it should be one of daily, monthly or yearly");
         err.donotUpdateUsage = true;
         next(err)
     } else if (util.isNull(req.query.fromDate)) {
@@ -98,10 +98,6 @@ exports.getAPIOnboardValidation = function (req, res, next) {
         next(err)
     } else if (util.isNull(req.body.apiVersion)) {
         err = customError.BadRequest("request needs apiVersion")
-        err.donotUpdateUsage = true;
-        next(err)
-    } else if (util.isNull(req.body.basePricePerCall)) {
-        err = customError.BadRequest("request needs basePricePerCall")
         err.donotUpdateUsage = true;
         next(err)
     } else {
@@ -165,6 +161,30 @@ exports.getAdminUsageValidation = function (req, res, next) {
         next(err)
     } else if (util.isNull(req.query.intervalType) || !(constants.intervalTypeConstants.includes(req.query.intervalType.toUpperCase()))) {
         err = customError.BadRequest("Interval type is required and it should be one of daily, monthly or yearly")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else {
+        next();
+    }
+}
+
+
+exports.getAdminErrorValidation = function (req, res, next) {
+    let err = null;
+    if (util.isNull(req.headers.api_key)) {
+        err = customError.BadRequest("API key is required");
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (util.isNull(req.query.intervalType) || !(constants.intervalTypeConstants.includes(req.query.intervalType.toUpperCase()))) {
+        err = customError.BadRequest("Interval type is required and it should be one of daily, monthly or yearly");
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (util.isNull(req.query.fromDate)) {
+        err = customError.BadRequest("FromDate is required");
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (!Boolean(req.query["getErrorCountsOnly"])) {
+        err = customError.BadRequest("getErrorCountsOnly is required");
         err.donotUpdateUsage = true;
         next(err)
     } else {

@@ -561,3 +561,123 @@ exports.getAdminUsage = function (req, response, callback) {
         }
     })
 }
+
+
+exports.getAdminError = function (req, response, callback) {
+    let fromDate = moment(req.query.fromDate).format("YYYY-MM-DD[T]HH:mm:ss")
+    let toDate = req.query.toDate ? moment(req.query.toDate).format("YYYY-MM-DD[T]HH:mm:ss") : moment(new Date()).format("YYYY-MM-DD[T]HH:mm:ss")
+    let options = [];
+
+    if (util.isNull(req.query.apiName)) {
+        for (const responseEle of response) {
+
+            let apiName = responseEle;
+
+            if (constants.dailyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
+                if (req.query.getErrorCountsOnly === 'true') {
+                    options.push({
+                        sql: sqlQueries.GET_DAILY_ADMIN_ERROR_COUNT,
+                        values: [apiName, fromDate, toDate]
+                    })
+                } else {
+                    options.push({
+                        sql: sqlQueries.GET_ERRORS_ADMIN_WITH_DETAILS,
+                        values: [apiName, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+                    })
+                }
+            } else if (constants.monthlyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
+                if (req.query.getErrorCountsOnly === 'true') {
+                    options.push({
+                        sql: sqlQueries.GET_MONTLY_ADMIN_ERROR_COUNT,
+                        values: [apiName, fromDate, toDate]
+                    })
+                } else {
+                    options.push({
+                        sql: sqlQueries.GET_ERRORS_ADMIN_WITH_DETAILS,
+                        values: [apiName, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+                    })
+                }
+            } else {
+                if (req.query.getErrorCountsOnly === 'true') {
+                    options.push({
+                        sql: sqlQueries.GET_YEARLY_ADMIN_ERROR_COUNT,
+                        values: [apiName, fromDate, toDate]
+                    })
+                } else {
+                    options.push({
+                        sql: sqlQueries.GET_ERRORS_ADMIN_WITH_DETAILS,
+                        values: [apiName, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+                    })
+                }
+            }
+        }
+
+    } else {
+        let apiName = req.query.apiName
+
+        if (constants.dailyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
+            if (req.query.getErrorCountsOnly === 'true') {
+                options.push({
+                    sql: sqlQueries.GET_DAILY_ADMIN_ERROR_COUNT,
+                    values: [apiName, fromDate, toDate]
+                })
+            } else {
+                options.push({
+                    sql: sqlQueries.GET_ERRORS_ADMIN_WITH_DETAILS,
+                    values: [apiName, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+                })
+            }
+        } else if (constants.monthlyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
+            if (req.query.getErrorCountsOnly === 'true') {
+                options.push({
+                    sql: sqlQueries.GET_MONTLY_ADMIN_ERROR_COUNT,
+                    values: [apiName, fromDate, toDate]
+                })
+            } else {
+                options.push({
+                    sql: sqlQueries.GET_ERRORS_ADMIN_WITH_DETAILS,
+                    values: [apiName, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+                })
+            }
+        } else {
+            if (req.query.getErrorCountsOnly === 'true') {
+                options.push({
+                    sql: sqlQueries.GET_YEARLY_ADMIN_ERROR_COUNT,
+                    values: [apiName, fromDate, toDate]
+                })
+            } else {
+                options.push({
+                    sql: sqlQueries.GET_ERRORS_ADMIN_WITH_DETAILS,
+                    values: [apiName, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+                })
+            }
+        }
+    }
+
+    console.log(options);
+    db.executeMultipleWithOptions(options, true, (dbError, dbResult) => {
+        if (dbError) {
+            callback(customError.dbError(dbError), null)
+        } else {
+            if (dbResult && dbResult.length > 0) {
+                let csvResponse = [];
+                dbResult.forEach(dbRows => {
+                    if (dbRows && dbRows.length > 0) {
+                        dbRows.forEach(result => {
+                            csvResponse.push(result)
+                        })
+                    } else {
+                        csvResponse.push()
+                    }
+                })
+                if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
+                    csvResponse.length > 0 ? callback(null, parse(csvResponse)) : callback(null, "No Data")
+                } else {
+                    csvResponse.length > 0 ? callback(null, csvResponse) : callback(null, "No Data")
+                }
+            } else {
+                callback(null, "No Data")
+            }
+        }
+    })
+}

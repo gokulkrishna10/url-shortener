@@ -75,6 +75,7 @@ router.post('/v1/customer/api-subscription', apiUsageValidator.getCustomerApiSub
 router.get('/v1/admin/validate-api-usage', routes.adminApiUsageValidation)
 router.get('/v1/internal/api-names', routes.getAllApiNames)
 router.get('/v1/internal/admin-usage', apiUsageValidator.getAdminUsageValidation, routes.getAdminUsage)
+router.get('/v1/internal/admin-error', apiUsageValidator.getAdminErrorValidation, routes.getAdminError)
 
 
 router.all('/*', function (req, res) {

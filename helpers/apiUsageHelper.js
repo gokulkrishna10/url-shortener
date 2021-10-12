@@ -79,7 +79,7 @@ exports.getAPIRoutePriceAttributes = function (req) {
 
     apiRoutePriceAttributes.APIRouteId = req.apiRouteId
     apiRoutePriceAttributes.APIPricingPlanId = 1;
-    apiRoutePriceAttributes.BasePricePerCall = req.body.basePricePerCall
+    apiRoutePriceAttributes.BasePricePerCall = req.body.basePricePerCall ? req.body.basePricePerCall : 0.00
 
     return apiRoutePriceAttributes
 }

@@ -285,5 +285,66 @@ exports.getAdminUsage = function (req, res, mainCallback) {
 }
 
 
+exports.getAdminError = function (req, res, mainCallback) {
+    async.waterfall([
+            function adminApiUsageValidation(callback) {
+                apiUsageDao.adminApiUsageValidation(req, (err, response) => {
+                    if (err) {
+                        callback(err, null)
+                    } else {
+                        callback(null, response)
+                    }
+                })
+            },
+            function getAllApiNames(response, callback) {
+                apiUsageDao.getAllApiNames(req, (err, response) => {
+                    if (err) {
+                        callback(err, null)
+                    } else {
+                        let errorResponse = []
+                        let successResponse = []
+                        let apiNameMatch;
+                        if (util.isNull(req.query.apiName)) {
+                            response.forEach(responseEle => {
+                                successResponse.push(responseEle.Name)
+                            })
+                            callback(null, successResponse)
+                        } else {
+                            response.forEach(responseEle => {
+                                if (responseEle.Name === req.query.apiName) {
+                                    apiNameMatch = true
+                                } else {
+                                    errorResponse.push(responseEle.Name)
+                                }
+                            })
+                            apiNameMatch ? callback(null, response) : mainCallback({
+                                "status": "failure",
+                                "code": 400,
+                                "message": `API name can only be one of : ${errorResponse}`
+                            }, null)
+                        }
+                    }
+                })
+            },
+            function getAdminError(response, callback) {
+                apiUsageDao.getAdminError(req, response, (err, response) => {
+                    if (err) {
+                        callback(err, null)
+                    } else {
+                        callback(null, response)
+                    }
+                })
+            }
+        ],
+        function finalCallback(finalErr, finalResponse) {
+            if (finalErr) {
+                mainCallback(finalErr, null)
+            } else {
+                mainCallback(null, finalResponse)
+            }
+        })
+}
+
+
 
 

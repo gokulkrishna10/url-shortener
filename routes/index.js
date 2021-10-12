@@ -117,3 +117,14 @@ exports.getAdminUsage = function (req, res) {
         }
     })
 }
+
+
+exports.getAdminError = function (req, res) {
+    apiUsage.getAdminError(req, res, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err.msg)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}
