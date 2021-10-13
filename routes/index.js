@@ -88,8 +88,8 @@ exports.customerApiSubscription = function (req, res) {
 }
 
 
-exports.adminApiUsageValidation = function (req, res) {
-    apiUsageDao.adminApiUsageValidation(req, (err, response) => {
+exports.adminValidation = function (req, res) {
+    apiUsageDao.adminValidation(req, (err, response) => {
         if (err) {
             res.status(err.code).send(err)
         } else {
@@ -112,6 +112,17 @@ exports.getAdminUsage = function (req, res) {
     apiUsage.getAdminUsage(req, res, (err, response) => {
         if (err) {
             res.status(err.code).send(err)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}
+
+
+exports.getAdminError = function (req, res) {
+    apiUsage.getAdminError(req, res, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err.msg)
         } else {
             res.status(200).send(response)
         }
