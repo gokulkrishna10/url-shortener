@@ -76,6 +76,7 @@ router.get('/v1/admin/validate-api-usage', routes.adminValidation)
 router.get('/v1/internal/api-names', apiUsageValidator.adminValidation, routes.getAllApiNames)
 router.get('/v1/internal/admin-usage', apiUsageValidator.adminValidation, apiUsageValidator.getAdminUsageValidation, routes.getAdminUsage)
 router.get('/v1/internal/admin-error', apiUsageValidator.adminValidation, apiUsageValidator.getAdminErrorValidation, routes.getAdminError)
+router.get('/v1/internal/api-performance', apiUsageValidator.adminValidation, apiUsageValidator.getAdminApiPerformanceValidation, routes.getApiPerformance)
 
 
 router.all('/*', function (req, res) {

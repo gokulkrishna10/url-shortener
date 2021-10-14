@@ -205,3 +205,18 @@ exports.getAdminErrorValidation = function (req, res, next) {
         next();
     }
 }
+
+exports.getAdminApiPerformanceValidation = function (req, res, next) {
+    let err = null;
+    if (util.isNull(req.headers.api_key)) {
+        err = customError.BadRequest("API key is required");
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (util.isNull(req.query.fastestOnTop)) {
+        err = customError.BadRequest("fastestOnTop is required");
+        err.donotUpdateUsage = true;
+        next(err)
+    } else {
+        next()
+    }
+}

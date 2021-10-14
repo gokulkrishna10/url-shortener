@@ -128,3 +128,13 @@ exports.getAdminError = function (req, res) {
         }
     })
 }
+
+exports.getApiPerformance = function (req, res) {
+    apiUsage.getApiPerformance(req, res, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err.msg)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}
