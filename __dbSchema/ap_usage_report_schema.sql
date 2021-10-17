@@ -313,7 +313,7 @@ Select * from ErrorType;
 
 
 Select * from APIError
-where APIErrorId = 2
+#where APIErrorId = 2
 order by APIErrorId desc
 LIMIT 5; 
 
@@ -594,11 +594,6 @@ GROUP BY Date, an.DisplayName, APIVersion, EndpointName, HttpStatusCode
 
 
 
-select COUNT(*) from APIUsage;
-select * from APIUsage;
-CREATE INDEX IDX_APIUSage_Covering
-ON APIUsage(RequestDate, APIKey, APINameId, APIVersion, EndpointName,HttpStatusCode,TimeTakenMilliseconds)
-
 --get DAILY API Errors. (getErrorCountsOnly = true)
 SELECT RequestDate as DateTime, an.DisplayName as APIName , APIVersion, EndpointName, HttpStatusCode, ae.ErrorId, ae.ErrorMessage
 FROM APIUsage au
@@ -638,6 +633,9 @@ FROM (
 LEFT OUTER JOIN APIName an on an.APINameId = t.APINameId
 where product_rank<=10
 AND t.HttpStatusCode = 200;
+
+
+
 */
 
 
