@@ -7,6 +7,7 @@ const moment = require('moment')
 const sqlQueries = require('./sqlQueries')
 const {parse} = require('json2csv');
 const {environment} = require('../environments')
+const util = require('../customnodemodules/util_node_module/utils')
 
 exports.getCustomerAPIDetails = function (req, res, callback) {
 
@@ -402,6 +403,359 @@ exports.insertIntoApiRouteSubscription = function (response, callback) {
                 }
             }
             callback(null, finalResponse)
+        }
+    })
+}
+
+
+exports.adminValidation = function (req, callback) {
+    let response = {}
+    if (req.headers && req.headers.api_key === environment.ADMIN_API_KEY) {
+        response = {
+            "status": "successful",
+            "message": "API key validated successfully",
+        }
+        callback(null, response)
+    } else {
+        response = {
+            "status": "failure",
+            "message": "Invalid API key",
+            "code": 400,
+            "donotUpdateUsage": true
+        }
+        callback(response, null)
+    }
+}
+
+
+exports.getAllApiNames = function (req, callback) {
+    let options = {
+        sql: "select Name,Description from APIName"
+    }
+
+    db.queryWithOptions(options, (dbError, dbResponse) => {
+        if (dbError) {
+            callback(customError.dbError(dbError), null)
+        } else {
+            callback(null, dbResponse)
+        }
+    })
+}
+
+exports.getAdminUsage = function (req, response, callback) {
+
+    let fromDate = moment(req.query.fromDate).format("YYYY-MM-DD[T]HH:mm:ss")
+    let toDate = req.query.toDate ? moment(req.query.toDate).format("YYYY-MM-DD[T]HH:mm:ss") : moment(new Date()).format("YYYY-MM-DD[T]HH:mm:ss")
+    let options = [];
+
+    if (util.isNull(req.query.apiName)) {
+        for (const responseEle of response) {
+
+            let apiName = responseEle;
+
+            if (constants.dailyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
+                if (req.query.getEndpoints) {
+                    options.push({
+                        sql: sqlQueries.GET_DAILY_ADMIN_USAGE_WITH_ENDPOINTS_QUERY,
+                        values: [apiName, fromDate, toDate]
+                    })
+                } else {
+                    options.push({
+                        sql: sqlQueries.GET_DAILY_ADMIN_USAGE_WO_ENDPOINTS_QUERY,
+                        values: [apiName, fromDate, toDate]
+                    })
+                }
+            } else if (constants.monthlyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
+                if (req.query.getEndpoints) {
+                    options.push({
+                        sql: sqlQueries.GET_MONTHLY_ADMIN_USAGE_WITH_ENDPOINTS_QUERY,
+                        values: [apiName, fromDate, toDate]
+                    })
+                } else {
+                    options.push({
+                        sql: sqlQueries.GET_MONTHLY_ADMIN_USAGE_WO_ENDPOINTS_QUERY,
+                        values: [apiName, fromDate, toDate]
+                    })
+                }
+            } else {
+                if (req.query.getEndpoints) {
+                    options.push({
+                        sql: sqlQueries.GET_YEARLY_ADMIN_USAGE_WITH_ENDPOINTS_QUERY,
+                        values: [apiName, fromDate, toDate]
+                    })
+                } else {
+                    options.push({
+                        sql: sqlQueries.GET_YEARLY_ADMIN_USAGE_WO_ENDPOINTS_QUERY,
+                        values: [apiName, fromDate, toDate]
+                    })
+                }
+            }
+        }
+
+    } else {
+        let apiName = req.query.apiName
+
+        if (constants.dailyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
+            if (req.query.getEndpoints) {
+                options.push({
+                    sql: sqlQueries.GET_DAILY_ADMIN_USAGE_WITH_ENDPOINTS_QUERY,
+                    values: [apiName, fromDate, toDate]
+                })
+            } else {
+                options.push({
+                    sql: sqlQueries.GET_DAILY_ADMIN_USAGE_WO_ENDPOINTS_QUERY,
+                    values: [apiName, fromDate, toDate]
+                })
+            }
+        } else if (constants.monthlyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
+            if (req.query.getEndpoints) {
+                options.push({
+                    sql: sqlQueries.GET_MONTHLY_ADMIN_USAGE_WITH_ENDPOINTS_QUERY,
+                    values: [apiName, fromDate, toDate]
+                })
+            } else {
+                options.push({
+                    sql: sqlQueries.GET_MONTHLY_ADMIN_USAGE_WO_ENDPOINTS_QUERY,
+                    values: [apiName, fromDate, toDate]
+                })
+            }
+        } else {
+            if (req.query.getEndpoints) {
+                options.push({
+                    sql: sqlQueries.GET_YEARLY_ADMIN_USAGE_WITH_ENDPOINTS_QUERY,
+                    values: [apiName, fromDate, toDate]
+                })
+            } else {
+                options.push({
+                    sql: sqlQueries.GET_YEARLY_ADMIN_USAGE_WO_ENDPOINTS_QUERY,
+                    values: [apiName, fromDate, toDate]
+                })
+            }
+        }
+    }
+
+    console.log(options);
+    db.executeMultipleWithOptions(options, true, (dbError, dbResult) => {
+        if (dbError) {
+            callback(customError.dbError(dbError), null)
+        } else {
+            if (dbResult && dbResult.length > 0) {
+                let csvResponse = [];
+                dbResult.forEach(dbRows => {
+                    if (dbRows && dbRows.length > 0) {
+                        dbRows.forEach(result => {
+                            csvResponse.push(result)
+                        })
+                    } else {
+                        csvResponse.push()
+                    }
+                })
+                if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
+                    csvResponse.length > 0 ? callback(null, parse(csvResponse)) : callback(null, "No Data")
+                } else {
+                    csvResponse.length > 0 ? callback(null, csvResponse) : callback(null, "No Data")
+                }
+            } else {
+                callback(null, "No Data")
+            }
+        }
+    })
+}
+
+
+exports.getAdminError = function (req, response, callback) {
+    let fromDate = moment(req.query.fromDate).format("YYYY-MM-DD[T]HH:mm:ss")
+    let toDate = req.query.toDate ? moment(req.query.toDate).format("YYYY-MM-DD[T]HH:mm:ss") : moment(new Date()).format("YYYY-MM-DD[T]HH:mm:ss")
+    let options = [];
+
+    if (util.isNull(req.query.apiName)) {
+        for (const responseEle of response) {
+
+            let apiName = responseEle;
+
+            if (constants.dailyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
+                if (req.query.getErrorCountsOnly === 'true') {
+                    options.push({
+                        sql: sqlQueries.GET_DAILY_ADMIN_ERROR_COUNT,
+                        values: [apiName, fromDate, toDate]
+                    })
+                } else {
+                    options.push({
+                        sql: sqlQueries.GET_ERRORS_ADMIN_WITH_DETAILS,
+                        values: [apiName, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+                    })
+                }
+            } else if (constants.monthlyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
+                if (req.query.getErrorCountsOnly === 'true') {
+                    options.push({
+                        sql: sqlQueries.GET_MONTLY_ADMIN_ERROR_COUNT,
+                        values: [apiName, fromDate, toDate]
+                    })
+                } else {
+                    options.push({
+                        sql: sqlQueries.GET_ERRORS_ADMIN_WITH_DETAILS,
+                        values: [apiName, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+                    })
+                }
+            } else {
+                if (req.query.getErrorCountsOnly === 'true') {
+                    options.push({
+                        sql: sqlQueries.GET_YEARLY_ADMIN_ERROR_COUNT,
+                        values: [apiName, fromDate, toDate]
+                    })
+                } else {
+                    options.push({
+                        sql: sqlQueries.GET_ERRORS_ADMIN_WITH_DETAILS,
+                        values: [apiName, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+                    })
+                }
+            }
+        }
+
+    } else {
+        let apiName = req.query.apiName
+
+        if (constants.dailyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
+            if (req.query.getErrorCountsOnly === 'true') {
+                options.push({
+                    sql: sqlQueries.GET_DAILY_ADMIN_ERROR_COUNT,
+                    values: [apiName, fromDate, toDate]
+                })
+            } else {
+                options.push({
+                    sql: sqlQueries.GET_ERRORS_ADMIN_WITH_DETAILS,
+                    values: [apiName, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+                })
+            }
+        } else if (constants.monthlyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
+            if (req.query.getErrorCountsOnly === 'true') {
+                options.push({
+                    sql: sqlQueries.GET_MONTLY_ADMIN_ERROR_COUNT,
+                    values: [apiName, fromDate, toDate]
+                })
+            } else {
+                options.push({
+                    sql: sqlQueries.GET_ERRORS_ADMIN_WITH_DETAILS,
+                    values: [apiName, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+                })
+            }
+        } else {
+            if (req.query.getErrorCountsOnly === 'true') {
+                options.push({
+                    sql: sqlQueries.GET_YEARLY_ADMIN_ERROR_COUNT,
+                    values: [apiName, fromDate, toDate]
+                })
+            } else {
+                options.push({
+                    sql: sqlQueries.GET_ERRORS_ADMIN_WITH_DETAILS,
+                    values: [apiName, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+                })
+            }
+        }
+    }
+
+    console.log(options);
+    db.executeMultipleWithOptions(options, true, (dbError, dbResult) => {
+        if (dbError) {
+            callback(customError.dbError(dbError), null)
+        } else {
+            if (dbResult && dbResult.length > 0) {
+                let csvResponse = [];
+                dbResult.forEach(dbRows => {
+                    if (dbRows && dbRows.length > 0) {
+                        dbRows.forEach(result => {
+                            csvResponse.push(result)
+                        })
+                    } else {
+                        csvResponse.push()
+                    }
+                })
+                if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
+                    csvResponse.length > 0 ? callback(null, parse(csvResponse)) : callback(null, "No Data")
+                } else {
+                    csvResponse.length > 0 ? callback(null, csvResponse) : callback(null, "No Data")
+                }
+            } else {
+                callback(null, "No Data")
+            }
+        }
+    })
+}
+
+exports.getApiNamesBasedOnExecutionTime = function (req, callback) {
+    let options;
+    options = {
+        sql: "SELECT distinct APINameId " +
+            "FROM api_usage_report_dev.APIUsage "
+    }
+
+    db.queryWithOptions(options, (dbError, dbResult) => {
+        if (dbError) {
+            callback(customError.dbError(dbError), null)
+        } else {
+            let apiNameIds = []
+            if (dbResult && dbResult.length > 0) {
+                dbResult.forEach(dbRow => {
+                    if (dbRow && dbRow.APINameId) {
+                        apiNameIds.push(dbRow.APINameId)
+                    } else {
+                        apiNameIds.push()
+                    }
+                })
+            }
+            callback(null, apiNameIds)
+        }
+    })
+}
+
+exports.getApiPerformance = function (req, response, callback) {
+    let options = [];
+    for (const apiNameId of response) {
+        if (req.query.fastestOnTop === "true") {
+            options.push({
+                sql: "SELECT APINameId, HttpStatusCode, EndpointName, RequestDate, TimeTakenMilliseconds " +
+                    "FROM api_usage_report_dev.APIUsage " +
+                    "WHERE APINameId = ? " +
+                    "ORDER BY TimeTakenMilliseconds, RequestDate DESC " +
+                    "LIMIT 10;",
+                values: [apiNameId]
+            })
+        } else {
+            options.push({
+                sql: "SELECT APINameId, HttpStatusCode, EndpointName, RequestDate, TimeTakenMilliseconds " +
+                    "FROM api_usage_report_dev.APIUsage " +
+                    "WHERE APINameId = ? " +
+                    "ORDER BY TimeTakenMilliseconds DESC, RequestDate DESC " +
+                    "LIMIT 10;",
+                values: [apiNameId]
+            })
+        }
+    }
+
+
+    db.executeMultipleWithOptions(options, true, (dbError, dbResult) => {
+        if (dbError) {
+            callback(customError.dbError(dbError), null)
+        } else {
+            if (dbResult && dbResult.length > 0) {
+                let csvResponse = [];
+                dbResult.forEach(dbRows => {
+                    if (dbRows && dbRows.length > 0) {
+                        dbRows.forEach(result => {
+                            csvResponse.push(result)
+                        })
+                    } else {
+                        csvResponse.push()
+                    }
+                })
+                if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
+                    csvResponse.length > 0 ? callback(null, parse(csvResponse)) : callback(null, "No Data")
+                } else {
+                    csvResponse.length > 0 ? callback(null, csvResponse) : callback(null, "No Data")
+                }
+            } else {
+                callback(null, "No Data")
+            }
         }
     })
 }

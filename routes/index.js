@@ -86,3 +86,55 @@ exports.customerApiSubscription = function (req, res) {
         }
     })
 }
+
+
+exports.adminValidation = function (req, res) {
+    apiUsageDao.adminValidation(req, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}
+
+exports.getAllApiNames = function (req, res) {
+    apiUsage.getAllApiNames(req, res, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}
+
+exports.getAdminUsage = function (req, res) {
+    apiUsage.getAdminUsage(req, res, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}
+
+
+exports.getAdminError = function (req, res) {
+    apiUsage.getAdminError(req, res, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err.msg)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}
+
+exports.getApiPerformance = function (req, res) {
+    apiUsage.getApiPerformance(req, res, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err.msg)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}
