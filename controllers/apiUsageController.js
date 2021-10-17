@@ -308,6 +308,36 @@ exports.getAdminError = function (req, res, mainCallback) {
         })
 }
 
+exports.getApiPerformance = function (req, res, mainCallback) {
+    async.waterfall([
+            function getExecutionTimeBasedApiNames(callback) {
+                apiUsageDao.getApiNamesBasedOnExecutionTime(req, (err, response) => {
+                    if (err) {
+                        callback(err, null)
+                    } else {
+                        (response && response.length > 0) ? callback(null, response) : mainCallback(null, "status:failure,message:No data found")
+                    }
+                })
+            },
+            function getApiPerformance(response, callback) {
+                apiUsageDao.getApiPerformance(req, response, (err, result) => {
+                    if (err) {
+                        callback(err, null)
+                    } else {
+                        callback(null, result)
+                    }
+                })
+            }
+        ],
+        function finalCallback(finalErr, finalResponse) {
+            if (finalErr) {
+                mainCallback(finalErr, null)
+            } else {
+                mainCallback(null, finalResponse)
+            }
+        })
+}
+
 
 
 

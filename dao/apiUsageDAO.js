@@ -681,3 +681,81 @@ exports.getAdminError = function (req, response, callback) {
         }
     })
 }
+
+exports.getApiNamesBasedOnExecutionTime = function (req, callback) {
+    let options;
+    options = {
+        sql: "SELECT distinct APINameId " +
+            "FROM api_usage_report_dev.APIUsage "
+    }
+
+    db.queryWithOptions(options, (dbError, dbResult) => {
+        if (dbError) {
+            callback(customError.dbError(dbError), null)
+        } else {
+            let apiNameIds = []
+            if (dbResult && dbResult.length > 0) {
+                dbResult.forEach(dbRow => {
+                    if (dbRow && dbRow.APINameId) {
+                        apiNameIds.push(dbRow.APINameId)
+                    } else {
+                        apiNameIds.push()
+                    }
+                })
+            }
+            callback(null, apiNameIds)
+        }
+    })
+}
+
+exports.getApiPerformance = function (req, response, callback) {
+    let options = [];
+    for (const apiNameId of response) {
+        if (req.query.fastestOnTop === "true") {
+            options.push({
+                sql: "SELECT APINameId, HttpStatusCode, EndpointName, RequestDate, TimeTakenMilliseconds " +
+                    "FROM api_usage_report_dev.APIUsage " +
+                    "WHERE APINameId = ? " +
+                    "ORDER BY TimeTakenMilliseconds, RequestDate DESC " +
+                    "LIMIT 10;",
+                values: [apiNameId]
+            })
+        } else {
+            options.push({
+                sql: "SELECT APINameId, HttpStatusCode, EndpointName, RequestDate, TimeTakenMilliseconds " +
+                    "FROM api_usage_report_dev.APIUsage " +
+                    "WHERE APINameId = ? " +
+                    "ORDER BY TimeTakenMilliseconds DESC, RequestDate DESC " +
+                    "LIMIT 10;",
+                values: [apiNameId]
+            })
+        }
+    }
+
+
+    db.executeMultipleWithOptions(options, true, (dbError, dbResult) => {
+        if (dbError) {
+            callback(customError.dbError(dbError), null)
+        } else {
+            if (dbResult && dbResult.length > 0) {
+                let csvResponse = [];
+                dbResult.forEach(dbRows => {
+                    if (dbRows && dbRows.length > 0) {
+                        dbRows.forEach(result => {
+                            csvResponse.push(result)
+                        })
+                    } else {
+                        csvResponse.push()
+                    }
+                })
+                if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
+                    csvResponse.length > 0 ? callback(null, parse(csvResponse)) : callback(null, "No Data")
+                } else {
+                    csvResponse.length > 0 ? callback(null, csvResponse) : callback(null, "No Data")
+                }
+            } else {
+                callback(null, "No Data")
+            }
+        }
+    })
+}
