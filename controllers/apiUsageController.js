@@ -3,6 +3,7 @@ const apiUsageDao = require('../dao/apiUsageDAO')
 const {response} = require("express");
 const {environment} = require('../environments')
 const util = require('../customnodemodules/util_node_module/utils')
+const {parse} = require("json2csv");
 
 exports.updateAPIUsage = function (req, res, mainCallback) {
     console.log("inside API usage")
@@ -199,10 +200,17 @@ exports.getAllApiNames = function (req, res, callback) {
         if (err) {
             callback(err, null)
         } else {
-            callback(null, response)
+            if (response && response.length > 0) {
+                if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
+                    callback(null, parse(response))
+                } else {
+                    callback(null, response)
+                }
+            } else {
+                callback(null, "{message:No data}")
+            }
         }
     })
-
 }
 
 exports.getAdminUsage = function (req, res, mainCallback) {
