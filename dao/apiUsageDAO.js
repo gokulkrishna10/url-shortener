@@ -437,7 +437,15 @@ exports.getAllApiNames = function (req, callback) {
         if (dbError) {
             callback(customError.dbError(dbError), null)
         } else {
-            callback(null, dbResponse)
+            if (dbResponse && dbResponse.length > 0) {
+                if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
+                    callback(null, parse(dbResponse))
+                } else {
+                    callback(null, dbResponse)
+                }
+            } else {
+                callback(null, "{message:No data}")
+            }
         }
     })
 }
