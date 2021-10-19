@@ -108,7 +108,14 @@ exports.getAPIUsage = function (req, res, callback) {
     //Dont use moment.format("YYYY-MM-DD HH:MM:SS"), istead use the format : ("YYYY-MM-DD[T]HH:mm:ss"). The former, at times ,gives seconds > 60 and makes the date inmvalid creating unpredictable issues.
     //Ref : https://github.com/moment/moment/issues/4300
     let fromDate = moment(req.query.fromDate).format("YYYY-MM-DD[T]HH:mm:ss")
-    let toDate = req.query.toDate ? moment(req.query.toDate).format("YYYY-MM-DD[T]HH:mm:ss") : moment(new Date()).format("YYYY-MM-DD[T]HH:mm:ss")
+    let toDate;
+    if (!req.query.toDate) {
+        toDate = moment(new Date()).format("YYYY-MM-DD[T]23:59:ss");
+    } else if (req.query.toDate && (moment(req.query.toDate).format("HH:mm:ss")) === "00:00:00") {
+        toDate = moment(req.query.toDate).format("YYYY-MM-DD[T]23:59:ss");
+    } else {
+        toDate = moment(req.query.toDate).format("YYYY-MM-DD[T]HH:mm:ss");
+    }
     let apiKey = req.headers.api_key
     let options;
     if (constants.dailyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
@@ -155,6 +162,12 @@ exports.getAPIUsage = function (req, res, callback) {
             callback(customError.dbError(dbError), null)
         } else {
             if (dbResult && dbResult.length > 0) {
+                dbResult.forEach(dbRows => {
+                    if (dbRows.Date) {
+                        dbRows.Date = moment(dbRows.Date).format("YYYY-MM-DD")
+                    }
+
+                })
                 if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
                     callback(null, parse(dbResult))
                 } else {
@@ -169,7 +182,14 @@ exports.getAPIUsage = function (req, res, callback) {
 
 exports.getAPIError = function (req, res, callback) {
     let fromDate = moment(req.query.fromDate).format("YYYY-MM-DD[T]HH:mm:ss")
-    let toDate = req.query.toDate ? moment(req.query.toDate).format("YYYY-MM-DD[T]HH:mm:ss") : moment(new Date()).format("YYYY-MM-DD[T]HH:mm:ss")
+    let toDate;
+    if (!req.query.toDate) {
+        toDate = moment(new Date()).format("YYYY-MM-DD[T]23:59:ss");
+    } else if (req.query.toDate && (moment(req.query.toDate).format("HH:mm:ss")) === "00:00:00") {
+        toDate = moment(req.query.toDate).format("YYYY-MM-DD[T]23:59:ss");
+    } else {
+        toDate = moment(req.query.toDate).format("YYYY-MM-DD[T]HH:mm:ss");
+    }
     let apiKey = req.headers.api_key
     let options;
     if (constants.dailyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
@@ -216,6 +236,11 @@ exports.getAPIError = function (req, res, callback) {
             callback(customError.dbError(dbError), null)
         } else {
             if (dbResult && dbResult.length > 0) {
+                dbResult.forEach(dbRows => {
+                    if (dbRows.Date) {
+                        dbRows.Date = moment(dbRows.Date).format("YYYY-MM-DD")
+                    }
+                })
                 if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
                     callback(null, parse(dbResult))
                 } else {
@@ -445,7 +470,14 @@ exports.getAllApiNames = function (req, callback) {
 exports.getAdminUsage = function (req, response, callback) {
 
     let fromDate = moment(req.query.fromDate).format("YYYY-MM-DD[T]HH:mm:ss")
-    let toDate = req.query.toDate ? moment(req.query.toDate).format("YYYY-MM-DD[T]HH:mm:ss") : moment(new Date()).format("YYYY-MM-DD[T]HH:mm:ss")
+    let toDate;
+    if (!req.query.toDate) {
+        toDate = moment(new Date()).format("YYYY-MM-DD[T]23:59:ss");
+    } else if (req.query.toDate && (moment(req.query.toDate).format("HH:mm:ss")) === "00:00:00") {
+        toDate = moment(req.query.toDate).format("YYYY-MM-DD[T]23:59:ss");
+    } else {
+        toDate = moment(req.query.toDate).format("YYYY-MM-DD[T]HH:mm:ss");
+    }
     let options = [];
 
     if (util.isNull(req.query.apiName)) {
@@ -544,6 +576,9 @@ exports.getAdminUsage = function (req, response, callback) {
                 dbResult.forEach(dbRows => {
                     if (dbRows && dbRows.length > 0) {
                         dbRows.forEach(result => {
+                            if (result.Date) {
+                                result.Date = moment(result.Date).format("YYYY-MM-DD");
+                            }
                             csvResponse.push(result)
                         })
                     } else {
@@ -672,9 +707,7 @@ exports.getAdminError = function (req, response, callback) {
                     if (dbRows && dbRows.length > 0) {
                         dbRows.forEach(result => {
                             if (result.Date) {
-                                result.Date = moment(result.Date).format("YYYY-MM-DD HH:mm:ss");
-                            } else if (result.DateTime) {
-                                result.DateTime = moment(result.DateTime).format("YYYY-MM-DD HH:mm:ss");
+                                result.Date = moment(result.Date).format("YYYY-MM-DD");
                             }
                             csvResponse.push(result)
                         })
