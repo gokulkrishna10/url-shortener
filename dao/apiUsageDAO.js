@@ -671,7 +671,11 @@ exports.getAdminError = function (req, response, callback) {
                 dbResult.forEach(dbRows => {
                     if (dbRows && dbRows.length > 0) {
                         dbRows.forEach(result => {
-                            result.Date = moment(result.Date).format("YYYY-MM-DD HH:mm:ss")
+                            if (result.Date) {
+                                result.Date = moment(result.Date).format("YYYY-MM-DD HH:mm:ss");
+                            } else if (result.DateTime) {
+                                result.DateTime = moment(result.DateTime).format("YYYY-MM-DD HH:mm:ss");
+                            }
                             csvResponse.push(result)
                         })
                     } else {

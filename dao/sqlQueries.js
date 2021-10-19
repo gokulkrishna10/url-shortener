@@ -146,8 +146,8 @@ FROM APIUsage au
 JOIN APIName an on au.APINameId = an.APINameId
 JOIN APIError ae on ae.APIErrorId = au.APIErrorId
 where an.Name = ?
-AND DATE(RequestDate) >= DATE(?) 
-AND DATE(RequestDate)<= DATE(?) 
+AND (RequestDate) >= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
+AND (RequestDate)<= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
 AND au.APIErrorId IS NOT NULL
 GROUP BY Month, APIVersion`;
 module.exports.GET_YEARLY_ADMIN_ERROR_COUNT = `SELECT YEAR(RequestDate) AS Year, an.DisplayName as APIName , APIVersion, EndpointName, Count(*) as Count
@@ -155,18 +155,18 @@ FROM APIUsage au
 JOIN APIName an on au.APINameId = an.APINameId
 JOIN APIError ae on ae.APIErrorId = au.APIErrorId
 where an.Name = ?
-AND DATE(RequestDate) >= DATE(?) 
-AND DATE(RequestDate)<= DATE(?) 
+AND (RequestDate) >= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
+AND (RequestDate)<= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
 AND au.APIErrorId IS NOT NULL
 GROUP BY Year, APIVersion`;
 
-module.exports.GET_ERRORS_ADMIN_WITH_DETAILS = `SELECT RequestDate as DateTime, an.DisplayName as APIName , APIVersion, EndpointName, HttpStatusCode, ae.ErrorId, ae.ErrorMessage
+module.exports.GET_ERRORS_ADMIN_WITH_DETAILS = `SELECT DATE_FORMAT(RequestDate,"%Y-%m-%d %H:%i:%s") as DateTime, an.DisplayName as APIName , APIVersion, EndpointName, HttpStatusCode, ae.ErrorId, ae.ErrorMessage
 FROM APIUsage au
 JOIN APIName an on au.APINameId = an.APINameId
 JOIN APIError ae on ae.APIErrorId = au.APIErrorId
 where an.Name = ?
-AND DATE(RequestDate) >= DATE(?) 
-AND DATE(RequestDate)<= DATE(?) 
+AND (RequestDate) >= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
+AND (RequestDate)<= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
 AND au.APIErrorId IS NOT NULL
 LIMIT ?`;
 
