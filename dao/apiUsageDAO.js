@@ -565,7 +565,7 @@ exports.getAdminUsage = function (req, response, callback) {
 
 exports.getAdminError = function (req, response, callback) {
     let fromDate = moment(req.query.fromDate).format("YYYY-MM-DD[T]HH:mm:ss")
-    let toDate = req.query.toDate ? moment(req.query.toDate).format("YYYY-MM-DD[T]HH:mm:ss") : moment(new Date()).format("YYYY-MM-DD[T]HH:mm:ss")
+    let toDate = req.query.toDate ? moment(req.query.toDate).format("YYYY-MM-DD[T]23:59:ss") : moment(new Date()).format("YYYY-MM-DD[T]HH:mm:ss")
     let options = [];
 
     if (util.isNull(req.query.apiName)) {
@@ -664,6 +664,7 @@ exports.getAdminError = function (req, response, callback) {
                 dbResult.forEach(dbRows => {
                     if (dbRows && dbRows.length > 0) {
                         dbRows.forEach(result => {
+                            result.Date = moment(result.Date).format("YYYY-MM-DD HH:mm:ss")
                             csvResponse.push(result)
                         })
                     } else {

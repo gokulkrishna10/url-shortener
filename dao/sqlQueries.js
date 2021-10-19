@@ -132,13 +132,13 @@ AND DATE(RequestDate)<= DATE(?)
 GROUP BY Year, APIVersion`;
 
 
-module.exports.GET_DAILY_ADMIN_ERROR_COUNT = `SELECT DATE(RequestDate) as Date, an.DisplayName as APIName , APIVersion, EndpointName, Count(*) as Count
+module.exports.GET_DAILY_ADMIN_ERROR_COUNT = `SELECT DATE_FORMAT(RequestDate,"%Y-%m-%d %H:%i:%s") as Date, an.DisplayName as APIName , APIVersion, EndpointName, Count(*) as Count
 FROM APIUsage au
 JOIN APIName an on au.APINameId = an.APINameId
 JOIN APIError ae on ae.APIErrorId = au.APIErrorId
 where an.Name = ?
-AND DATE(RequestDate) >= DATE(?) 
-AND DATE(RequestDate)<= DATE(?) 
+AND (RequestDate) >= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
+AND (RequestDate)<= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
 AND au.APIErrorId IS NOT NULL
 GROUP BY Date, APIVersion`;
 module.exports.GET_MONTLY_ADMIN_ERROR_COUNT = `SELECT DATE_FORMAT(RequestDate,'%M %Y') AS Month, an.DisplayName as APIName , APIVersion, EndpointName, Count(*) as Count
