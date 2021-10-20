@@ -85,19 +85,19 @@ exports.getAPIOnboardValidation = function (req, res, next) {
         err = customError.BadRequest("request needs a body")
         err.donotUpdateUsage = true;
         next(err)
-    } else if (util.isNull(req.body.name)) {
+    } else if (util.isNull(req.body.name) || util.isNull((req.body.name).trim())) {
         err = customError.BadRequest("request needs apiName")
         err.donotUpdateUsage = true;
         next(err)
-    } else if (util.isNull(req.body.displayName)) {
+    } else if (util.isNull(req.body.displayName) || util.isNull((req.body.displayName).trim())) {
         err = customError.BadRequest("request needs displayName")
         err.donotUpdateUsage = true;
         next(err)
-    } else if (util.isNull(req.body.description)) {
+    } else if (util.isNull(req.body.description) || util.isNull((req.body.description).trim())) {
         err = customError.BadRequest("request needs description")
         err.donotUpdateUsage = true;
         next(err)
-    } else if (util.isNull(req.body.apiVersion)) {
+    } else if (util.isNull(req.body.apiVersion) || util.isNull((req.body.apiVersion).trim())) {
         err = customError.BadRequest("request needs apiVersion")
         err.donotUpdateUsage = true;
         next(err)
