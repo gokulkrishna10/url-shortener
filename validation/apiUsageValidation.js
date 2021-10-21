@@ -50,6 +50,10 @@ exports.getUsageValidation = function (req, res, next) {
         err = customError.BadRequest("FromDate is required")
         err.donotUpdateUsage = true;
         next(err)
+    } else if (util.isNull(req.query.getEndpoints)) {
+        err = customError.BadRequest("getEndpoints is required")
+        err.donotUpdateUsage = true;
+        next(err)
     } else {
         next();
     }
@@ -70,8 +74,8 @@ exports.getErrorValidation = function (req, res, next) {
         err = customError.BadRequest("FromDate is required");
         err.donotUpdateUsage = true;
         next(err)
-    } else if (!Boolean(req.query["getErrorCountsOnly"])) {
-        err = customError.BadRequest("getErrorCountsOnly is required");
+    } else if (!Boolean(req.query["getErrorDetails"])) {
+        err = customError.BadRequest("getErrorDetails is required");
         err.donotUpdateUsage = true;
         next(err)
     } else {
@@ -177,6 +181,10 @@ exports.getAdminUsageValidation = function (req, res, next) {
         err = customError.BadRequest("Interval type is required and it should be one of daily, monthly or yearly")
         err.donotUpdateUsage = true;
         next(err)
+    } else if (util.isNull(req.query.getEndpoints)) {
+        err = customError.BadRequest("getEndpoints is required")
+        err.donotUpdateUsage = true;
+        next(err)
     } else {
         next();
     }
@@ -197,8 +205,8 @@ exports.getAdminErrorValidation = function (req, res, next) {
         err = customError.BadRequest("FromDate is required");
         err.donotUpdateUsage = true;
         next(err)
-    } else if (!Boolean(req.query["getErrorCountsOnly"])) {
-        err = customError.BadRequest("getErrorCountsOnly is required");
+    } else if (!Boolean(req.query["getErrorDetails"])) {
+        err = customError.BadRequest("getErrorDetails is required");
         err.donotUpdateUsage = true;
         next(err)
     } else {
