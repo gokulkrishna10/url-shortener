@@ -1,6 +1,7 @@
 const async = require('async')
 const apiUsageDao = require('../dao/apiUsageDAO')
-const {response} = require("express");
+const util = require('../customnodemodules/util_node_module/utils')
+const {parse} = require("json2csv");
 
 exports.updateAPIUsage = function (req, res, mainCallback) {
     console.log("inside API usage")
@@ -102,13 +103,41 @@ exports.onBoardNewApi = function (req, res, mainCallback) {
     console.log("inside onBoardNewApi")
 
     async.waterfall([
-        function insertIntoApiName(callback) {
+        function checkIfApiAndEndpointExists(callback) {
+            apiUsageDao.checkIfApiAndEndpointExists(req, (err, response) => {
+                if (err) {
+                    callback(err, null)
+                } else {
+                    if (response !== null) {
+                        mainCallback({
+                            "status": "failure",
+                            "message": "Given endpoint is already registered under this api",
+                            "code": 400
+                        }, null)
+                    } else {
+                        callback(null, req)
+                    }
+                }
+            })
+        },
+        function insertIntoApiName(req, callback) {
             apiUsageDao.insertIntoApiName(req, (err, response) => {
                 if (err) {
                     callback(err, null)
                 } else {
-                    req.apiNameId = response.insertId
-                    callback(null, req)
+                    if (response.insertId) {  // for new api and new endpoint
+                        req.apiNameId = response.insertId
+                        callback(null, req)
+                    } else {
+                        apiUsageDao.getApiNameId(req, (innerQueryErr, innerQueryResponse) => {
+                            if (innerQueryErr) {
+                                callback(innerQueryErr, null)
+                            } else { // for existing api but new endpoint
+                                req.apiNameId = innerQueryResponse.APINameId
+                                callback(null, req)
+                            }
+                        })
+                    }
                 }
             })
         }, function insertIntoApiRoute(req, callback) {
@@ -190,4 +219,139 @@ exports.customerApiSubscription = function (req, res, mainCallback) {
         }
     })
 }
+
+
+exports.getAllApiNames = function (req, res, callback) {
+    apiUsageDao.getAllApiNames(req, (err, response) => {
+        if (err) {
+            callback(err, null)
+        } else {
+            if (response && response.length > 0) {
+                if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
+                    callback(null, parse(response))
+                } else {
+                    callback(null, response)
+                }
+            } else {
+                callback(null, "{message:No data}")
+            }
+        }
+    })
+}
+
+exports.getAdminUsage = function (req, res, mainCallback) {
+    async.waterfall([
+            function getAllApiNames(callback) {
+                apiUsageDao.getAllApiNames(req, (err, response) => {
+                    if (err) {
+                        callback(err, null)
+                    } else {
+                        let errorResponse = []
+                        let successResponse = []
+                        let apiNameMatch;
+                        if (util.isNull(req.query.apiName)) {
+                            response.forEach(responseEle => {
+                                successResponse.push(responseEle.Name)
+                            })
+                            callback(null, successResponse)
+                        } else {
+                            response.forEach(responseEle => {
+                                if (responseEle.Name === req.query.apiName) {
+                                    apiNameMatch = true
+                                } else {
+                                    errorResponse.push(responseEle.Name)
+                                }
+                            })
+                            apiNameMatch ? callback(null, response) : mainCallback({
+                                "status": "failure",
+                                "code": 400,
+                                "message": `API name can only be one of : ${errorResponse}`
+                            }, null)
+                        }
+                    }
+                })
+            },
+            function getAdminUsage(response, callback) {
+                apiUsageDao.getAdminUsage(req, response, (err, response) => {
+                    if (err) {
+                        callback(err, null)
+                    } else {
+                        callback(null, response)
+                    }
+                })
+            }
+        ],
+        function finalCallback(finalErr, finalResponse) {
+            if (finalErr) {
+                mainCallback(finalErr, null)
+            } else {
+                mainCallback(null, finalResponse)
+            }
+        })
+}
+
+
+exports.getAdminError = function (req, res, mainCallback) {
+    async.waterfall([
+            function getAllApiNames(callback) {
+                apiUsageDao.getAllApiNames(req, (err, response) => {
+                    if (err) {
+                        callback(err, null)
+                    } else {
+                        let errorResponse = []
+                        let successResponse = []
+                        let apiNameMatch;
+                        if (util.isNull(req.query.apiName)) {
+                            response.forEach(responseEle => {
+                                successResponse.push(responseEle.Name)
+                            })
+                            callback(null, successResponse)
+                        } else {
+                            response.forEach(responseEle => {
+                                if (responseEle.Name === req.query.apiName) {
+                                    apiNameMatch = true
+                                } else {
+                                    errorResponse.push(responseEle.Name)
+                                }
+                            })
+                            apiNameMatch ? callback(null, response) : mainCallback({
+                                "status": "failure",
+                                "code": 400,
+                                "message": `API name can only be one of : ${errorResponse}`
+                            }, null)
+                        }
+                    }
+                })
+            },
+            function getAdminError(response, callback) {
+                apiUsageDao.getAdminError(req, response, (err, response) => {
+                    if (err) {
+                        callback(err, null)
+                    } else {
+                        callback(null, response)
+                    }
+                })
+            }
+        ],
+        function finalCallback(finalErr, finalResponse) {
+            if (finalErr) {
+                mainCallback(finalErr, null)
+            } else {
+                mainCallback(null, finalResponse)
+            }
+        })
+}
+
+exports.getApiPerformance = function (req, res, callback) {
+    apiUsageDao.getApiPerformanceBasedOnExecutionTime(req, res, (err, result) => {
+        if (err) {
+            callback(err, null)
+        } else {
+            callback(null, result)
+        }
+    })
+}
+
+
+
 
