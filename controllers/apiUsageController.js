@@ -103,13 +103,41 @@ exports.onBoardNewApi = function (req, res, mainCallback) {
     console.log("inside onBoardNewApi")
 
     async.waterfall([
-        function insertIntoApiName(callback) {
+        function checkIfApiAndEndpointExists(callback) {
+            apiUsageDao.checkIfApiAndEndpointExists(req, (err, response) => {
+                if (err) {
+                    callback(err, null)
+                } else {
+                    if (response !== null) {
+                        mainCallback({
+                            "status": "failure",
+                            "message": "Given endpoint is already registered under this api",
+                            "code": 400
+                        }, null)
+                    } else {
+                        callback(null, req)
+                    }
+                }
+            })
+        },
+        function insertIntoApiName(req, callback) {
             apiUsageDao.insertIntoApiName(req, (err, response) => {
                 if (err) {
                     callback(err, null)
                 } else {
-                    req.apiNameId = response.insertId
-                    callback(null, req)
+                    if (response.insertId) {  // for new api and new endpoint
+                        req.apiNameId = response.insertId
+                        callback(null, req)
+                    } else {
+                        apiUsageDao.getApiNameId(req, (innerQueryErr, innerQueryResponse) => {
+                            if (innerQueryErr) {
+                                callback(innerQueryErr, null)
+                            } else { // for existing api but new endpoint
+                                req.apiNameId = innerQueryResponse.APINameId
+                                callback(null, req)
+                            }
+                        })
+                    }
                 }
             })
         }, function insertIntoApiRoute(req, callback) {
