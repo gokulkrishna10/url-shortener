@@ -1,8 +1,7 @@
 const async = require('async')
 const apiUsageDao = require('../dao/apiUsageDAO')
-const {response} = require("express");
-const {environment} = require('../environments')
 const util = require('../customnodemodules/util_node_module/utils')
+const {parse} = require("json2csv");
 
 exports.updateAPIUsage = function (req, res, mainCallback) {
     console.log("inside API usage")
@@ -104,13 +103,41 @@ exports.onBoardNewApi = function (req, res, mainCallback) {
     console.log("inside onBoardNewApi")
 
     async.waterfall([
-        function insertIntoApiName(callback) {
+        function checkIfApiAndEndpointExists(callback) {
+            apiUsageDao.checkIfApiAndEndpointExists(req, (err, response) => {
+                if (err) {
+                    callback(err, null)
+                } else {
+                    if (response !== null) {
+                        mainCallback({
+                            "status": "failure",
+                            "message": "Given endpoint is already registered under this api",
+                            "code": 400
+                        }, null)
+                    } else {
+                        callback(null, req)
+                    }
+                }
+            })
+        },
+        function insertIntoApiName(req, callback) {
             apiUsageDao.insertIntoApiName(req, (err, response) => {
                 if (err) {
                     callback(err, null)
                 } else {
-                    req.apiNameId = response.insertId
-                    callback(null, req)
+                    if (response.insertId) {  // for new api and new endpoint
+                        req.apiNameId = response.insertId
+                        callback(null, req)
+                    } else {
+                        apiUsageDao.getApiNameId(req, (innerQueryErr, innerQueryResponse) => {
+                            if (innerQueryErr) {
+                                callback(innerQueryErr, null)
+                            } else { // for existing api but new endpoint
+                                req.apiNameId = innerQueryResponse.APINameId
+                                callback(null, req)
+                            }
+                        })
+                    }
                 }
             })
         }, function insertIntoApiRoute(req, callback) {
@@ -199,10 +226,17 @@ exports.getAllApiNames = function (req, res, callback) {
         if (err) {
             callback(err, null)
         } else {
-            callback(null, response)
+            if (response && response.length > 0) {
+                if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
+                    callback(null, parse(response))
+                } else {
+                    callback(null, response)
+                }
+            } else {
+                callback(null, "{message:No data}")
+            }
         }
     })
-
 }
 
 exports.getAdminUsage = function (req, res, mainCallback) {
@@ -308,34 +342,14 @@ exports.getAdminError = function (req, res, mainCallback) {
         })
 }
 
-exports.getApiPerformance = function (req, res, mainCallback) {
-    async.waterfall([
-            function getExecutionTimeBasedApiNames(callback) {
-                apiUsageDao.getApiNamesBasedOnExecutionTime(req, (err, response) => {
-                    if (err) {
-                        callback(err, null)
-                    } else {
-                        (response && response.length > 0) ? callback(null, response) : mainCallback(null, "status:failure,message:No data found")
-                    }
-                })
-            },
-            function getApiPerformance(response, callback) {
-                apiUsageDao.getApiPerformance(req, response, (err, result) => {
-                    if (err) {
-                        callback(err, null)
-                    } else {
-                        callback(null, result)
-                    }
-                })
-            }
-        ],
-        function finalCallback(finalErr, finalResponse) {
-            if (finalErr) {
-                mainCallback(finalErr, null)
-            } else {
-                mainCallback(null, finalResponse)
-            }
-        })
+exports.getApiPerformance = function (req, res, callback) {
+    apiUsageDao.getApiPerformanceBasedOnExecutionTime(req, res, (err, result) => {
+        if (err) {
+            callback(err, null)
+        } else {
+            callback(null, result)
+        }
+    })
 }
 
 
