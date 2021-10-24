@@ -1,3 +1,6 @@
+const uuid = require('uuid')
+
+
 exports.getAPIUsageAttributes = function (req, res, result) {
     let apiUsageObject = {};
 
@@ -43,10 +46,63 @@ exports.getAPIErrorAttributes = function (req, res) {
 
 
     if (req.body.apiDetails && req.body.apiDetails.errorDescription) {
-        apiErrorObject.ErrorMessage = apiErrorObject.ErrorMessage ? apiErrorObject.ErrorMessage +". "+ req.body.apiDetails.errorDescription : req.body.apiDetails.errorDescription;
+        apiErrorObject.ErrorMessage = apiErrorObject.ErrorMessage ? apiErrorObject.ErrorMessage + ". " + req.body.apiDetails.errorDescription : req.body.apiDetails.errorDescription;
     }
 
     apiErrorObject.InputData = JSON.stringify(req.body.apiDetails)
 
     return apiErrorObject
+}
+
+exports.getAPINameAttributes = function (req) {
+    let apiNameAttributes = {};
+
+    apiNameAttributes.Name = req.body.name
+    apiNameAttributes.DisplayName = req.body.displayName
+    apiNameAttributes.Description = req.body.description
+
+    return apiNameAttributes
+}
+
+exports.getAPIRouteAttributes = function (req) {
+    let apiRouteAttributes = {};
+
+    apiRouteAttributes.APINameId = req.apiNameId
+    apiRouteAttributes.APIVersion = req.body.apiVersion
+    apiRouteAttributes.EndpointName = req.body.endPointName ? req.body.endPointName : "/"
+
+    return apiRouteAttributes
+}
+
+exports.getAPIRoutePriceAttributes = function (req) {
+    let apiRoutePriceAttributes = {};
+
+    apiRoutePriceAttributes.APIRouteId = req.apiRouteId
+    apiRoutePriceAttributes.APIPricingPlanId = 1;
+    apiRoutePriceAttributes.BasePricePerCall = req.body.basePricePerCall ? req.body.basePricePerCall : 0.00
+
+    return apiRoutePriceAttributes
+}
+
+exports.getCustomerAttributes = function (req) {
+    let customerAttributes = {};
+
+    customerAttributes.CustomerName = req.body.customerName
+    customerAttributes.LegalName = req.body.legalName;
+    customerAttributes.Address = req.body.address ? req.body.address : null
+    customerAttributes.Email = req.body.email
+    customerAttributes.IsActive = 1
+
+    return customerAttributes
+}
+
+exports.getApiRouteSubscriptionAttributes = function (response) {
+    let apiRouteSubscriptionAttributes = {};
+
+    apiRouteSubscriptionAttributes.APICustomerId = response.APICustomerId
+    apiRouteSubscriptionAttributes.APINameId = response.APINameId;
+    apiRouteSubscriptionAttributes.APIKey = uuid.v4();
+    apiRouteSubscriptionAttributes.IsActive = 1
+
+    return apiRouteSubscriptionAttributes
 }

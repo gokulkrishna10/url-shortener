@@ -44,3 +44,97 @@ exports.getApiUsage = function (req, res) {
         }
     })
 }
+
+exports.getAPIError = function (req, res) {
+    apiUsageDao.getAPIError(req, res, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err.msg)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}
+
+exports.onBoardNewApi = function (req, res) {
+    apiUsage.onBoardNewApi(req, res, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err)
+        } else {
+            res.status(201).send(response)
+        }
+    })
+}
+
+
+exports.addNewCustomer = function (req, res) {
+    apiUsage.addNewCustomer(req, res, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err)
+        } else {
+            res.status(201).send(response)
+        }
+    })
+}
+
+
+exports.customerApiSubscription = function (req, res) {
+    apiUsage.customerApiSubscription(req, res, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err)
+        } else {
+            res.status(201).send(response)
+        }
+    })
+}
+
+
+exports.adminValidation = function (req, res) {
+    apiUsageDao.adminValidation(req, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}
+
+exports.getAllApiNames = function (req, res) {
+    apiUsage.getAllApiNames(req, res, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}
+
+exports.getAdminUsage = function (req, res) {
+    apiUsage.getAdminUsage(req, res, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}
+
+
+exports.getAdminError = function (req, res) {
+    apiUsage.getAdminError(req, res, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err.msg)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}
+
+exports.getApiPerformance = function (req, res) {
+    apiUsage.getApiPerformance(req, res, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err.msg)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}

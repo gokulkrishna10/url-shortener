@@ -6,7 +6,9 @@
     "RDS_SCHEMA": "api_usage_report_dev",
     "RDS_NO_OF_CONNECTIONS": 20,
     "RDS_FAILOVER_NO_OF_CONNECTIONS": 5,
-    "RDS_CONNECTION_TIMEOUT": 10000
+    "RDS_CONNECTION_TIMEOUT": 10000,
+    "MAX_ERROR_GET_COUNT": 1000,
+    "ADMIN_API_KEY": "e08f40b3-05ce-4fe3-bfea-27c744fa6b90"
   },
   "dev": {
     "RDS_HOST": "openenergy.crjdegsnxmp2.eu-west-1.rds.amazonaws.com",
@@ -15,7 +17,31 @@
     "RDS_SCHEMA": "api_usage_report_dev",
     "RDS_NO_OF_CONNECTIONS": 20,
     "RDS_FAILOVER_NO_OF_CONNECTIONS": 5,
-    "RDS_CONNECTION_TIMEOUT": 10000
+    "RDS_CONNECTION_TIMEOUT": 10000,
+    "MAX_ERROR_GET_COUNT": 1000,
+    "ADMIN_API_KEY": "e08f40b3-05ce-4fe3-bfea-27c744fa6b90"
+  },
+  "preprod": {
+    "RDS_HOST": "openenergy.crjdegsnxmp2.eu-west-1.rds.amazonaws.com",
+    "RDS_USER": "api_usasge_report_devuser",
+    "RDS_PASSWORD": "891f5b0d-6873-4b5f-a0ae-9b890ed0739d",
+    "RDS_SCHEMA": "api_usage_report_dev",
+    "RDS_NO_OF_CONNECTIONS": 20,
+    "RDS_FAILOVER_NO_OF_CONNECTIONS": 5,
+    "RDS_CONNECTION_TIMEOUT": 10000,
+    "MAX_ERROR_GET_COUNT": 1000,
+    "ADMIN_API_KEY": "e08f40b3-05ce-4fe3-bfea-27c744fa6b90"
+  },
+  "sandbox": {
+    "RDS_HOST": "openenergy.crjdegsnxmp2.eu-west-1.rds.amazonaws.com",
+    "RDS_USER": "api_usasge_report_devuser",
+    "RDS_PASSWORD": "891f5b0d-6873-4b5f-a0ae-9b890ed0739d",
+    "RDS_SCHEMA": "api_usage_report_dev",
+    "RDS_NO_OF_CONNECTIONS": 20,
+    "RDS_FAILOVER_NO_OF_CONNECTIONS": 5,
+    "RDS_CONNECTION_TIMEOUT": 10000,
+    "MAX_ERROR_GET_COUNT": 1000,
+    "ADMIN_API_KEY": "e08f40b3-05ce-4fe3-bfea-27c744fa6b90"
   },
   "preprod": {
     "RDS_HOST": "openenergy.crjdegsnxmp2.eu-west-1.rds.amazonaws.com",
@@ -33,7 +59,9 @@
     "RDS_SCHEMA": "api_usage_report_prod",
     "RDS_NO_OF_CONNECTIONS": 20,
     "RDS_FAILOVER_NO_OF_CONNECTIONS": 5,
-    "RDS_CONNECTION_TIMEOUT": 10000
+    "RDS_CONNECTION_TIMEOUT": 10000,
+    "MAX_ERROR_GET_COUNT": 1000,
+    "ADMIN_API_KEY": "e08f40b3-05ce-4fe3-bfea-27c744fa6b90"
   }
 }
 

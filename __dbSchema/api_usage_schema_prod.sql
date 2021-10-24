@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS APICustomer (
     CONSTRAINT PK_APICustomer PRIMARY KEY (APICustomerId)
 );
 
+ALTER TABLE APICustomer
+ADD	CONSTRAINT UK_APICustomer UNIQUE(CustomerName);
 
 /* ====================================================================================================
 Description: This table contains the APIName details
@@ -121,8 +123,20 @@ CREATE TABLE IF NOT EXISTS APIRouteSubscription(
     CONSTRAINT FK_APISubscription_APICustomerId FOREIGN KEY (APICustomerId) REFERENCES APICustomer(APICustomerId)
 );
 
+
 ALTER TABLE APIRouteSubscription
-ADD	CONSTRAINT UK_APIRouteSubscription UNIQUE(APICustomerId, APINameId, APIKey, IsActive, StartDate);
+ADD	CONSTRAINT UK_APIRouteSubscription UNIQUE(APICustomerId, APINameId, APIKey);
+
+/* TO DROP, HAD TO DROP THE FK FIRST
+ALTER TABLE APIRouteSubscription
+DROP FOREIGN KEY FK_APISubscription_APICustomerId;
+ALTER TABLE APIRouteSubscription
+DROP INDEX  UK_APIRouteSubscription;
+# Add it back after dropping the UK key
+ALTER TABLE APIRouteSubscription
+ADD CONSTRAINT FK_APISubscription_APICustomerId FOREIGN KEY (APICustomerId) REFERENCES APICustomer(APICustomerId);
+
+*/
 
 /* ====================================================================================================
 Description : This table stores the API Limits for a (APINameId + CustomerId). This can be used to track Volume usage as well as
@@ -245,7 +259,6 @@ CREATE TABLE IF NOT EXISTS APIUsage (
 );
 
 
-
 /*--------------------SELECT----------------------
 
 USE api_usage_report_prod;
@@ -362,31 +375,125 @@ INNER JOIN APIName apn on ars.APINameId = apn.APINameId
 WHERE Name = 'ev-comparison-api' 
 AND APIKey = '81586818-fba3-4c15-aba8-5ce08f552141'
 
-# -------------------------Usage - IntervalType = d----------------
-Select * from APIUsage
 
-Select RequestDate, APINameId, APIVersion, EndpointName, COunt(*) as Count from APIUsage
+# ================================Usage Queries=========================
+
+--get API Usage. (getEndpoints = true)
+SELECT DATE(RequestDate) as Date, an.DisplayName as APIName , APIVersion, EndpointName, Count(*) as Count 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c' 
+AND RequestDate >= STR_TO_DATE("2020-10-20 23:00:00", "%Y-%m-%d %H:%i:%s")
+AND RequestDate <= STR_TO_DATE("2021-09-24 23:00:00", "%Y-%m-%d %H:%i:%s")
+GROUP BY Date, an.DisplayName, APIVersion, EndpointName
+
+--get API Usage. (getEndpoints = false)
+SELECT DATE(RequestDate) as Date, an.DisplayName as APIName , APIVersion, Count(*) as Count 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c' 
+AND RequestDate >= STR_TO_DATE("2020-10-20 23:00:00", "%Y-%m-%d %H:%i:%s")
+AND RequestDate <= STR_TO_DATE("2021-09-24 23:00:00", "%Y-%m-%d %H:%i:%s")
+GROUP BY Date, an.DisplayName, APIVersion
+
+------------Month---------------
+--get API Usage. (getEndpoints = true)
+SELECT DATE_FORMAT(RequestDate,'%M %Y') AS Month, an.DisplayName as APIName , APIVersion, EndpointName, Count(*) as Count 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c' 
+AND RequestDate >= STR_TO_DATE("2020-10-20 23:00:00", "%Y-%m-%d %H:%i:%s")
+AND RequestDate <= STR_TO_DATE("2021-09-24 23:00:00", "%Y-%m-%d %H:%i:%s")
+GROUP BY Month, an.DisplayName, APIVersion, EndpointName
+
+--get API Usage. (getEndpoints = false)
+SELECT DATE_FORMAT(RequestDate,'%M %Y') AS Month, an.DisplayName as APIName , APIVersion, Count(*) as Count 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c' 
+AND RequestDate >= STR_TO_DATE("2020-10-20 23:00:00", "%Y-%m-%d %H:%i:%s")
+AND RequestDate <= STR_TO_DATE("2021-09-24 23:00:00", "%Y-%m-%d %H:%i:%s")
+GROUP BY Month, an.DisplayName, APIVersion
+
+-----------------------Year---------------------
+--get API Usage. (getEndpoints = true)
+SELECT YEAR(RequestDate) AS Year, an.DisplayName as APIName , APIVersion, EndpointName, Count(*) as Count 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c' 
+AND RequestDate >= STR_TO_DATE("2020-10-20 23:00:00", "%Y-%m-%d %H:%i:%s")
+AND RequestDate <= STR_TO_DATE("2021-09-24 23:00:00", "%Y-%m-%d %H:%i:%s")
+GROUP BY Year, an.DisplayName, APIVersion, EndpointName
+
+--get API Usage. (getEndpoints = false)
+SELECT YEAR(RequestDate) AS Year, an.DisplayName as APIName , APIVersion, Count(*) as Count 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c' 
+AND RequestDate >= STR_TO_DATE("2020-10-20 23:00:00", "%Y-%m-%d %H:%i:%s")
+AND RequestDate <= STR_TO_DATE("2021-09-24 23:00:00", "%Y-%m-%d %H:%i:%s")
+GROUP BY Year, an.DisplayName, APIVersion
+
+
+SELECT DATE_FORMAT(RequestDate,'%M %Y') AS Month,RequestDate,  an.DisplayName as APIName , APIVersion, Count(*) as Count 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
 where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c'
-group by RequestDate, APINameId, APIVersion, EndpointName
-
-Select date_format(date(RequestDate),'%d-%m-%Y')as RequestDate, APIVersion, EndpointName, Count(*) as Count
-FROM APIUsage
-where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c'
-group by date_format(date(RequestDate),'%d-%m-%Y'), APIVersion, EndpointName
-
-Select DATE(RequestDate), APIVersion, EndpointName, Count(*) as Count
-FROM APIUsage
-where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c'
-AND DATE(RequestDate) = '2021-09-14'
-group by DATE(RequestDate), APIVersion, EndpointName
-
-Select MONTHNAME(RequestDate) as Month, APIVersion, EndpointName, Count(*) as Count
-FROM APIUsage
-where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c'
-AND DATE(RequestDate) = '2021-09-14'
-group by MONTHNAME(RequestDate), APIVersion, EndpointName
+AND RequestDate >= STR_TO_DATE("2020-10-20 23:00:00", "%Y-%m-%d %H:%i:%s")
+AND RequestDate <= STR_TO_DATE("2021-09-24 23:00:00", "%Y-%m-%d %H:%i:%s")
+GROUP BY Month, an.DisplayName, APIVersion
 
 
+--=========================Errors===============================
+
+--get API Errors with Details (getErrorCountsOnly = true)
+SELECT DATE(RequestDate) as Date, an.DisplayName as APIName , APIVersion, EndpointName, HttpStatusCode, Count(*) as Count 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c' 
+AND RequestDate >= STR_TO_DATE("2020-10-20 23:00:00", "%Y-%m-%d %H:%i:%s")
+AND RequestDate <= STR_TO_DATE("2021-09-24 23:00:00", "%Y-%m-%d %H:%i:%s")
+AND APIErrorId IS NOT NULL
+GROUP BY Date, an.DisplayName, APIVersion, EndpointName, HttpStatusCode
+
+--get DAILY API Errors. (getErrorCountsOnly = true)
+SELECT RequestDate as DateTime, an.DisplayName as APIName , APIVersion, EndpointName, HttpStatusCode, ae.ErrorId, ae.ErrorMessage
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+JOIN APIError ae on ae.APIErrorId = au.APIErrorId
+where APIKey = 'a0a07621-2379-4042-bde9-0539a84a036c' 
+AND RequestDate >= STR_TO_DATE("2020-10-20 23:00:00", "%Y-%m-%d %H:%i:%s")
+AND RequestDate <= STR_TO_DATE("2021-09-24 23:00:00", "%Y-%m-%d %H:%i:%s")
+AND au.APIErrorId IS NOT NULL
+
+--get MONTHLY API Errors. (getErrorCountsOnly = true)
+--get YEARLY API Errors. (getErrorCountsOnly = true)
+
+=================================Perfornamce========================
+--Best
+#Ref : https://ubiq.co/database-blog/select-top-10-records-for-each-category-in-mysql/
+SELECT an.DisplayName, t.EndpointName, DATE(t.RequestDate) as Date, t.TimeTakenMilliseconds as Time
+FROM ( 
+	SELECT au.*, @product_rank := IF(@current_product = APINameId, @product_rank + 1, 1) AS product_rank, 
+			@current_product := APINameId 
+	FROM APIUsage au 
+	ORDER BY APINameId ASC, DATE(RequestDate) DESC, TimeTakenMilliseconds ASC) t
+LEFT OUTER JOIN APIName an on an.APINameId = t.APINameId
+where product_rank<=10
+AND t.HttpStatusCode = 200;
+
+
+--Worst
+#Ref : https://ubiq.co/database-blog/select-top-10-records-for-each-category-in-mysql/
+SELECT an.DisplayName, t.EndpointName, DATE(t.RequestDate) as Date, t.TimeTakenMilliseconds as Time
+FROM ( 
+	SELECT au.*, @product_rank := IF(@current_product = APINameId, @product_rank + 1, 1) AS product_rank, 
+			@current_product := APINameId 
+	FROM APIUsage au 
+	ORDER BY APINameId ASC, DATE(RequestDate) DESC, TimeTakenMilliseconds desc) t
+LEFT OUTER JOIN APIName an on an.APINameId = t.APINameId
+where product_rank<=10
+AND t.HttpStatusCode = 200;
 
 */
 
