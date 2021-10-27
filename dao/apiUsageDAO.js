@@ -485,6 +485,7 @@ exports.insertIntoApiRouteSubscription = function (response, callback) {
             if (dbResponse && dbResponse.affectedRows > 0) {
                 finalResponse = {
                     "status": "successful",
+                    "message": "Customer successfully subscribed to the API",
                     "apiKey": apiRouteSubscriptionAttributes.APIKey
                 }
             } else {
@@ -497,26 +498,6 @@ exports.insertIntoApiRouteSubscription = function (response, callback) {
             callback(null, finalResponse)
         }
     })
-}
-
-
-exports.adminValidation = function (req, callback) {
-    let response = {}
-    if (req.headers && req.headers.api_key === environment.ADMIN_API_KEY) {
-        response = {
-            "status": "successful",
-            "message": "API key validated successfully",
-        }
-        callback(null, response)
-    } else {
-        response = {
-            "status": "failure",
-            "message": "Invalid API key",
-            "code": 400,
-            "donotUpdateUsage": true
-        }
-        callback(response, null)
-    }
 }
 
 

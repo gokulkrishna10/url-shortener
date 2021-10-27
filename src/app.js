@@ -68,14 +68,13 @@ router.all("*", function (req, res, next) {
 router.post('/v1/api-usage', apiUsageValidator.apiUsageValidation, routes.updateAPIUsage);
 router.post('/v1/validate-api-usage', routes.apiUsageRequestValidation)
 //public
-router.get('/v1/usage', routes.apiUsageClientValidationByKey,apiUsageValidator.getUsageValidation, routes.getApiUsage)
-router.get('/v1/error', routes.apiUsageClientValidationByKey,apiUsageValidator.getErrorValidation, routes.getAPIError)
+router.get('/v1/usage', routes.apiUsageClientValidationByKey, apiUsageValidator.getUsageValidation, routes.getApiUsage)
+router.get('/v1/error', routes.apiUsageClientValidationByKey, apiUsageValidator.getErrorValidation, routes.getAPIError)
 //Admin-internal
-//TODO : what is theuse of this??
-router.get('/v1/admin/validate-api-usage', routes.adminValidation)
-router.post('/v1/internal/onboard-api', apiUsageValidator.getAPIOnboardValidation, routes.onBoardNewApi)
-router.post('/v1/internal/customer', apiUsageValidator.getNewCustomerValidation, routes.addNewCustomer)
-router.post('/v1/internal/api-subscription', apiUsageValidator.getCustomerApiSubscriptionValidation, routes.customerApiSubscription)
+
+router.post('/v1/internal/onboard-api', apiUsageValidator.adminValidation, apiUsageValidator.getAPIOnboardValidation, routes.onBoardNewApi)
+router.post('/v1/internal/customer', apiUsageValidator.adminValidation, apiUsageValidator.getNewCustomerValidation, routes.addNewCustomer)
+router.post('/v1/internal/api-subscription', apiUsageValidator.adminValidation, apiUsageValidator.getCustomerApiSubscriptionValidation, routes.customerApiSubscription)
 router.get('/v1/internal/api-names', apiUsageValidator.adminValidation, routes.getAllApiNames)
 router.get('/v1/internal/admin-usage', apiUsageValidator.adminValidation, apiUsageValidator.getAdminUsageValidation, routes.getAdminUsage)
 router.get('/v1/internal/admin-error', apiUsageValidator.adminValidation, apiUsageValidator.getAdminErrorValidation, routes.getAdminError)
