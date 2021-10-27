@@ -71,8 +71,7 @@ router.post('/v1/validate-api-usage', routes.apiUsageRequestValidation)
 router.get('/v1/usage', routes.apiUsageClientValidationByKey, apiUsageValidator.getUsageValidation, routes.getApiUsage)
 router.get('/v1/error', routes.apiUsageClientValidationByKey, apiUsageValidator.getErrorValidation, routes.getAPIError)
 //Admin-internal
-//TODO : what is theuse of this??
-router.get('/v1/admin/validate-api-usage', routes.adminValidation)
+
 router.post('/v1/internal/onboard-api', apiUsageValidator.adminValidation, apiUsageValidator.getAPIOnboardValidation, routes.onBoardNewApi)
 router.post('/v1/internal/customer', apiUsageValidator.adminValidation, apiUsageValidator.getNewCustomerValidation, routes.addNewCustomer)
 router.post('/v1/internal/api-subscription', apiUsageValidator.adminValidation, apiUsageValidator.getCustomerApiSubscriptionValidation, routes.customerApiSubscription)
