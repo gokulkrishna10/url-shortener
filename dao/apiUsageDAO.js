@@ -485,6 +485,7 @@ exports.insertIntoApiRouteSubscription = function (response, callback) {
             if (dbResponse && dbResponse.affectedRows > 0) {
                 finalResponse = {
                     "status": "successful",
+                    "message": "Customer successfully subscribed to the API",
                     "apiKey": apiRouteSubscriptionAttributes.APIKey
                 }
             } else {
