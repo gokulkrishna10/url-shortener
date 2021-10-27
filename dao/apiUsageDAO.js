@@ -81,6 +81,7 @@ exports.insertErrorDetails = function (req, res, callback) {
 }
 
 
+//THis method is being called by client APIs to validate before invoking the API endpoints
 exports.validateApiKeyAndName = function (req, res, callback) {
 
     let options = {
@@ -99,6 +100,32 @@ exports.validateApiKeyAndName = function (req, res, callback) {
                 callback(null, dbResponse)
             } else {
                 callback(null, null)
+            }
+        }
+    })
+}
+
+//This method is being called by the external clients of API Usage and is being to 
+// validate the cleints with just their APIKey. Used before invoking usage and error endpoints.
+exports.validateApiKey = function (req, res, callback) {
+
+    let options = {
+        sql: "SELECT * from APIRouteSubscription ars " +
+            "INNER JOIN APIName apn on ars.APINameId = apn.APINameId " +
+            "WHERE APIKey = ?",
+        values: [req.headers.api_key]
+    }
+
+    db.queryWithOptions(options, function (error, dbResponse) {
+        if (error) {
+            console.log(error)
+            callback(apiUsageAttributesHelper.setErrorCode(customError.Unauthorized("Failed to validate. Please try again.", constants.errorCodeExcludeFromAPIUsageLogging)), null)
+        } else {
+            if (dbResponse && dbResponse.length > 0) {
+                callback(null, dbResponse)
+            } else {
+                console.log("validateApiKey() failed for :" + req.headers.api_key);
+                callback(apiUsageAttributesHelper.setErrorCode(customError.Unauthorized("Failed to authorize. Please set correct value for header : api_key", constants.errorCodeExcludeFromAPIUsageLogging)), null)
             }
         }
     })

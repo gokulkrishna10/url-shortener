@@ -634,9 +634,19 @@ LEFT OUTER JOIN APIName an on an.APINameId = t.APINameId
 where product_rank<=10
 AND t.HttpStatusCode = 200;
 
+#===========================================Testing - MeterDeactivationTracker- Year 50000================================
+select * from MeterDeactivationTracker
+where MeterNo = '9999999999999'
+
+
+delete from MeterDeactivationTracker
+where MeterNo = '9999999999999'
 
 
 */
+
+
+
 
 
 

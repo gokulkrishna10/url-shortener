@@ -1,5 +1,7 @@
 const apiUsage = require('../controllers/apiUsageController')
 const apiUsageDao = require('../dao/apiUsageDAO')
+const ErrorMod = require('../customnodemodules/error_node_module/errors')
+const customError = new ErrorMod()
 
 
 exports.updateAPIUsage = (req, res) => {
@@ -18,7 +20,7 @@ exports.updateAPIUsage = (req, res) => {
 // check if the input API key is registered in the APIRouteSubscription table
 // and the requested API name matches with the registered API key
 exports.apiUsageRequestValidation = function (req, res) {
-    apiUsageDao.validateApiKeyAndName(req, res, (err, response) => {
+    apiUsageDao.validateApiKey(req, res, (err, response) => {
         if (err) {
             console.log(err)
             res.send(err).status(err.code)
@@ -30,6 +32,16 @@ exports.apiUsageRequestValidation = function (req, res) {
                 console.log('{status:failure, message:Validation failed}')
                 res.status(401).send(JSON.parse('{"status":"failure", "message":"Validation failed"}'))
             }
+        }
+    })
+}
+
+exports.apiUsageClientValidationByKey = function (req, res, next) {
+    apiUsageDao.validateApiKey(req, res, (err, response) => {
+        if (err) {
+            next(err)
+        } else {
+            next();
         }
     })
 }

@@ -1,4 +1,6 @@
+const { constant } = require('async');
 const uuid = require('uuid')
+const constants = require('../constants/constants')
 
 
 exports.getAPIUsageAttributes = function (req, res, result) {
@@ -105,4 +107,11 @@ exports.getApiRouteSubscriptionAttributes = function (response) {
     apiRouteSubscriptionAttributes.IsActive = 1
 
     return apiRouteSubscriptionAttributes
+}
+
+//Set the error code so that the error won't be logged as the the APIUsage
+// error
+exports.setErrorCode = function (err) {
+    err.errorId = constants.errorCodeExcludeFromAPIUsageLogging;
+    return err;
 }
