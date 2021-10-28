@@ -85,7 +85,11 @@ exports.getErrorValidation = function (req, res, next) {
 
 exports.getAPIOnboardValidation = function (req, res, next) {
     let err = null
-    if (Object.entries(req.body).length === 0) {
+    if (util.isNull(req.headers.api_key)) {
+        err = customError.BadRequest("API key is required")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (Object.entries(req.body).length === 0) {
         err = customError.BadRequest("request needs a body")
         err.donotUpdateUsage = true;
         next(err)
@@ -112,7 +116,11 @@ exports.getAPIOnboardValidation = function (req, res, next) {
 
 exports.getNewCustomerValidation = function (req, res, next) {
     let err = null
-    if (Object.entries(req.body).length === 0) {
+    if (util.isNull(req.headers.api_key)) {
+        err = customError.BadRequest("API key is required")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (Object.entries(req.body).length === 0) {
         err = customError.BadRequest("request needs a body")
         err.donotUpdateUsage = true;
         next(err)
@@ -136,7 +144,11 @@ exports.getNewCustomerValidation = function (req, res, next) {
 
 exports.getCustomerApiSubscriptionValidation = function (req, res, next) {
     let err = null
-    if (Object.entries(req.body).length === 0) {
+    if (util.isNull(req.headers.api_key)) {
+        err = customError.BadRequest("API key is required")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (Object.entries(req.body).length === 0) {
         err = customError.BadRequest("request needs a body")
         err.donotUpdateUsage = true;
         next(err)

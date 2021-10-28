@@ -81,6 +81,7 @@ exports.insertErrorDetails = function (req, res, callback) {
 }
 
 
+//THis method is being called by client APIs to validate before invoking the API endpoints
 exports.validateApiKeyAndName = function (req, res, callback) {
 
     let options = {
@@ -99,6 +100,32 @@ exports.validateApiKeyAndName = function (req, res, callback) {
                 callback(null, dbResponse)
             } else {
                 callback(null, null)
+            }
+        }
+    })
+}
+
+//This method is being called by the external clients of API Usage and is being to 
+// validate the cleints with just their APIKey. Used before invoking usage and error endpoints.
+exports.validateApiKey = function (req, res, callback) {
+
+    let options = {
+        sql: "SELECT * from APIRouteSubscription ars " +
+            "INNER JOIN APIName apn on ars.APINameId = apn.APINameId " +
+            "WHERE APIKey = ?",
+        values: [req.headers.api_key]
+    }
+
+    db.queryWithOptions(options, function (error, dbResponse) {
+        if (error) {
+            console.log(error)
+            callback(apiUsageAttributesHelper.setErrorCode(customError.Unauthorized("Failed to validate. Please try again.", constants.errorCodeExcludeFromAPIUsageLogging)), null)
+        } else {
+            if (dbResponse && dbResponse.length > 0) {
+                callback(null, dbResponse)
+            } else {
+                console.log("validateApiKey() failed for :" + req.headers.api_key);
+                callback(apiUsageAttributesHelper.setErrorCode(customError.Unauthorized("Failed to authorize. Please set correct value for header : api_key", constants.errorCodeExcludeFromAPIUsageLogging)), null)
             }
         }
     })
@@ -458,6 +485,7 @@ exports.insertIntoApiRouteSubscription = function (response, callback) {
             if (dbResponse && dbResponse.affectedRows > 0) {
                 finalResponse = {
                     "status": "successful",
+                    "message": "Customer successfully subscribed to the API",
                     "apiKey": apiRouteSubscriptionAttributes.APIKey
                 }
             } else {
@@ -470,26 +498,6 @@ exports.insertIntoApiRouteSubscription = function (response, callback) {
             callback(null, finalResponse)
         }
     })
-}
-
-
-exports.adminValidation = function (req, callback) {
-    let response = {}
-    if (req.headers && req.headers.api_key === environment.ADMIN_API_KEY) {
-        response = {
-            "status": "successful",
-            "message": "API key validated successfully",
-        }
-        callback(null, response)
-    } else {
-        response = {
-            "status": "failure",
-            "message": "Invalid API key",
-            "code": 400,
-            "donotUpdateUsage": true
-        }
-        callback(response, null)
-    }
 }
 
 
