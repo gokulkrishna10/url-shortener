@@ -10,7 +10,7 @@ const express = require("express"),
 var ErrorMod = require('../customnodemodules/error_node_module/errors');
 var customeError = new ErrorMod();
 const apiUsageValidator = require('../validation/apiUsageValidation')
-
+const constants = require('../constants/constants')
 
 app.use(
     morgan(function (tokens, req, res) {
@@ -31,7 +31,8 @@ app.set("port", portConfiguration[envFile.stage] || 7400);
 app.use(function error_handler(err, req, res, next) {
     res.header("Content-Type", "application/json; charset=utf-8");
     res.status(err.code || 500).send(err)
-    if (!Boolean(err.donotUpdateUsage)) {
+    if (!(Boolean(err.donotUpdateUsage)
+        || err.errorId == constants.errorCodeExcludeFromAPIUsageLogging)) {
         var errData = {};
         errData.responseData = err;
         routes.updateAPIUsage(req, err)
@@ -63,16 +64,17 @@ router.all("*", function (req, res, next) {
 });
 
 //routes
-
+//APIUsage tracking - internal
 router.post('/v1/api-usage', apiUsageValidator.apiUsageValidation, routes.updateAPIUsage);
 router.post('/v1/validate-api-usage', routes.apiUsageRequestValidation)
-router.get('/v1/usage', apiUsageValidator.getUsageValidation, routes.getApiUsage)
-router.get('/v1/error', apiUsageValidator.getErrorValidation, routes.getAPIError)
-router.post('/v1/onboard-api', apiUsageValidator.getAPIOnboardValidation, routes.onBoardNewApi)
-router.post('/v1/customer', apiUsageValidator.getNewCustomerValidation, routes.addNewCustomer)
-router.post('/v1/customer/api-subscription', apiUsageValidator.getCustomerApiSubscriptionValidation, routes.customerApiSubscription)
+//public
+router.get('/v1/usage', routes.apiUsageClientValidationByKey, apiUsageValidator.getUsageValidation, routes.getApiUsage)
+router.get('/v1/error', routes.apiUsageClientValidationByKey, apiUsageValidator.getErrorValidation, routes.getAPIError)
+//Admin-internal
 
-router.get('/v1/admin/validate-api-usage', routes.adminValidation)
+router.post('/v1/internal/onboard-api', apiUsageValidator.adminValidation, apiUsageValidator.getAPIOnboardValidation, routes.onBoardNewApi)
+router.post('/v1/internal/customer', apiUsageValidator.adminValidation, apiUsageValidator.getNewCustomerValidation, routes.addNewCustomer)
+router.post('/v1/internal/api-subscription', apiUsageValidator.adminValidation, apiUsageValidator.getCustomerApiSubscriptionValidation, routes.customerApiSubscription)
 router.get('/v1/internal/api-names', apiUsageValidator.adminValidation, routes.getAllApiNames)
 router.get('/v1/internal/admin-usage', apiUsageValidator.adminValidation, apiUsageValidator.getAdminUsageValidation, routes.getAdminUsage)
 router.get('/v1/internal/admin-error', apiUsageValidator.adminValidation, apiUsageValidator.getAdminErrorValidation, routes.getAdminError)
