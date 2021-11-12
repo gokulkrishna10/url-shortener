@@ -20,7 +20,7 @@ exports.updateAPIUsage = (req, res) => {
 // check if the input API key is registered in the APIRouteSubscription table
 // and the requested API name matches with the registered API key
 exports.apiUsageRequestValidation = function (req, res) {
-    apiUsageDao.validateApiKey(req, res, (err, response) => {
+    apiUsageDao.validateApiKeyAndName(req, res, (err, response) => {
         if (err) {
             console.log(err)
             res.send(err).status(err.code)
@@ -30,7 +30,7 @@ exports.apiUsageRequestValidation = function (req, res) {
                 res.send(JSON.parse('{"status":"success", "message":"Validation successful"}')).status(200)
             } else {
                 console.log('{status:failure, message:Validation failed}')
-                res.status(401).send(JSON.parse('{"status":"failure", "message":"Validation failed"}'))
+                res.status(400).send(JSON.parse('{"status":"failure", "message":"Validation failed. Please check the apiKey or the apiName entered"}'))
             }
         }
     })

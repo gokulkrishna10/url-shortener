@@ -14,18 +14,20 @@ exports.getCustomerAPIDetails = function (req, res, callback) {
     let apiKey = req.headers.api_key
     let apiVersion = req.body.apiDetails.apiVersion
     let endPointName = req.body.apiDetails.endPointName
+    let apiName = req.body.apiDetails.apiName
     let options = {
         sql: "SELECT ars.APINameId,ars.APICustomerId, arp.APIPricingPlanId, arp.BasePricePerCall, ar.APIRouteId, ar.EndPointName " +
             "FROM APIRouteSubscription ars " +
+            "JOIN APIName an on an.APINameId = ars.APINameId " +
             "JOIN APIRoute ar on ar.APINameId = ars.APINameId " +
             "JOIN APIRoutePrice arp on ar.APIRouteId = arp.APIRouteId " +
-            "where APIKey = ? " +
+            "where APIKey = ? AND an.Name = ? " +
             "AND ar.APIVersion = ? " +
             "AND (EndPointName = ? OR EndPointName = '/') " +
             "ORDER BY LENGTH(ar.EndPointName) DESC " +
             "LIMIT 1;",
 
-        values: [apiKey, apiVersion, endPointName]
+        values: [apiKey, apiName, apiVersion, endPointName]
     }
 
     db.queryWithOptions(options, function (err, dbResponse) {

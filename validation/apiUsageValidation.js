@@ -4,6 +4,24 @@ const customError = new ErrorMod()
 const constants = require('../constants/constants')
 const {environment} = require("../environments");
 
+
+exports.apiKeyAndApiNameValidation = function (req, res, next) {
+    let err = null;
+
+    if (util.isNull(req.headers.api_key)) {
+        err = customError.BadRequest("request needs an api key")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (util.isNull(req.body.apiName) || util.isNull((req.body.apiName).trim())) {
+        err = customError.BadRequest("request needs an apiName")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else {
+        next()
+    }
+}
+
+
 exports.apiUsageValidation = function (req, res, next) {
     //If no statuscode, put it as 500
     if (!Boolean(req.body.apiDetails.httpStatusCode)) {
@@ -12,9 +30,12 @@ exports.apiUsageValidation = function (req, res, next) {
     if (util.isNull(req.body) && util.isNull(req.body.apiDetails)) {
         req.isValidationError = true;
         next(customError.BadRequest("request needs a body"))
-    } else if (util.isNull(req.headers.api_key) && util.isNull(req.body.apiDetails.apiName)) {
+    } else if (util.isNull(req.headers.api_key)) {
         req.isValidationError = true;
-        next(customError.BadRequest("request needs either an api key or api name"))
+        next(customError.BadRequest("request needs an api key"))
+    } else if (util.isNull(req.body.apiDetails.apiName) || util.isNull((req.body.apiDetails.apiName).trim())) {
+        req.isValidationError = true;
+        next(customError.BadRequest("request needs an apiName"))
     } else if (isNaN(req.body.apiDetails.executionTime)) {
         req.isValidationError = true;
         next(customError.BadRequest("request needs an execution time"))

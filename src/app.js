@@ -66,7 +66,7 @@ router.all("*", function (req, res, next) {
 //routes
 //APIUsage tracking - internal
 router.post('/v1/api-usage', apiUsageValidator.apiUsageValidation, routes.updateAPIUsage);
-router.post('/v1/validate-api-usage', routes.apiUsageRequestValidation)
+router.post('/v1/validate-api-usage', apiUsageValidator.apiKeyAndApiNameValidation, routes.apiUsageRequestValidation)
 //public
 router.get('/v1/usage', routes.apiUsageClientValidationByKey, apiUsageValidator.getUsageValidation, routes.getApiUsage)
 router.get('/v1/error', routes.apiUsageClientValidationByKey, apiUsageValidator.getErrorValidation, routes.getAPIError)
