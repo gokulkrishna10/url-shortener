@@ -83,7 +83,7 @@ exports.insertErrorDetails = function (req, res, callback) {
 }
 
 
-//THis method is being called by client APIs to validate before invoking the API endpoints
+// This method is being called by the client APIs to validate before invoking the API endpoints
 exports.validateApiKeyAndName = function (req, res, callback) {
 
     let options = {

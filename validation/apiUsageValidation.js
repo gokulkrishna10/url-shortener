@@ -12,7 +12,7 @@ exports.apiKeyAndApiNameValidation = function (req, res, next) {
         err = customError.BadRequest("request needs an api key")
         err.donotUpdateUsage = true;
         next(err)
-    } else if (util.isNull(req.body.apiName) || util.isNull((req.body.apiName).trim())) {
+    } else if (util.isNull((req.body.apiName).trim())) {
         err = customError.BadRequest("request needs an apiName")
         err.donotUpdateUsage = true;
         next(err)
