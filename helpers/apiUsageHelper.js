@@ -1,4 +1,3 @@
-const { constant } = require('async');
 const uuid = require('uuid')
 const constants = require('../constants/constants')
 
@@ -38,12 +37,12 @@ exports.getAPIErrorAttributes = function (req, res) {
         apiErrorObject.ErrorId = null
         apiErrorObject.ErrorTypeId = 3
         apiErrorObject.ErrorMessage = req.internalProcessingMessage
-        apiErrorObject.ErrorStatus = 1                                         // Needs to be resolved. Hence ErrorStatus = 1
+        apiErrorObject.ErrorStatus = 1                                         // Needs to be resolved. Hence, ErrorStatus = 1
     } else {
         apiErrorObject.ErrorId = null                                          //unknown error.
         apiErrorObject.ErrorTypeId = 4
         apiErrorObject.ErrorMessage = "Unhandled internal apiUsage error"
-        apiErrorObject.ErrorStatus = 1                                         //Needs to be resolved. Hence ErrorStatus = 1
+        apiErrorObject.ErrorStatus = 1                                         //Needs to be resolved. Hence, ErrorStatus = 1
     }
 
 
@@ -109,8 +108,7 @@ exports.getApiRouteSubscriptionAttributes = function (response) {
     return apiRouteSubscriptionAttributes
 }
 
-//Set the error code so that the error won't be logged as the the APIUsage
-// error
+//Set the error code so that the error won't be logged as the APIUsage error
 exports.setErrorCode = function (err) {
     err.errorId = constants.errorCodeExcludeFromAPIUsageLogging;
     return err;

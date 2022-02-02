@@ -21,7 +21,8 @@ exports.getCustomerAPIDetails = function (req, res, callback) {
             "JOIN APIName an on an.APINameId = ars.APINameId " +
             "JOIN APIRoute ar on ar.APINameId = ars.APINameId " +
             "JOIN APIRoutePrice arp on ar.APIRouteId = arp.APIRouteId " +
-            "where APIKey = ? AND an.Name = ? " +
+            "JOIN APICustomer ac on ars.APICustomerId = ac.APICustomerId "+
+            "where ac.APIKey = ? AND an.Name = ? " +
             "AND ar.APIVersion = ? " +
             "AND (EndPointName = ? OR EndPointName = '/') " +
             "ORDER BY LENGTH(ar.EndPointName) DESC " +

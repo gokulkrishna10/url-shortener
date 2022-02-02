@@ -33,7 +33,7 @@ exports.apiUsageValidation = function (req, res, next) {
     } else if (util.isNull(req.headers.api_key)) {
         req.isValidationError = true;
         next(customError.BadRequest("request needs an api key"))
-    } else if (util.isNull(req.body.apiDetails.apiName) || util.isNull((req.body.apiDetails.apiName).trim())) {
+    } else if (util.isNull((req.body.apiDetails.apiName).trim())) {
         req.isValidationError = true;
         next(customError.BadRequest("request needs an apiName"))
     } else if (isNaN(req.body.apiDetails.executionTime)) {
