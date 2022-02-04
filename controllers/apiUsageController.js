@@ -11,9 +11,9 @@ exports.updateAPIUsage = function (req, res, mainCallback) {
 
     async.waterfall([
             function updateErrorDetails(callback) {
-                if (req.isValidationError   // true if update-api-usage input request validation failed
-                    || apiUsageClientValidationError  // true if request validation failed from client API( i.e. if client is not found to be subscribed to the requested api)
-                    || apiUsageClientError // true if client api failed
+                if (req.isValidationError   //api-usage input rquest validation failed
+                    || apiUsageClientValidationError  //request validation failed from client API
+                    || apiUsageClientError
                 ) {
                     apiUsageDao.insertErrorDetails(req, res, function (err, dbResponse) {
                         if (err) {
@@ -23,7 +23,7 @@ exports.updateAPIUsage = function (req, res, mainCallback) {
                                 if (!req.isValidationError && apiUsageClientError) {
                                     callback(null, req);
                                 } else {
-                                    // We do not have enough details to create an entry with APIUsage table and hence leaving after making an entry to APIError table.
+                                    //We donot have enough details to create an entry with APIUsage table and hence leaving after making an entry to APIError table.
                                     mainCallback(null, '{"status":"successful","message":"error successfully recorded in APIError table"}')
                                 }
                             } else {

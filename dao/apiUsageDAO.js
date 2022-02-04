@@ -21,8 +21,7 @@ exports.getCustomerAPIDetails = function (req, res, callback) {
             "JOIN APIName an on an.APINameId = ars.APINameId " +
             "JOIN APIRoute ar on ar.APINameId = ars.APINameId " +
             "JOIN APIRoutePrice arp on ar.APIRouteId = arp.APIRouteId " +
-            "JOIN APICustomer ac on ars.APICustomerId = ac.APICustomerId "+
-            "where ac.APIKey = ? AND an.Name = ? " +
+            "where APIKey = ? AND an.Name = ? " +
             "AND ar.APIVersion = ? " +
             "AND (EndPointName = ? OR EndPointName = '/') " +
             "ORDER BY LENGTH(ar.EndPointName) DESC " +
@@ -84,14 +83,13 @@ exports.insertErrorDetails = function (req, res, callback) {
 }
 
 
-// This method is being called by the client APIs to validate before invoking the API endpoints
+//THis method is being called by client APIs to validate before invoking the API endpoints
 exports.validateApiKeyAndName = function (req, res, callback) {
 
     let options = {
         sql: "SELECT * from APIRouteSubscription ars " +
             "INNER JOIN APIName apn on ars.APINameId = apn.APINameId " +
-            "INNER JOIN APICustomer ac on ars.APICustomerId = ac.APICustomerId "+
-            "WHERE Name = ? AND ac.APIKey = ?",
+            "WHERE Name = ? AND APIKey = ?",
         values: [req.body.apiName, req.headers.api_key]
     }
 
