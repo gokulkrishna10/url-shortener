@@ -12,7 +12,11 @@ exports.apiKeyAndApiNameValidation = function (req, res, next) {
         err = customError.BadRequest("request needs an api key")
         err.donotUpdateUsage = true;
         next(err)
-    } else if (util.isNull(req.body.apiName) || util.isNull((req.body.apiName).trim())) {
+    } else if (!req.body) {
+        err = customError.BadRequest("request needs a body")
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (util.isNull((req.body.apiName)) || util.isNull((req.body.apiName).trim())) {
         err = customError.BadRequest("request needs an apiName")
         err.donotUpdateUsage = true;
         next(err)
@@ -33,7 +37,7 @@ exports.apiUsageValidation = function (req, res, next) {
     } else if (util.isNull(req.headers.api_key)) {
         req.isValidationError = true;
         next(customError.BadRequest("request needs an api key"))
-    } else if (util.isNull(req.body.apiDetails.apiName) || util.isNull((req.body.apiDetails.apiName).trim())) {
+    } else if (util.isNull((req.body.apiDetails.apiName)) || util.isNull((req.body.apiDetails.apiName).trim())) {
         req.isValidationError = true;
         next(customError.BadRequest("request needs an apiName"))
     } else if (isNaN(req.body.apiDetails.executionTime)) {
