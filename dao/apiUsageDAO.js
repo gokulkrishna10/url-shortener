@@ -90,7 +90,8 @@ exports.validateApiKeyAndName = function (req, res, callback) {
     let options = {
         sql: "SELECT * from APIRouteSubscription ars " +
             "INNER JOIN APIName apn on ars.APINameId = apn.APINameId " +
-            "WHERE Name = ? AND APIKey = ?",
+            "INNER JOIN APICustomer ac on ars.APICustomerId = ac.APICustomerId "+
+            "WHERE Name = ? AND ac.APIKey = ?",
         values: [req.body.apiName, req.headers.api_key]
     }
 
