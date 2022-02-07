@@ -1,4 +1,3 @@
-const { constant } = require('async');
 const uuid = require('uuid')
 const constants = require('../constants/constants')
 

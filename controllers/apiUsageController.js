@@ -11,9 +11,9 @@ exports.updateAPIUsage = function (req, res, mainCallback) {
 
     async.waterfall([
             function updateErrorDetails(callback) {
-                if (req.isValidationError   //api-usage input rquest validation failed
-                    || apiUsageClientValidationError  //request validation failed from client API
-                    || apiUsageClientError
+                if (req.isValidationError   // true if update-api-usage input request validation failed
+                    || apiUsageClientValidationError  // true if request validation failed from client API( i.e. if client is not found to be subscribed to the requested api)
+                    || apiUsageClientError   // true if client api failed
                 ) {
                     apiUsageDao.insertErrorDetails(req, res, function (err, dbResponse) {
                         if (err) {
