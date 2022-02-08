@@ -93,6 +93,7 @@ exports.getCustomerAttributes = function (req) {
     customerAttributes.Address = req.body.address ? req.body.address : null
     customerAttributes.Email = req.body.email
     customerAttributes.IsActive = 1
+    customerAttributes.APIKey = 'dummy-key' // adding a dummy customer apiKey until the design is finalised
 
     return customerAttributes
 }
@@ -102,7 +103,7 @@ exports.getApiRouteSubscriptionAttributes = function (response) {
 
     apiRouteSubscriptionAttributes.APICustomerId = response.APICustomerId
     apiRouteSubscriptionAttributes.APINameId = response.APINameId;
-    apiRouteSubscriptionAttributes.APIKey = uuid.v4();
+    apiRouteSubscriptionAttributes.APIKey = uuid.v4();   // need to remove this once the design is finalised
     apiRouteSubscriptionAttributes.IsActive = 1
 
     return apiRouteSubscriptionAttributes
