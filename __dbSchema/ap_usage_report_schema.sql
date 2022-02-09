@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS APIRouteSubscription(
     IsActive TINYINT NOT NULL,
 	StartDate DATETIME NOT NULL DEFAULT NOW(),
     CONSTRAINT PK_APIRouteSubscription PRIMARY KEY (APIRouteSubscriptionId),
-    CONSTRAINT UK_APIRouteSubscription UNIQUE(APICustomerId, APINameId, APIKey),
+    ADD CONSTRAINT UK_APIRouteSubscription_Covering UNIQUE(APICustomerId, APINameId, APIPricingPlanId)
     CONSTRAINT FK_APIRouteSubscription_APINameId FOREIGN KEY (APINameId) REFERENCES APIName(APINameId),
     CONSTRAINT FK_APISubscription_APICustomerId FOREIGN KEY (APICustomerId) REFERENCES APICustomer(APICustomerId),
     CONSTRAINT FK_APIRouteSubscription_APIPricingPlanId FOREIGN KEY (APIPricingPlanId) REFERENCES APIPricingPlan(APIPricingPlanId)
