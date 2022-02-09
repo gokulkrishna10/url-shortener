@@ -70,12 +70,12 @@ router.post('/v1/validate-api-usage', apiUsageValidator.apiKeyAndApiNameValidati
 //public
 router.get('/v1/usage', routes.apiUsageClientValidationByKey, apiUsageValidator.getUsageValidation, routes.getApiUsage)
 router.get('/v1/error', routes.apiUsageClientValidationByKey, apiUsageValidator.getErrorValidation, routes.getAPIError)
+router.get('/v1/api-names', routes.getAllApiNames)
 //Admin-internal
 
 router.post('/v1/internal/onboard-api', apiUsageValidator.adminValidation, apiUsageValidator.getAPIOnboardValidation, routes.onBoardNewApi)
 router.post('/v1/internal/customer', apiUsageValidator.adminValidation, apiUsageValidator.getNewCustomerValidation, routes.addNewCustomer)
 router.post('/v1/internal/api-subscription', apiUsageValidator.adminValidation, apiUsageValidator.getCustomerApiSubscriptionValidation, routes.customerApiSubscription)
-router.get('/v1/internal/api-names', apiUsageValidator.adminValidation, routes.getAllApiNames)
 router.get('/v1/internal/admin-usage', apiUsageValidator.adminValidation, apiUsageValidator.getAdminUsageValidation, routes.getAdminUsage)
 router.get('/v1/internal/admin-error', apiUsageValidator.adminValidation, apiUsageValidator.getAdminErrorValidation, routes.getAdminError)
 router.get('/v1/internal/api-performance', apiUsageValidator.adminValidation, apiUsageValidator.getAdminApiPerformanceValidation, routes.getApiPerformance)

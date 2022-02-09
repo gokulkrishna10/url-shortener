@@ -150,12 +150,23 @@ exports.getAPIUsage = function (req, res, callback) {
         toDate = moment(req.query.toDate).format("YYYY-MM-DD[T]HH:mm:ss");
     }
     let apiKey = req.headers.api_key
+    let apiName = req.query.apiName
     let options;
     if (constants.dailyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
-        if (req.query.getEndpoints === "true") {
+        if (req.query.getEndpoints === "true" && !apiName) {
             options = {
                 sql: sqlQueries.GET_DAILY_USAGE_WITH_ENDPOINTS_QUERY,
                 values: [apiKey, fromDate, toDate]
+            }
+        } else if (req.query.getEndpoints === "true" && apiName) {
+            options = {
+                sql: sqlQueries.GET_DAILY_USAGE_WITH_ENDPOINTS_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate]
+            }
+        } else if (req.query.getEndpoints !== "true" && apiName) {
+            options = {
+                sql: sqlQueries.GET_DAILY_USAGE_WO_ENDPOINTS_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate]
             }
         } else {
             options = {
@@ -164,10 +175,20 @@ exports.getAPIUsage = function (req, res, callback) {
             }
         }
     } else if (constants.monthlyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
-        if (req.query.getEndpoints === "true") {
+        if (req.query.getEndpoints === "true" && !apiName) {
             options = {
                 sql: sqlQueries.GET_MONTHLY_USAGE_WITH_ENDPOINTS_QUERY,
                 values: [apiKey, fromDate, toDate]
+            }
+        } else if (req.query.getEndpoints === "true" && apiName) {
+            options = {
+                sql: sqlQueries.GET_MONTHLY_USAGE_WITH_ENDPOINTS_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate]
+            }
+        } else if (req.query.getEndpoints !== "true" && apiName) {
+            options = {
+                sql: sqlQueries.GET_MONTHLY_USAGE_WO_ENDPOINTS_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate]
             }
         } else {
             options = {
@@ -176,10 +197,20 @@ exports.getAPIUsage = function (req, res, callback) {
             }
         }
     } else {
-        if (req.query.getEndpoints === "true") {
+        if (req.query.getEndpoints === "true" && !apiName) {
             options = {
                 sql: sqlQueries.GET_YEARLY_USAGE_WITH_ENDPOINTS_QUERY,
                 values: [apiKey, fromDate, toDate]
+            }
+        } else if (req.query.getEndpoints === "true" && apiName) {
+            options = {
+                sql: sqlQueries.GET_YEARLY_USAGE_WITH_ENDPOINTS_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate]
+            }
+        } else if (req.query.getEndpoints !== "true" && apiName) {
+            options = {
+                sql: sqlQueries.GET_YEARLY_USAGE_WO_ENDPOINTS_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate]
             }
         } else {
             options = {
@@ -223,12 +254,23 @@ exports.getAPIError = function (req, res, callback) {
         toDate = moment(req.query.toDate).format("YYYY-MM-DD[T]HH:mm:ss");
     }
     let apiKey = req.headers.api_key
+    let apiName = req.query.apiName
     let options;
     if (constants.dailyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
-        if (req.query.getErrorDetails === 'true') {
+        if (req.query.getErrorDetails === 'true' && !apiName) {
             options = {
                 sql: sqlQueries.GET_ERRORS_WITH_DETAILS,
                 values: [apiKey, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+            }
+        } else if (req.query.getErrorDetails === 'true' && apiName) {
+            options = {
+                sql: sqlQueries.GET_ERRORS_WITH_DETAILS_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+            }
+        } else if (req.query.getErrorDetails !== 'true' && apiName) {
+            options = {
+                sql: sqlQueries.GET_DAILY_ERROR_COUNT_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate]
             }
         } else {
             options = {
@@ -237,10 +279,20 @@ exports.getAPIError = function (req, res, callback) {
             }
         }
     } else if (constants.monthlyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
-        if (req.query.getErrorDetails === 'true') {
+        if (req.query.getErrorDetails === 'true' && !apiName) {
             options = {
                 sql: sqlQueries.GET_ERRORS_WITH_DETAILS,
                 values: [apiKey, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+            }
+        } else if (req.query.getErrorDetails === 'true' && apiName) {
+            options = {
+                sql: sqlQueries.GET_ERRORS_WITH_DETAILS_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+            }
+        } else if (req.query.getErrorDetails !== 'true' && apiName) {
+            options = {
+                sql: sqlQueries.GET_MONTLY_ERROR_COUNT_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate]
             }
         } else {
             options = {
@@ -249,10 +301,20 @@ exports.getAPIError = function (req, res, callback) {
             }
         }
     } else {
-        if (req.query.getErrorDetails === 'true') {
+        if (req.query.getErrorDetails === 'true' && !apiName) {
             options = {
                 sql: sqlQueries.GET_ERRORS_WITH_DETAILS,
                 values: [apiKey, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+            }
+        } else if (req.query.getErrorDetails === 'true' && apiName) {
+            options = {
+                sql: sqlQueries.GET_ERRORS_WITH_DETAILS_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+            }
+        } else if (req.query.getErrorDetails !== 'true' && apiName) {
+            options = {
+                sql: sqlQueries.GET_YEARLY_ERROR_COUNT_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate]
             }
         } else {
             options = {
@@ -522,7 +584,7 @@ exports.insertOrUpdateToApiRouteSubscription = function (response, callback) {
 
 exports.getAllApiNames = function (req, callback) {
     let options = {
-        sql: "select Name,Description from APIName"
+        sql: "select Name,DisplayName,Description from APIName"
     }
 
     db.queryWithOptions(options, (dbError, dbResponse) => {
