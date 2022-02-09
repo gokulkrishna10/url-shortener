@@ -7,13 +7,7 @@ password: 891f5b0d-6873-4b5f-a0ae-9b890ed0739d
 
 
 DESIGN DECISIONS:
--------------------
-1. Volume Quota Limits:
-Decided not to use the Volume limits at the AWS API Gateway level as we will have to create a usage plan per API/method
-at the customer level. Also it will not warn the customer once the limits are about to be reached. Hence we are going ahead 
-with a custom implementation.
-
-2. Pricing Plan:
+1. Pricing Plan:
 Chose to follow a simple plan where we define the pricing only for the PayAsYouGo plan. All the other plans follow
 a discuont scheme basd on the BasePrice defined for PayAsYouGo plan.
 
@@ -35,13 +29,14 @@ CREATE TABLE IF NOT EXISTS APICustomer (
 	Address VARCHAR(500) NULL,
     Email VARCHAR(255) NOT NULL,
     IsActive TINYINT NOT NULL,
+    APIKey VARCHAR(100) NOT NULL, 
 	CreateDate DATETIME NOT NULL DEFAULT NOW(),
 	UpdateDate DATETIME NOT NULL DEFAULT NOW(),
-    CONSTRAINT PK_APICustomer PRIMARY KEY (APICustomerId)
+    CONSTRAINT PK_APICustomer PRIMARY KEY (APICustomerId),
+    CONSTRAINT UK_APICustomer_APIKey UNIQUE(APIKey)
 );
 
-ALTER TABLE APICustomer
-ADD	CONSTRAINT UK_APICustomer UNIQUE(CustomerName);
+
 
 /* ====================================================================================================
 Description: This table contains the APIName details
@@ -54,11 +49,10 @@ CREATE TABLE IF NOT EXISTS APIName (
     DisplayName VARCHAR(100) NOT NULL,
     Description VARCHAR(200) NOT NULL,
 	CreateDate DATETIME NOT NULL DEFAULT NOW(),
-    CONSTRAINT PK_APIName PRIMARY KEY (APINameid)
+    CONSTRAINT PK_APIName PRIMARY KEY (APINameid),
+    CONSTRAINT UK_APIName_APIName UNIQUE(Name),
+    CONSTRAINT UK_APIName_DisplayName UNIQUE(DisplayName)
 );
-
-ALTER TABLE APIName
-ADD	CONSTRAINT UK_APIName UNIQUE(Name);
 
 
 /* ====================================================================================================
@@ -77,11 +71,11 @@ CREATE TABLE IF NOT EXISTS APIRoute (
     APIVersion VARCHAR(10) NULL,
     EndpointName VARCHAR(200) NOT NULL,
     CONSTRAINT PK_APIRoute PRIMARY KEY (APIRouteId),
-    CONSTRAINT FK_APIRoute_APINameId FOREIGN KEY (APINameId) REFERENCES APIName(APINameId)
+    CONSTRAINT FK_APIRoute_APINameId FOREIGN KEY (APINameId) REFERENCES APIName(APINameId),
+    CONSTRAINT UK_APIRoute UNIQUE(APINameId, APIVersion, EndpointName)
 );
 
-ALTER TABLE APIRoute
-ADD	CONSTRAINT UK_APIRoute UNIQUE(APINameId, APIVersion, EndpointName);
+
 
 /* ====================================================================================================
 Description: This table stores the Pricing Discount types
@@ -98,12 +92,12 @@ CREATE TABLE IF NOT EXISTS APIPricingPlan (
     PlanDuration VARCHAR(30) NOT NULL,
     Quantity INT NOT NULL,
     DiscountPercent DECIMAL(4,2) NOT NULL,
-    CONSTRAINT PK_APIPricingPlan PRIMARY KEY (APIPricingPlanId)
+    CONSTRAINT PK_APIPricingPlan PRIMARY KEY (APIPricingPlanId),
+    CONSTRAINT UK_APIPricingPlan_Name UNIQUE(Name)
 );
 
-ALTER TABLE APIPricingPlan
-ADD	CONSTRAINT UK_APIPricingPlan UNIQUE(Name);
 
+/*
 
 INSERT INTO APIPricingPlan(Name, Description, Unit,PlanDuration, Quantity, DiscountPercent)
 VALUES ('PayAsYouGo', 'PayAsYouGo', 'Nos','N/A', 0,0);
@@ -116,67 +110,129 @@ VALUES ('SavingPlan1000', 'Pay Upfront Purchase', 'Pounds','Monthly', 1000, 4);
 INSERT INTO APIPricingPlan(Name, Description, Unit, PlanDuration, Quantity, DiscountPercent)
 VALUES ('SavingPlan2000', 'Pay Upfront Purchase', 'Pounds','Monthly', 2000, 5);
 
+*/
+
 
 /* ====================================================================================================
-Description: This table contains data for an APISubscription for a (API+Customer). Note API Keys are defined
-per (API + Customer).
-APIKey : GUID string
+Description: This table contains data for an APISubscription for a (API+Customer). NOTE APIKeys are
+at the Customer Level. Just like othe subscription, the custoner is subscribing with a PricingPlan and with a StartDate
+and NO EndDate.
+When the Customer changes plan, which will be allowed only from Next month, the EndDate will be updated 
+a new Subscription will be started, with a new PricinglanId.
+
 
 IMPORTANT NOTE: INSERT A NEW ENTRY when the pricing plan changes for a customer, so that we can track
-				the history and can be tracked. Also can be used to re-create past invoices.
-TODO: Need changes here... this can't be here.. it has to go to APIRoutePrice table
-    APIPricingPlanId INT NOT NULL,
+the history and can be tracked. Also can be used to re-create past invoices.
+
 */
 
 CREATE TABLE IF NOT EXISTS APIRouteSubscription(
 	APIRouteSubscriptionId INT NOT NULL AUTO_INCREMENT,
 	APICustomerId INT NOT NULL,
     APINameId INT NOT NULL,
+    APIPricingPlanId INT NOT NULL,
 	APIKey VARCHAR(100) NOT NULL, 
     IsActive TINYINT NOT NULL,
 	StartDate DATETIME NOT NULL DEFAULT NOW(),
     CONSTRAINT PK_APIRouteSubscription PRIMARY KEY (APIRouteSubscriptionId),
+    ADD CONSTRAINT UK_APIRouteSubscription_Covering UNIQUE(APICustomerId, APINameId, APIPricingPlanId)
     CONSTRAINT FK_APIRouteSubscription_APINameId FOREIGN KEY (APINameId) REFERENCES APIName(APINameId),
-    CONSTRAINT FK_APISubscription_APICustomerId FOREIGN KEY (APICustomerId) REFERENCES APICustomer(APICustomerId)
+    CONSTRAINT FK_APISubscription_APICustomerId FOREIGN KEY (APICustomerId) REFERENCES APICustomer(APICustomerId),
+    CONSTRAINT FK_APIRouteSubscription_APIPricingPlanId FOREIGN KEY (APIPricingPlanId) REFERENCES APIPricingPlan(APIPricingPlanId)
 );
 
-ALTER TABLE APIRouteSubscription
-ADD	CONSTRAINT UK_APIRouteSubscription UNIQUE(APICustomerId, APINameId, APIKey);
 
-/* TO DROP, HAD TO DROP THE FK FIRST
+/*
+#==================================== BEGIN - Changes for API Usage - Phase I=============================
+#==============>Add PricingPlanId to the Subscripotion tabble
 ALTER TABLE APIRouteSubscription
-DROP FOREIGN KEY FK_APISubscription_APICustomerId;
+ADD COLUMN APIPricingPlanId INT NOT NULL DEFAULT 1;
+
+Select * from APIRouteSubscription;
+
+# Modify the Constraint
 ALTER TABLE APIRouteSubscription
-DROP INDEX  UK_APIRouteSubscription;
-# Add it back after dropping the UK key
+ADD CONSTRAINT UK_APIRouteSubscription_Covering UNIQUE(APICustomerId, APINameId, APIPricingPlanId)
+
+#=========>****************Drop the APIKey Column after testing is done*******************
 ALTER TABLE APIRouteSubscription
-ADD CONSTRAINT FK_APISubscription_APICustomerId FOREIGN KEY (APICustomerId) REFERENCES APICustomer(APICustomerId);
+DROP CONSTRAINT UK_APIRouteSubscription;
+
+ALTER TABLE APIRouteSubscription
+DROP COLUMN APIKey;
+
+ALTER TABLE APIRouteSubscription
+ADD CONSTRAINT FK_APIRouteSubscription_APIPricingPlanId FOREIGN KEY (APIPricingPlanId) REFERENCES APIPricingPlan(APIPricingPlanId);
+
+#=========>Drop the APIKey Column after testing is done
+
+
+*/
+
+/*
+#==================================== BEGIN - Changes for API Usage - Phase II=============================
+# Add and EndDate to Subscription
+
+
+
+## Add EndDate to Subscription
+
+# The Subscription Validation
+-> Should take care of multiple subscriptions including expired ones
+
+# End Subscription
+-> Add an API Method to end subscription
+
+## Subscription Limits
+-> Add Quota Limits 
+
+
+## Invoice
+-> For finding invoice, we will use only APIUsage table
+-> But the APIRouteSubscription table can be used to find the history of subscriptions for a client.
+-> Add an API to get invoice amount for a Customer for a given month period
+
+===============================================OTHER Tasks==============================================
+Decide on the required pricing plans:
+    - We can have a TrialPlan with max nunber limit
+    - Volume Subscriptions by number and amount
+
+Billing:
+ - Apply discounts based on the plan on top of the total
+ - need to define the transition rules
+
+API Usage Update:
+    - Update the totals in the table : APISubscriptionLimits as you go
+    - Check for thresholds and send email accordingly
+    - Send regular usage report emails for Spend Accounts  (eg: weekly)
+
+Limit Resetting Lambda:
+    - A Lambda will trigger and reset the Subscriptions with Limits at 12 AM beginning of a month
+=====================================================================================================
+
+
+#   this table stores the subscription limits (number and amount for those PricingPlans that are not PayAsYouGo)
+CREATE TABLE IF NOT EXISTS APISubscriptionLimit (
+	APISubscriptionLimitId INT NOT NULL AUTO_INCREMENT,
+    APIRouteSubscriptionId INT NOT NULL, # (FK) TODO
+    TotalUsageCount INT NOT NULL DEFAULT 0,
+    TotalCost DECIMAL(10,4) NOT NULL, 
+    
+    CONSTRAINT PK_APISubscriptionLimit PRIMARY KEY (APIQuotaLimitId),
+    CONSTRAINT FK_APISubscriptionLimit_APIRouteSubscriptionId FOREIGN KEY (APIRouteSubscriptionId) REFERENCES APIRouteSubscription(APIRouteSubscriptionId)
+);
+
+--> Drop the table : APIQuotaLimit
+
+*/
+
+/*
+#==================================== BEGIN - Changes for API Usage - Phase II=============================
+
 
 */
 
 
-
-/* ====================================================================================================
-Description : This table stores the API Limits for a (APINameId + CustomerId). This can be used to track Volume usage as well as
-upfront usage.
-PlanDuration : Daily, Weekly, Monthly
-
-FACTS:
-1. Customer subscribes for an API and receives an APIKey
-2. An API can have single or multiple chargeable routes (each route charges differently : PricePerCall for BasePlan)
-3. API Discounts are applied though Pricing Plans, which will internallky impose quota limits
-
-Edge cases:
-1. Pay Upfront amount/Quota Limit is over for a month
-	SOLUTION: 
-		Possible options:
-		a. Customer moves to the new Pricing plan
-			SOL: Will be charged accordingly as we keep track of the PlanId pe call
-		b. Customer doesn't change to the new plan.
-			SOL: For QuotaLimit, the customer can be charged as per PayAsYouGo after the QuotaLimit is reached
-				 For the PayUpFront, once the amount expires, the cusrtomer will be changed by the PayAsYouGo plan.
-
-*/
 
 CREATE TABLE IF NOT EXISTS APIQuotaLimit (
 	APIQuotaLimitId INT NOT NULL AUTO_INCREMENT,
@@ -291,12 +347,47 @@ CREATE TABLE IF NOT EXISTS APIUsage (
 );
 
 
+/*
+#==================================== BEGIN - Changes for API Usage - Phase I=============================
+### THIS SECXTION TO DELETE AFTER BEING DEPLOYES TO PROD======================
+##------------API Customer changes-------------------
+ALTER TABLE APICustomer
+MODIFY COLUMN APIKey VARCHAR(100) NULL;
+
+# Now update the APIKey from APIRouteSubscription manually and after that make the key non-nullable
+
+ALTER TABLE APICustomer
+MODIFY COLUMN APIKey VARCHAR(100) NOT NULL;
+
+ALTER TABLE APICustomer
+ADD	CONSTRAINT UK_APICustomer_APIKey UNIQUE(APIKey);
+
+
+##------------APIName table changes-------------------
+# make then unique
+ALTER TABLE APIName
+ADD	CONSTRAINT UK_APIName_APIName UNIQUE(Name);
+ALTER TABLE APIName
+ADD	CONSTRAINT UK_APIName_DisplayName UNIQUE(DisplayName);
+
+##------------APIRouteSubscription table changes-------------------
 
 
 
 
+#################Just verify in Prod, these are existing at the timne of deployment#######################
+ALTER TABLE APIPricingPlan
+ADD	CONSTRAINT UK_APIPricingPlan_Name UNIQUE(Name);
 
-/*--------------------SELECT----------------------
+
+#=========================== END - Changes for API Usage - Phase I=============================
+
+*/
+
+/*
+
+##====================================================Scripts=========================================================
+
 USE api_usage_report_dev;
 
 Select * from APIUsage;
@@ -320,182 +411,6 @@ LIMIT 5;
 Select * from APIUsage
 order by APIUsageId desc
 LIMIT 5; 
-
-*/
-
-
-/*--------------------DROP----------------------
-USE api_usage_report_dev;
-
-Drop table APIUsage;
-Drop table APIError;
-Drop table ErrorType;
-Drop table APIRoutePrice;
-Drop table APIQuotaLimit;
-Drop table APIRouteSubscription;
-Drop table APIPricingPlan;
-Drop table APIRoute;
-Drop table APICustomer;
-Drop table APIName;
-
-*/
-
-
-/*
-----------------------------------Scripts-------------------------------------------------------
-
-------------Onboard an API--------------------
-#------API 
-INSERT INTO APIName (Name, DisplayName, Description)
-VALUES ('Half-Hourly-Meter-History', 'Half Hourly Meter History',  'Half-Hourly-Meter-History');
-INSERT INTO APIName (Name, DisplayName, Description)
-VALUES ('meter-data', 'meter-data',  'meter-data');
-INSERT INTO APIName (Name, DisplayName, Description)
-VALUES ('meter-data-advanced', 'meter-data-advanced',  'meter-data-advanced');
-INSERT INTO APIName (Name, DisplayName, Description)
-VALUES ('carbon-footprint', 'carbon-footprint',  'carbon-footprint');
-INSERT INTO APIName (Name, DisplayName, Description)
-VALUES ('eveloper/meter-data', 'eveloper/meter-data',  'eveloper/meter-data');
-INSERT INTO APIName (Name, DisplayName, Description)
-VALUES ('current-energy-profile', 'current-energy-profile',  'current-energy-profile');
-INSERT INTO APIName (Name, DisplayName, Description)
-VALUES ('precovid-energy-profile', 'precovid-energy-profile',  'precovid-energy-profile');
-INSERT INTO APIName (Name, DisplayName, Description)
-VALUES ('current-energy-usage', 'current-energy-usage',  'current-energy-usage');
-INSERT INTO APIName (Name, DisplayName, Description)
-VALUES ('precovid-energy-usage', 'precovid-energy-usage',  'precovid-energy-usage');
-INSERT INTO APIName (Name, DisplayName, Description)
-VALUES ('current-energy-supplier', 'current-energy-supplier',  'current-energy-supplier');
-INSERT INTO APIName (Name, DisplayName, Description)
-VALUES ('current-supplier-details', 'current-supplier-details',  'current-supplier-details');
-INSERT INTO APIName (Name, DisplayName, Description)
-VALUES ('quote-request', 'quote-request',  'quote-request');
-INSERT INTO APIName (Name, DisplayName, Description)
-VALUES ('ev-comparison-api', 'evCompare',  'evCompare');
-INSERT INTO APIName (Name, DisplayName, Description)
-VALUES ('ou-neighbourhood-comparison', 'Neighbourhood Energy Comparison',  'Neighbourhood Energy Comparison');
-
-
- 
-
-#--ROUTE1
-INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
-VALUES (1,'v1','/');
-INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
-VALUES (1,'v1','cumulative-interval-data');
-
-INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
-VALUES (2,'v1','/');
-INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
-VALUES (3,'v1','/');
-INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
-VALUES (4,'v1','/');
-INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
-VALUES (5,'v1','/');
-INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
-VALUES (6,'v1','/');
-INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
-VALUES (7,'v1','/');
-INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
-VALUES (8,'v1','/');
-INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
-VALUES (9,'v1','/');
-INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
-VALUES (10,'v1','/');
-INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
-VALUES (11,'v1','/');
-INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
-VALUES (12,'v1','/');
-INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
-VALUES (13,'v1','/');
-INSERT INTO APIRoute (APINameId, APIVersion, EndpointName)
-VALUES (14,'v1','/');
-
-
-select * from APIRoute;
-
-#-- NOTE you will only enter price for APIPricingPlanId = 1
-INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
-VALUES (1, 1, 0.10); 
-INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
-VALUES (2, 1, 0.15); 
-
-INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
-VALUES (3, 1, 0.10); 
-INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
-VALUES (4, 1, 0.10); 
-INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
-VALUES (5, 1, 0.10); 
-INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
-VALUES (6, 1, 0.10); 
-INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
-VALUES (7, 1, 0.10); 
-INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
-VALUES (8, 1, 0.10); 
-INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
-VALUES (9, 1, 0.10); 
-INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
-VALUES (10, 1, 0.10); 
-INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
-VALUES (11, 1, 0.10); 
-INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
-VALUES (12, 1, 0.10); 
-INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
-VALUES (13, 1, 0.10); 
-INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
-VALUES (14, 1, 0.10); 
-INSERT INTO APIRoutePrice (APIRouteId, APIPricingPlanId, BasePricePerCall)
-VALUES (15, 1, 0.10); 
-
-
-
-
-#-----------Onboard a Customer -----
-INSERT INTO APICustomer (CustomerName, LegalName,  Address, Email, IsActive)
-VALUES ('Renewable-Exchange', 'Renewable Exchange Ltd',  NULL, 'sudheer.k@digitalapicraft.com', 1);
-
-INSERT INTO APICustomer (CustomerName, LegalName,  Address, Email, IsActive)
-VALUES ('Test Customer', 'Test Customer',  NULL, 'sudheer.k@digitalapicraft.com', 1);
-
-#---------------Subcription (API + Customer)
-
-INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
-VALUES (1, 1, 'a0a07621-2379-4042-bde9-0539a84a036c', 1);
-	
-INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
-VALUES (2, 2, 'LABRADOR-APIKEY', 1);
-INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
-VALUES (2, 3, 'LABRADOR-APIKEY', 1);
-INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
-VALUES (2, 4, 'LABRADOR-APIKEY', 1);
-INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
-VALUES (2, 5, 'LABRADOR-APIKEY', 1);
-INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
-VALUES (2, 6, 'LABRADOR-APIKEY', 1);
-INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
-VALUES (2, 7, 'LABRADOR-APIKEY', 1);
-INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
-VALUES (2, 8, 'LABRADOR-APIKEY', 1);
-INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
-VALUES (2, 9, 'LABRADOR-APIKEY', 1);
-INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
-VALUES (2, 10, 'LABRADOR-APIKEY', 1);
-INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
-VALUES (2, 11, 'LABRADOR-APIKEY', 1);
-INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
-VALUES (2, 12, 'LABRADOR-APIKEY', 1);
-
-INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
-VALUES (2, 13, '3f56cc00-7882-483d-b1eb-9c89070c64a7', 1);
-INSERT INTO APIRouteSubscription (APICustomerId, APINameId, APIKey, IsActive)
-VALUES (2, 14, 'f6ec9f65-fa7a-4365-958c-aff0a1220631', 1);
-
-
-
-#--------------APIRouteId + Customer ( If there are any limits needed)
-#INSERT INTO APIQuotaLimit (APINameId, APICustomerId, APIPricingPlanId, PlanDuration)
-#VALUES (1, 1, 2, 'Monthly');
-
 
 
 #--------------Update Usage Queries------------------
@@ -633,14 +548,6 @@ FROM (
 LEFT OUTER JOIN APIName an on an.APINameId = t.APINameId
 where product_rank<=10
 AND t.HttpStatusCode = 200;
-
-#===========================================Testing - MeterDeactivationTracker- Year 50000================================
-select * from MeterDeactivationTracker
-where MeterNo = '9999999999999'
-
-
-delete from MeterDeactivationTracker
-where MeterNo = '9999999999999'
 
 
 */
