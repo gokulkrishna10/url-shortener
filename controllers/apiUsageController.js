@@ -23,7 +23,7 @@ exports.updateAPIUsage = function (req, res, mainCallback) {
                                 if (!req.isValidationError && apiUsageClientError) {
                                     callback(null, req);
                                 } else {
-                                    //We donot have enough details to create an entry with APIUsage table and hence leaving after making an entry to APIError table.
+                                    //We do not have enough details to create an entry with APIUsage table and hence leaving after making an entry to APIError table.
                                     mainCallback(null, '{"status":"successful","message":"error successfully recorded in APIError table"}')
                                 }
                             } else {
