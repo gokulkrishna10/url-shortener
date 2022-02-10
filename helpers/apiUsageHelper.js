@@ -1,3 +1,4 @@
+const {constant} = require('async');
 const uuid = require('uuid')
 const constants = require('../constants/constants')
 
@@ -93,6 +94,7 @@ exports.getCustomerAttributes = function (req) {
     customerAttributes.Address = req.body.address ? req.body.address : null
     customerAttributes.Email = req.body.email
     customerAttributes.IsActive = 1
+    customerAttributes.APIKey = 'dummy-key' // adding a dummy customer apiKey until the design is finalised to randomly generate it
 
     return customerAttributes
 }
@@ -102,8 +104,9 @@ exports.getApiRouteSubscriptionAttributes = function (response) {
 
     apiRouteSubscriptionAttributes.APICustomerId = response.APICustomerId
     apiRouteSubscriptionAttributes.APINameId = response.APINameId;
-    apiRouteSubscriptionAttributes.APIKey = uuid.v4();
+    apiRouteSubscriptionAttributes.APIKey = 'dummy-key';   // need to remove this once the design is finalised
     apiRouteSubscriptionAttributes.IsActive = 1
+    apiRouteSubscriptionAttributes.APIPricingPlanId = response.APIPricingPlanId
 
     return apiRouteSubscriptionAttributes
 }

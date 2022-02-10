@@ -184,29 +184,30 @@ exports.customerApiSubscription = function (req, res, mainCallback) {
     console.log("inside customerApiSubscription")
 
     async.waterfall([
-        function getAPICustomerIdAndApiNameId(callback) {
-            apiUsageDao.getAPICustomerIdAndApiNameId(req, (err, response) => {
+        function getAPICustomerIdAndApiNameIdAndPricingPlanId(callback) {
+            apiUsageDao.getAPICustomerIdAndApiNameIdAndPricingPlanId(req, (err, response) => {
                 if (err) {
                     callback(err, null)
                 } else {
                     (response.code && response.code === 400) ? mainCallback(response, null) : callback(null, response)
                 }
             })
-        }, function checkTheCustomerIdAndApiNameId(response, callback) {
-            apiUsageDao.checkTheCustomerIdAndApiNameId(response, (err, result) => {
+        }, function checkTheCustomerIdAndApiNameIdAndPricingPlanId(response, callback) {
+            apiUsageDao.checkTheCustomerIdAndApiNameIdAndPricingPlanId(response, (err, result) => {
                 if (err) {
                     callback(err, null)
                 } else {
                     (result && result.code && result.code === 400) ? mainCallback(result, null) : callback(null, response)
                 }
             })
-        }, function insertIntoApiRouteSubscription(response, callback) {
-            apiUsageDao.insertIntoApiRouteSubscription(response, (err, response) => {
+        }, function insertOrUpdateToApiRouteSubscription(response, callback) {
+            apiUsageDao.insertOrUpdateToApiRouteSubscription(response, (err, response) => {
                 if (err) {
                     callback(err, null)
                 } else {
                     response.apiName = req.body.apiName
-                    response.customerName = req.body.customerName;
+                    response.customerName = req.body.customerName
+                    response.pricingPlan = req.body.pricingPlan;
                     (response.code && response.code === 500) ? callback(response, null) : callback(null, response)
                 }
             })
