@@ -21,7 +21,7 @@ exports.getCustomerAPIDetails = function (req, res, callback) {
             "JOIN APIName an on an.APINameId = ars.APINameId " +
             "JOIN APIRoute ar on ar.APINameId = ars.APINameId " +
             "JOIN APIRoutePrice arp on ar.APIRouteId = arp.APIRouteId " +
-            "JOIN APICustomer ac on ars.APICustomerId = ac.APICustomerId "+
+            "JOIN APICustomer ac on ars.APICustomerId = ac.APICustomerId " +
             "where ac.APIKey = ? AND an.Name = ? " +
             "AND ar.APIVersion = ? " +
             "AND (EndPointName = ? OR EndPointName = '/') " +
@@ -90,7 +90,7 @@ exports.validateApiKeyAndName = function (req, res, callback) {
     let options = {
         sql: "SELECT * from APIRouteSubscription ars " +
             "INNER JOIN APIName apn on ars.APINameId = apn.APINameId " +
-            "INNER JOIN APICustomer ac on ars.APICustomerId = ac.APICustomerId "+
+            "INNER JOIN APICustomer ac on ars.APICustomerId = ac.APICustomerId " +
             "WHERE Name = ? AND ac.APIKey = ?",
         values: [req.body.apiName, req.headers.api_key]
     }
@@ -116,7 +116,7 @@ exports.validateApiKey = function (req, res, callback) {
     let options = {
         sql: "SELECT * from APIRouteSubscription ars " +
             "INNER JOIN APIName apn on ars.APINameId = apn.APINameId " +
-            "INNER JOIN APICustomer ac on ars.APICustomerId = ac.APICustomerId "+
+            "INNER JOIN APICustomer ac on ars.APICustomerId = ac.APICustomerId " +
             "WHERE ac.APIKey = ?",
 
         values: [req.headers.api_key]
@@ -584,7 +584,7 @@ exports.insertOrUpdateToApiRouteSubscription = function (response, callback) {
 
 exports.getAllApiNames = function (req, callback) {
     let options = {
-        sql: "select Name,DisplayName,Description from APIName"
+        sql: "select DisplayName,Description from APIName"
     }
 
     db.queryWithOptions(options, (dbError, dbResponse) => {

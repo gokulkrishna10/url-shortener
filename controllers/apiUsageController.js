@@ -252,21 +252,21 @@ exports.getAdminUsage = function (req, res, mainCallback) {
                         let apiNameMatch;
                         if (util.isNull(req.query.apiName)) {
                             response.forEach(responseEle => {
-                                successResponse.push(responseEle.Name)
+                                successResponse.push(responseEle.DisplayName)
                             })
                             callback(null, successResponse)
                         } else {
                             response.forEach(responseEle => {
-                                if (responseEle.Name === req.query.apiName) {
+                                if (responseEle.DisplayName === req.query.apiName) {
                                     apiNameMatch = true
                                 } else {
-                                    errorResponse.push(responseEle.Name)
+                                    errorResponse.push(responseEle.DisplayName)
                                 }
                             })
                             apiNameMatch ? callback(null, response) : mainCallback({
                                 "status": "failure",
                                 "code": 400,
-                                "message": `API name can only be one of : ${errorResponse}`
+                                "message": `API name can only be one of : [${errorResponse}]`
                             }, null)
                         }
                     }
@@ -304,21 +304,21 @@ exports.getAdminError = function (req, res, mainCallback) {
                         let apiNameMatch;
                         if (util.isNull(req.query.apiName)) {
                             response.forEach(responseEle => {
-                                successResponse.push(responseEle.Name)
+                                successResponse.push(responseEle.DisplayName)
                             })
                             callback(null, successResponse)
                         } else {
                             response.forEach(responseEle => {
-                                if (responseEle.Name === req.query.apiName) {
+                                if (responseEle.DisplayName === req.query.apiName) {
                                     apiNameMatch = true
                                 } else {
-                                    errorResponse.push(responseEle.Name)
+                                    errorResponse.push(responseEle.DisplayName)
                                 }
                             })
                             apiNameMatch ? callback(null, response) : mainCallback({
                                 "status": "failure",
                                 "code": 400,
-                                "message": `API name can only be one of : ${errorResponse}`
+                                "message": `API name can only be one of : [${errorResponse}]`
                             }, null)
                         }
                     }
