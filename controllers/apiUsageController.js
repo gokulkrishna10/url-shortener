@@ -6,7 +6,7 @@ const {parse} = require("json2csv");
 exports.updateAPIUsage = function (req, res, mainCallback) {
     console.log("inside API usage")
 
-    let apiUsageClientValidationError = (req.body.apiDetails && Boolean(req.body.apiDetails.validationResult) && req.body.apiDetails.validationResult !== true);
+    let apiUsageClientValidationError = (req.body.apiDetails && req.body.apiDetails.validationResult !== true);
     let apiUsageClientError = (req.body.apiDetails && (Boolean(req.body.apiDetails.errorCode) || Boolean(req.body.apiDetails.errorDescription)));
 
     async.waterfall([
