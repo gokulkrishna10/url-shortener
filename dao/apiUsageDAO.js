@@ -488,7 +488,7 @@ exports.getAPICustomerIdAndApiNameIdAndPricingPlanId = function (req, callback) 
         sql: "select APICustomerId from APICustomer where CustomerName = ?",
         values: [req.body.customerName]
     }, {
-        sql: "select APINameId from APIName where Name = ?",
+        sql: "select APINameId from APIName where DisplayName = ?",
         values: [req.body.apiName]
     }, {
         sql: "select APIPricingPlanId from APIPricingPlan where Name = ?",
