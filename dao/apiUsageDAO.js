@@ -505,7 +505,7 @@ exports.insertOrUpdateToApiRouteSubscription = function (response, callback) {
                 finalResponse = {
                     "status": "successful",
                     "message": "Customer successfully subscribed to the API",
-                    "apiKey": apiRouteSubscriptionAttributes.APIKey  // purge this after the design is finalized
+                    "apiKey": apiRouteSubscriptionAttributes.APIKey  // purge this after the apiKey is removed from apiSubscription table
                 }
             } else {
                 finalResponse = {
