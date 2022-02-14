@@ -24,7 +24,7 @@ exports.updateAPIUsage = function (req, res, mainCallback) {
                                     callback(null, req);
                                 } else {
                                     //We do not have enough details to create an entry with APIUsage table and hence leaving after making an entry to APIError table.
-                                    mainCallback(null, '{"status":"successful","message":"error successfully recorded in APIError table"}')
+                                    mainCallback(null, '{"status":"successful","message":"error successfully recorded"}')
                                 }
                             } else {
                                 mainCallback('{"status":"failure","message":"failed to record the error"}', null)
@@ -345,6 +345,16 @@ exports.getAdminError = function (req, res, mainCallback) {
 
 exports.getApiPerformance = function (req, res, callback) {
     apiUsageDao.getApiPerformanceBasedOnExecutionTime(req, res, (err, result) => {
+        if (err) {
+            callback(err, null)
+        } else {
+            callback(null, result)
+        }
+    })
+}
+
+exports.getAllPricingPlans = function (req, callback) {
+    apiUsageDao.getAllPricingPlans(req, (err, result) => {
         if (err) {
             callback(err, null)
         } else {

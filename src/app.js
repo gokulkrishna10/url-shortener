@@ -71,6 +71,7 @@ router.post('/v1/validate-api-usage', apiUsageValidator.apiKeyAndApiNameValidati
 router.get('/v1/usage', routes.apiUsageClientValidationByKey, apiUsageValidator.getUsageValidation, routes.getApiUsage)
 router.get('/v1/error', routes.apiUsageClientValidationByKey, apiUsageValidator.getErrorValidation, routes.getAPIError)
 router.get('/v1/api-names', routes.getAllApiNames)
+router.get('/v1/pricing-plans', routes.getAllPricingPlans)
 //Admin-internal
 
 router.post('/v1/internal/onboard-api', apiUsageValidator.adminValidation, apiUsageValidator.getAPIOnboardValidation, routes.onBoardNewApi)
