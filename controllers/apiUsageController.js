@@ -353,6 +353,16 @@ exports.getApiPerformance = function (req, res, callback) {
     })
 }
 
+exports.getAllPricingPlans = function (req, callback) {
+    apiUsageDao.getAllPricingPlans(req, (err, result) => {
+        if (err) {
+            callback(err, null)
+        } else {
+            callback(null, result)
+        }
+    })
+}
+
 
 
 

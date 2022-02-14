@@ -905,3 +905,27 @@ exports.getApiPerformanceBasedOnExecutionTime = function (req, res, callback) {
         }
     })
 }
+
+
+exports.getAllPricingPlans = function (req, callback) {
+    let options = {
+        sql: "select Name from APIPricingPlan",
+    }
+
+    db.queryWithOptions(options, (dbError, dbResponse) => {
+        if (dbError) {
+            callback(customError.dbError(dbError), null)
+        } else {
+            if (dbResponse && dbResponse.length > 0) {
+                if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
+                    callback(null, parse(dbResponse))
+                } else {
+                    callback(null, dbResponse)
+                }
+            } else {
+                callback(null, "{message:No data}")
+            }
+        }
+    })
+}
+

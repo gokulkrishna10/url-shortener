@@ -137,3 +137,14 @@ exports.getApiPerformance = function (req, res) {
         }
     })
 }
+
+
+exports.getAllPricingPlans = function (req, res) {
+    apiUsage.getAllPricingPlans(req,(err, response) => {
+        if (err) {
+            res.status(err.code).send(err.msg)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}
