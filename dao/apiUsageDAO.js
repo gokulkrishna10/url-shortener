@@ -515,7 +515,7 @@ exports.getAPICustomerIdAndApiNameIdAndPricingPlanId = function (req, callback) 
             } else if (dbResponse && dbResponse[2].length === 0) {
                 dbSuccessResponse = {
                     "status": "failure",
-                    "message": `Requested pricing plan is not available. pricingPlan value can only be one of [${constants.pricingPlans}]`,
+                    "message": `Requested pricing plan is not available. Check out the available plans from getAllPricingPlans(/v1/pricing-plans) api`,
                     code: 400
                 }
             } else {
