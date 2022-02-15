@@ -20,7 +20,7 @@ exports.updateAPIUsage = function (req, res, mainCallback) {
                             mainCallback(err, null)
                         } else {
                             if (dbResponse) {
-                                if (!req.isValidationError && apiUsageClientError) {
+                                if (!req.isValidationError && !apiUsageClientValidationError && apiUsageClientError) {
                                     callback(null, req);
                                 } else {
                                     //We do not have enough details to create an entry with APIUsage table and hence leaving after making an entry to APIError table.
