@@ -6,7 +6,7 @@ const {parse} = require("json2csv");
 exports.updateAPIUsage = function (req, res, mainCallback) {
     console.log("inside API usage")
 
-    let apiUsageClientValidationError = (req.body.apiDetails && Boolean(req.body.apiDetails.validationResult) && req.body.apiDetails.validationResult !== true);
+    let apiUsageClientValidationError = (req.body.apiDetails && req.body.apiDetails.validationResult !== true);
     let apiUsageClientError = (req.body.apiDetails && (Boolean(req.body.apiDetails.errorCode) || Boolean(req.body.apiDetails.errorDescription)));
 
     async.waterfall([
@@ -24,7 +24,7 @@ exports.updateAPIUsage = function (req, res, mainCallback) {
                                     callback(null, req);
                                 } else {
                                     //We do not have enough details to create an entry with APIUsage table and hence leaving after making an entry to APIError table.
-                                    mainCallback(null, '{"status":"successful","message":"error successfully recorded in APIError table"}')
+                                    mainCallback(null, '{"status":"successful","message":"error successfully recorded"}')
                                 }
                             } else {
                                 mainCallback('{"status":"failure","message":"failed to record the error"}', null)
@@ -184,29 +184,30 @@ exports.customerApiSubscription = function (req, res, mainCallback) {
     console.log("inside customerApiSubscription")
 
     async.waterfall([
-        function getAPICustomerIdAndApiNameId(callback) {
-            apiUsageDao.getAPICustomerIdAndApiNameId(req, (err, response) => {
+        function getAPICustomerIdAndApiNameIdAndPricingPlanId(callback) {
+            apiUsageDao.getAPICustomerIdAndApiNameIdAndPricingPlanId(req, (err, response) => {
                 if (err) {
                     callback(err, null)
                 } else {
                     (response.code && response.code === 400) ? mainCallback(response, null) : callback(null, response)
                 }
             })
-        }, function checkTheCustomerIdAndApiNameId(response, callback) {
-            apiUsageDao.checkTheCustomerIdAndApiNameId(response, (err, result) => {
+        }, function checkTheCustomerIdAndApiNameIdAndPricingPlanId(response, callback) {
+            apiUsageDao.checkTheCustomerIdAndApiNameIdAndPricingPlanId(response, (err, result) => {
                 if (err) {
                     callback(err, null)
                 } else {
                     (result && result.code && result.code === 400) ? mainCallback(result, null) : callback(null, response)
                 }
             })
-        }, function insertIntoApiRouteSubscription(response, callback) {
-            apiUsageDao.insertIntoApiRouteSubscription(response, (err, response) => {
+        }, function insertOrUpdateToApiRouteSubscription(response, callback) {
+            apiUsageDao.insertOrUpdateToApiRouteSubscription(response, (err, response) => {
                 if (err) {
                     callback(err, null)
                 } else {
                     response.apiName = req.body.apiName
-                    response.customerName = req.body.customerName;
+                    response.customerName = req.body.customerName
+                    response.pricingPlan = req.body.pricingPlan;
                     (response.code && response.code === 500) ? callback(response, null) : callback(null, response)
                 }
             })
@@ -251,21 +252,21 @@ exports.getAdminUsage = function (req, res, mainCallback) {
                         let apiNameMatch;
                         if (util.isNull(req.query.apiName)) {
                             response.forEach(responseEle => {
-                                successResponse.push(responseEle.Name)
+                                successResponse.push(responseEle.DisplayName)
                             })
                             callback(null, successResponse)
                         } else {
                             response.forEach(responseEle => {
-                                if (responseEle.Name === req.query.apiName) {
+                                if (responseEle.DisplayName === req.query.apiName) {
                                     apiNameMatch = true
                                 } else {
-                                    errorResponse.push(responseEle.Name)
+                                    errorResponse.push(responseEle.DisplayName)
                                 }
                             })
                             apiNameMatch ? callback(null, response) : mainCallback({
                                 "status": "failure",
                                 "code": 400,
-                                "message": `API name can only be one of : ${errorResponse}`
+                                "message": `API name can only be one of : [${errorResponse}]`
                             }, null)
                         }
                     }
@@ -303,21 +304,21 @@ exports.getAdminError = function (req, res, mainCallback) {
                         let apiNameMatch;
                         if (util.isNull(req.query.apiName)) {
                             response.forEach(responseEle => {
-                                successResponse.push(responseEle.Name)
+                                successResponse.push(responseEle.DisplayName)
                             })
                             callback(null, successResponse)
                         } else {
                             response.forEach(responseEle => {
-                                if (responseEle.Name === req.query.apiName) {
+                                if (responseEle.DisplayName === req.query.apiName) {
                                     apiNameMatch = true
                                 } else {
-                                    errorResponse.push(responseEle.Name)
+                                    errorResponse.push(responseEle.DisplayName)
                                 }
                             })
                             apiNameMatch ? callback(null, response) : mainCallback({
                                 "status": "failure",
                                 "code": 400,
-                                "message": `API name can only be one of : ${errorResponse}`
+                                "message": `API name can only be one of : [${errorResponse}]`
                             }, null)
                         }
                     }
@@ -344,6 +345,16 @@ exports.getAdminError = function (req, res, mainCallback) {
 
 exports.getApiPerformance = function (req, res, callback) {
     apiUsageDao.getApiPerformanceBasedOnExecutionTime(req, res, (err, result) => {
+        if (err) {
+            callback(err, null)
+        } else {
+            callback(null, result)
+        }
+    })
+}
+
+exports.getAllPricingPlans = function (req, callback) {
+    apiUsageDao.getAllPricingPlans(req, (err, result) => {
         if (err) {
             callback(err, null)
         } else {

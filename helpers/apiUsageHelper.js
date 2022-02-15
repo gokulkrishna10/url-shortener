@@ -37,12 +37,12 @@ exports.getAPIErrorAttributes = function (req, res) {
         apiErrorObject.ErrorId = null
         apiErrorObject.ErrorTypeId = 3
         apiErrorObject.ErrorMessage = req.internalProcessingMessage
-        apiErrorObject.ErrorStatus = 1                                         // Needs to be resolved. Hence ErrorStatus = 1
+        apiErrorObject.ErrorStatus = 1                                         // Needs to be resolved. Hence, ErrorStatus = 1
     } else {
         apiErrorObject.ErrorId = null                                          //unknown error.
         apiErrorObject.ErrorTypeId = 4
         apiErrorObject.ErrorMessage = "Unhandled internal apiUsage error"
-        apiErrorObject.ErrorStatus = 1                                         //Needs to be resolved. Hence ErrorStatus = 1
+        apiErrorObject.ErrorStatus = 1                                         //Needs to be resolved. Hence, ErrorStatus = 1
     }
 
 
@@ -93,6 +93,7 @@ exports.getCustomerAttributes = function (req) {
     customerAttributes.Address = req.body.address ? req.body.address : null
     customerAttributes.Email = req.body.email
     customerAttributes.IsActive = 1
+    customerAttributes.APIKey = uuid.v4()
 
     return customerAttributes
 }
@@ -102,13 +103,14 @@ exports.getApiRouteSubscriptionAttributes = function (response) {
 
     apiRouteSubscriptionAttributes.APICustomerId = response.APICustomerId
     apiRouteSubscriptionAttributes.APINameId = response.APINameId;
-    apiRouteSubscriptionAttributes.APIKey = uuid.v4();
+    apiRouteSubscriptionAttributes.APIKey = uuid.v4();   // need to remove this once the design is finalised
     apiRouteSubscriptionAttributes.IsActive = 1
+    apiRouteSubscriptionAttributes.APIPricingPlanId = response.APIPricingPlanId
 
     return apiRouteSubscriptionAttributes
 }
 
-//Set the error code so that the error won't be logged as the the APIUsage
+//Set the error code so that the error won't be logged as the APIUsage
 // error
 exports.setErrorCode = function (err) {
     err.errorId = constants.errorCodeExcludeFromAPIUsageLogging;

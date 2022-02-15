@@ -288,6 +288,10 @@ INSERT INTO ErrorType (ErrorTypeId, Name, Description)
 VALUES (2, 'ValidationError', 'Request data validation error');
 INSERT INTO ErrorType (ErrorTypeId, Name, Description)
 VALUES (3, 'InternalProcessingError', 'Internal processing error');
+INSERT INTO `api_usage_report_dev`.`ErrorType` (`ErrorTypeId`, `Name`, `Description`)
+VALUES ('4', 'InternalApiUsageError', 'Unhandled internal apiUsage error');
+
+
 
 
 /* ====================================================================================================
