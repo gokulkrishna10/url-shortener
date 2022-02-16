@@ -1,9 +1,12 @@
 
 #1. API Customer changes
 ALTER TABLE APICustomer
-MODIFY COLUMN APIKey VARCHAR(100) NULL;
+ADD COLUMN APIKey VARCHAR(100) NULL AFTER APICustomerId;
+
 
 # Now update the APIKey from APIRouteSubscription manually and after that make the key non-nullable
+
+select * from APICustomer;
 
 ALTER TABLE APICustomer
 MODIFY COLUMN APIKey VARCHAR(100) NOT NULL;
@@ -21,13 +24,9 @@ ADD	CONSTRAINT UK_APIName_DisplayName UNIQUE(DisplayName);
 
 #3. APIRouteSubscription table changes
 ALTER TABLE APIRouteSubscription
-ADD COLUMN APIPricingPlanId INT NOT NULL DEFAULT 1;
+ADD COLUMN APIPricingPlanId INT NOT NULL DEFAULT 1 AFTER APINameId;
 
 Select * from APIRouteSubscription;
-
-# Modify the Constraints
-ALTER TABLE APIRouteSubscription
-DROP CONSTRAINT UK_APIRouteSubscription_Covering; 
 
 ALTER TABLE APIRouteSubscription
 ADD CONSTRAINT UK_APIRouteSubscription_Covering UNIQUE(APICustomerId, APINameId, APIPricingPlanId);
@@ -35,13 +34,14 @@ ADD CONSTRAINT UK_APIRouteSubscription_Covering UNIQUE(APICustomerId, APINameId,
 ALTER TABLE APIRouteSubscription
 ADD CONSTRAINT FK_APIRouteSubscription_APIPricingPlanId FOREIGN KEY (APIPricingPlanId) REFERENCES APIPricingPlan(APIPricingPlanId);
 
-#4. Drop the APIKey Column after testing is done
-ALTER TABLE APIRouteSubscription
-DROP CONSTRAINT UK_APIRouteSubscription;
+#4 Drop the non-applicable constraint from Workbench
 
-ALTER TABLE APIRouteSubscription
-DROP COLUMN APIKey;
+#5 truncate tables to clean up data
+truncate table APIUsage;
+#Drop the FK for APIErrorId from API usage, else it won't allow to truncate
+truncate table APIError;
+# Add the FK after that
+ALTER TABLE APIUsage
+ADD CONSTRAINT FK_APIUsage_APIErrorId FOREIGN KEY (APIErrorId) REFERENCES APIError(APIErrorId);
 
-
-
-
+#5. Drop the non-applicabl constraint from Workbench
