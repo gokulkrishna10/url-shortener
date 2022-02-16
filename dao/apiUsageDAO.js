@@ -21,7 +21,8 @@ exports.getCustomerAPIDetails = function (req, res, callback) {
             "JOIN APIName an on an.APINameId = ars.APINameId " +
             "JOIN APIRoute ar on ar.APINameId = ars.APINameId " +
             "JOIN APIRoutePrice arp on ar.APIRouteId = arp.APIRouteId " +
-            "where APIKey = ? AND an.Name = ? " +
+            "JOIN APICustomer ac on ars.APICustomerId = ac.APICustomerId " +
+            "where ac.APIKey = ? AND an.Name = ? " +
             "AND ar.APIVersion = ? " +
             "AND (EndPointName = ? OR EndPointName = '/') " +
             "ORDER BY LENGTH(ar.EndPointName) DESC " +
@@ -89,7 +90,8 @@ exports.validateApiKeyAndName = function (req, res, callback) {
     let options = {
         sql: "SELECT * from APIRouteSubscription ars " +
             "INNER JOIN APIName apn on ars.APINameId = apn.APINameId " +
-            "WHERE Name = ? AND APIKey = ?",
+            "INNER JOIN APICustomer ac on ars.APICustomerId = ac.APICustomerId " +
+            "WHERE Name = ? AND ac.APIKey = ?",
         values: [req.body.apiName, req.headers.api_key]
     }
 
@@ -114,7 +116,9 @@ exports.validateApiKey = function (req, res, callback) {
     let options = {
         sql: "SELECT * from APIRouteSubscription ars " +
             "INNER JOIN APIName apn on ars.APINameId = apn.APINameId " +
-            "WHERE APIKey = ?",
+            "INNER JOIN APICustomer ac on ars.APICustomerId = ac.APICustomerId " +
+            "WHERE ac.APIKey = ?",
+
         values: [req.headers.api_key]
     }
 
@@ -146,12 +150,23 @@ exports.getAPIUsage = function (req, res, callback) {
         toDate = moment(req.query.toDate).format("YYYY-MM-DD[T]HH:mm:ss");
     }
     let apiKey = req.headers.api_key
+    let apiName = req.query.apiName
     let options;
     if (constants.dailyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
-        if (req.query.getEndpoints === "true") {
+        if (req.query.getEndpoints === "true" && !apiName) {
             options = {
                 sql: sqlQueries.GET_DAILY_USAGE_WITH_ENDPOINTS_QUERY,
                 values: [apiKey, fromDate, toDate]
+            }
+        } else if (req.query.getEndpoints === "true" && apiName) {
+            options = {
+                sql: sqlQueries.GET_DAILY_USAGE_WITH_ENDPOINTS_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate]
+            }
+        } else if (req.query.getEndpoints !== "true" && apiName) {
+            options = {
+                sql: sqlQueries.GET_DAILY_USAGE_WO_ENDPOINTS_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate]
             }
         } else {
             options = {
@@ -160,10 +175,20 @@ exports.getAPIUsage = function (req, res, callback) {
             }
         }
     } else if (constants.monthlyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
-        if (req.query.getEndpoints === "true") {
+        if (req.query.getEndpoints === "true" && !apiName) {
             options = {
                 sql: sqlQueries.GET_MONTHLY_USAGE_WITH_ENDPOINTS_QUERY,
                 values: [apiKey, fromDate, toDate]
+            }
+        } else if (req.query.getEndpoints === "true" && apiName) {
+            options = {
+                sql: sqlQueries.GET_MONTHLY_USAGE_WITH_ENDPOINTS_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate]
+            }
+        } else if (req.query.getEndpoints !== "true" && apiName) {
+            options = {
+                sql: sqlQueries.GET_MONTHLY_USAGE_WO_ENDPOINTS_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate]
             }
         } else {
             options = {
@@ -172,10 +197,20 @@ exports.getAPIUsage = function (req, res, callback) {
             }
         }
     } else {
-        if (req.query.getEndpoints === "true") {
+        if (req.query.getEndpoints === "true" && !apiName) {
             options = {
                 sql: sqlQueries.GET_YEARLY_USAGE_WITH_ENDPOINTS_QUERY,
                 values: [apiKey, fromDate, toDate]
+            }
+        } else if (req.query.getEndpoints === "true" && apiName) {
+            options = {
+                sql: sqlQueries.GET_YEARLY_USAGE_WITH_ENDPOINTS_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate]
+            }
+        } else if (req.query.getEndpoints !== "true" && apiName) {
+            options = {
+                sql: sqlQueries.GET_YEARLY_USAGE_WO_ENDPOINTS_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate]
             }
         } else {
             options = {
@@ -219,12 +254,23 @@ exports.getAPIError = function (req, res, callback) {
         toDate = moment(req.query.toDate).format("YYYY-MM-DD[T]HH:mm:ss");
     }
     let apiKey = req.headers.api_key
+    let apiName = req.query.apiName
     let options;
     if (constants.dailyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
-        if (req.query.getErrorDetails === 'true') {
+        if (req.query.getErrorDetails === 'true' && !apiName) {
             options = {
                 sql: sqlQueries.GET_ERRORS_WITH_DETAILS,
                 values: [apiKey, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+            }
+        } else if (req.query.getErrorDetails === 'true' && apiName) {
+            options = {
+                sql: sqlQueries.GET_ERRORS_WITH_DETAILS_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+            }
+        } else if (req.query.getErrorDetails !== 'true' && apiName) {
+            options = {
+                sql: sqlQueries.GET_DAILY_ERROR_COUNT_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate]
             }
         } else {
             options = {
@@ -233,10 +279,20 @@ exports.getAPIError = function (req, res, callback) {
             }
         }
     } else if (constants.monthlyIntervalTypeConstant.includes(req.query.intervalType.toUpperCase())) {
-        if (req.query.getErrorDetails === 'true') {
+        if (req.query.getErrorDetails === 'true' && !apiName) {
             options = {
                 sql: sqlQueries.GET_ERRORS_WITH_DETAILS,
                 values: [apiKey, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+            }
+        } else if (req.query.getErrorDetails === 'true' && apiName) {
+            options = {
+                sql: sqlQueries.GET_ERRORS_WITH_DETAILS_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+            }
+        } else if (req.query.getErrorDetails !== 'true' && apiName) {
+            options = {
+                sql: sqlQueries.GET_MONTLY_ERROR_COUNT_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate]
             }
         } else {
             options = {
@@ -245,10 +301,20 @@ exports.getAPIError = function (req, res, callback) {
             }
         }
     } else {
-        if (req.query.getErrorDetails === 'true') {
+        if (req.query.getErrorDetails === 'true' && !apiName) {
             options = {
                 sql: sqlQueries.GET_ERRORS_WITH_DETAILS,
                 values: [apiKey, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+            }
+        } else if (req.query.getErrorDetails === 'true' && apiName) {
+            options = {
+                sql: sqlQueries.GET_ERRORS_WITH_DETAILS_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate, environment.MAX_ERROR_GET_COUNT]
+            }
+        } else if (req.query.getErrorDetails !== 'true' && apiName) {
+            options = {
+                sql: sqlQueries.GET_YEARLY_ERROR_COUNT_AND_API_NAME_QUERY,
+                values: [apiKey, apiName, fromDate, toDate]
             }
         } else {
             options = {
@@ -407,20 +473,26 @@ exports.addNewCustomer = function (req, callback) {
             }
             callback(dbErrorResponse, null)
         } else {
-            let response = {"status": "successful", "message": "Added customer successfully"}
+            let response = {
+                "status": "successful",
+                "message": `Added customer successfully with the apiKey : ${customerObject.APIKey}`
+            }
             callback(null, response)
         }
     })
 }
 
 
-exports.getAPICustomerIdAndApiNameId = function (req, callback) {
+exports.getAPICustomerIdAndApiNameIdAndPricingPlanId = function (req, callback) {
     let options = [{
         sql: "select APICustomerId from APICustomer where CustomerName = ?",
         values: [req.body.customerName]
     }, {
-        sql: "select APINameId from APIName where Name = ?",
+        sql: "select APINameId from APIName where DisplayName = ?",
         values: [req.body.apiName]
+    }, {
+        sql: "select APIPricingPlanId from APIPricingPlan where Name = ?",
+        values: [req.body.pricingPlan]
     }]
 
     db.executeMultipleWithOptions(options, true, (dbError, dbResponse) => {
@@ -440,19 +512,26 @@ exports.getAPICustomerIdAndApiNameId = function (req, callback) {
                     "message": "Requested API name does not match with our records",
                     code: 400
                 }
+            } else if (dbResponse && dbResponse[2].length === 0) {
+                dbSuccessResponse = {
+                    "status": "failure",
+                    "message": `Requested pricing plan is not available. Check out the available plans from getAllPricingPlans(/v1/pricing-plans) api`,
+                    code: 400
+                }
             } else {
                 dbSuccessResponse.APICustomerId = dbResponse[0][0].APICustomerId
                 dbSuccessResponse.APINameId = dbResponse[1][0].APINameId
+                dbSuccessResponse.APIPricingPlanId = dbResponse[2][0].APIPricingPlanId
             }
             callback(null, dbSuccessResponse)
         }
     })
 }
 
-exports.checkTheCustomerIdAndApiNameId = function (response, callback) {
+exports.checkTheCustomerIdAndApiNameIdAndPricingPlanId = function (response, callback) {
     let options = {
-        sql: "select APICustomerId, APINameId from APIRouteSubscription where APICustomerId = ? AND APINameId = ?",
-        values: [response.APICustomerId, response.APINameId]
+        sql: "select APICustomerId, APINameId, APIPricingPlanId from APIRouteSubscription where APICustomerId = ? AND APINameId = ? AND APIPricingPlanId = ?",
+        values: [response.APICustomerId, response.APINameId, response.APIPricingPlanId]
     }
 
     db.queryWithOptions(options, (dbError, dbResponse) => {
@@ -463,7 +542,7 @@ exports.checkTheCustomerIdAndApiNameId = function (response, callback) {
             if (dbResponse && dbResponse.length > 0) {
                 dbSuccessResponse = {
                     "status": "failure",
-                    "message": "This customer is already subscribed to the requested API",
+                    "message": "This customer is already subscribed to the requested API and pricingPlan",
                     code: 400
                 }
             }
@@ -472,11 +551,11 @@ exports.checkTheCustomerIdAndApiNameId = function (response, callback) {
     })
 }
 
-exports.insertIntoApiRouteSubscription = function (response, callback) {
+exports.insertOrUpdateToApiRouteSubscription = function (response, callback) {
     let apiRouteSubscriptionAttributes = apiUsageAttributesHelper.getApiRouteSubscriptionAttributes(response)
     let options = {
-        sql: "insert into APIRouteSubscription set ?",
-        values: [apiRouteSubscriptionAttributes]
+        sql: "insert into APIRouteSubscription set ? ON DUPLICATE KEY UPDATE ?",
+        values: [apiRouteSubscriptionAttributes, apiRouteSubscriptionAttributes]
     }
 
     db.queryWithOptions(options, (dbError, dbResponse) => {
@@ -488,7 +567,7 @@ exports.insertIntoApiRouteSubscription = function (response, callback) {
                 finalResponse = {
                     "status": "successful",
                     "message": "Customer successfully subscribed to the API",
-                    "apiKey": apiRouteSubscriptionAttributes.APIKey
+                    "apiKey": apiRouteSubscriptionAttributes.APIKey  // purge this after the apiKey is removed from apiSubscription table
                 }
             } else {
                 finalResponse = {
@@ -505,7 +584,7 @@ exports.insertIntoApiRouteSubscription = function (response, callback) {
 
 exports.getAllApiNames = function (req, callback) {
     let options = {
-        sql: "select Name,Description from APIName"
+        sql: "select DisplayName,Description from APIName"
     }
 
     db.queryWithOptions(options, (dbError, dbResponse) => {
@@ -826,3 +905,27 @@ exports.getApiPerformanceBasedOnExecutionTime = function (req, res, callback) {
         }
     })
 }
+
+
+exports.getAllPricingPlans = function (req, callback) {
+    let options = {
+        sql: "select Name from APIPricingPlan",
+    }
+
+    db.queryWithOptions(options, (dbError, dbResponse) => {
+        if (dbError) {
+            callback(customError.dbError(dbError), null)
+        } else {
+            if (dbResponse && dbResponse.length > 0) {
+                if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
+                    callback(null, parse(dbResponse))
+                } else {
+                    callback(null, dbResponse)
+                }
+            } else {
+                callback(null, "{message:No data}")
+            }
+        }
+    })
+}
+

@@ -1,7 +1,5 @@
 const apiUsage = require('../controllers/apiUsageController')
 const apiUsageDao = require('../dao/apiUsageDAO')
-const ErrorMod = require('../customnodemodules/error_node_module/errors')
-const customError = new ErrorMod()
 
 
 exports.updateAPIUsage = (req, res) => {
@@ -17,8 +15,7 @@ exports.updateAPIUsage = (req, res) => {
     })
 }
 
-// check if the input API key is registered in the APIRouteSubscription table
-// and the requested API name matches with the registered API key
+// check if the requested API key is registered with the requested API name in the APIRouteSubscription table
 exports.apiUsageRequestValidation = function (req, res) {
     apiUsageDao.validateApiKeyAndName(req, res, (err, response) => {
         if (err) {
@@ -30,7 +27,7 @@ exports.apiUsageRequestValidation = function (req, res) {
                 res.send(JSON.parse('{"status":"success", "message":"Validation successful"}')).status(200)
             } else {
                 console.log('{status:failure, message:Validation failed}')
-                res.status(400).send(JSON.parse('{"status":"failure", "message":"Validation failed. Please check the apiKey or the apiName entered"}'))
+                res.status(200).send(JSON.parse('{"status":"failure", "message":"Validation failed. Please check the apiKey or the apiName entered"}'))
             }
         }
     })
@@ -133,6 +130,17 @@ exports.getAdminError = function (req, res) {
 
 exports.getApiPerformance = function (req, res) {
     apiUsage.getApiPerformance(req, res, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err.msg)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}
+
+
+exports.getAllPricingPlans = function (req, res) {
+    apiUsage.getAllPricingPlans(req,(err, response) => {
         if (err) {
             res.status(err.code).send(err.msg)
         } else {
