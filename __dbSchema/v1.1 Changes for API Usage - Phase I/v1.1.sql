@@ -45,3 +45,8 @@ ALTER TABLE APIUsage
 ADD CONSTRAINT FK_APIUsage_APIErrorId FOREIGN KEY (APIErrorId) REFERENCES APIError(APIErrorId);
 
 #5. Drop the non-applicabl constraint from Workbench
+
+#6. INSERT INTO `api_usage_report_dev`.`ErrorType` (`ErrorTypeId`, `Name`, `Description`) VALUES ('5', 'InternalApiUsageError', 'Unhandled internal apiUsage error');
+    UPDATE `api_usage_report_dev`.`ErrorType` SET `Name` = 'ClientValidationError', `Description` = 'Client validation error' WHERE (`ErrorTypeId` = '4');
+
+
