@@ -1,5 +1,32 @@
+Use api_usage_report_prod;
 
-USE api_usage_report_dev;
+Select * from APIError;
+
+select * from APIUsage
+Order By APIUsageId desc;
+
+select * from APIError
+Order by APIErrorId;
+
+Select * from APIName;
+
+Select * from APIRouteSubscription;
+
+Select * from APICustomer;
+
+
+startTime was not found in the req object. [object Object]
+
+{"executionTime":-1,"apiVersion":"v1","endPointName":"neighbourhood-comparison","clientIpAddress":"::ffff:10.11.0.196","httpStatusCode":401,"errorCode":401,"errorDescription":"startTime was not found in the req object. [object Object]","apiName":"ou-neighbourhood-comparison","validationResult":false}
+
+
+
+
+
+
+
+
+USE api_usage_report_prod;
 
 Select * from APIUsage;
 
