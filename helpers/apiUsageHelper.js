@@ -26,25 +26,28 @@ exports.getAPIUsageAttributes = function (req, res, result) {
 exports.getAPIErrorAttributes = function (req, res) {
     let apiErrorObject = {}
 
-    if (req.isValidationError) {                                              // req data validation error
+    if (req.isValidationError) {                                              // request data validation error
         apiErrorObject.ErrorId = res.code;
         apiErrorObject.ErrorTypeId = 2
         apiErrorObject.ErrorMessage = res.error[0].message
-    } else if (req.body.apiDetails && (req.body.apiDetails.errorCode || req.body.apiDetails.errorDescription)) {        // caller api error
-        apiErrorObject.ErrorId = req.body.apiDetails.errorCode
-        apiErrorObject.ErrorTypeId = 1
     } else if (req.isInternalProcessingError) {                               // internal data processing error
         apiErrorObject.ErrorId = null
         apiErrorObject.ErrorTypeId = 3
         apiErrorObject.ErrorMessage = req.internalProcessingMessage
         apiErrorObject.ErrorStatus = 1                                         // Needs to be resolved. Hence, ErrorStatus = 1
+    } else if (req.body.apiDetails && (req.body.apiDetails.errorCode || req.body.apiDetails.errorDescription)) {        // caller api error (client error)
+        apiErrorObject.ErrorId = req.body.apiDetails.errorCode
+        apiErrorObject.ErrorTypeId = 1
+    } else if (req.body.apiDetails && req.body.apiDetails.validationResult !== true) {          // client validation error
+        apiErrorObject.ErrorId = null
+        apiErrorObject.ErrorTypeId = 4
+        apiErrorObject.ErrorMessage = "Client validation error"
     } else {
         apiErrorObject.ErrorId = null                                          //unknown error.
-        apiErrorObject.ErrorTypeId = 4
+        apiErrorObject.ErrorTypeId = 5
         apiErrorObject.ErrorMessage = "Unhandled internal apiUsage error"
         apiErrorObject.ErrorStatus = 1                                         //Needs to be resolved. Hence, ErrorStatus = 1
     }
-
 
     if (req.body.apiDetails && req.body.apiDetails.errorDescription) {
         apiErrorObject.ErrorMessage = apiErrorObject.ErrorMessage ? apiErrorObject.ErrorMessage + ". " + req.body.apiDetails.errorDescription : req.body.apiDetails.errorDescription;
