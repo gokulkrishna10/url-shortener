@@ -80,6 +80,7 @@ router.post('/v1/internal/api-subscription', apiUsageValidator.adminValidation, 
 router.get('/v1/internal/admin-usage', apiUsageValidator.adminValidation, apiUsageValidator.getAdminUsageValidation, routes.getAdminUsage)
 router.get('/v1/internal/admin-error', apiUsageValidator.adminValidation, apiUsageValidator.getAdminErrorValidation, routes.getAdminError)
 router.get('/v1/internal/api-performance', apiUsageValidator.adminValidation, apiUsageValidator.getAdminApiPerformanceValidation, routes.getApiPerformance)
+router.get('/v1/internal/api-key', apiUsageValidator.adminValidation, apiUsageValidator.getAdminApiKeyFromCustomerNameValidation, routes.getApiKeyFromCustomerName)
 
 
 router.all('/*', function (req, res) {

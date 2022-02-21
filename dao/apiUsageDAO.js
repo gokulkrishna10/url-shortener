@@ -929,3 +929,27 @@ exports.getAllPricingPlans = function (req, callback) {
     })
 }
 
+
+exports.getApiKeyFromCustomerName = function (req, callback) {
+    let options = {
+        sql: "SELECT APIKey from APICustomer where CustomerName = ?",
+        values: [req.query.orgName]
+    }
+
+    db.queryWithOptions(options, (dbError, dbResponse) => {
+        if (dbError) {
+            callback(customError.dbError(dbError), null)
+        } else {
+            if (dbResponse && dbResponse.length > 0) {
+                callback(null, dbResponse)
+            } else {
+                callback({
+                    "status": "failure",
+                    "message": "Check the orgName entered. No apiKey found for the requested organisation",
+                    code: 400
+                }, null)
+            }
+        }
+    })
+}
+
