@@ -941,7 +941,7 @@ exports.getApiKeyFromCustomerName = function (req, callback) {
             callback(customError.dbError(dbError), null)
         } else {
             if (dbResponse && dbResponse.length > 0) {
-                callback(null, dbResponse)
+                callback(null, dbResponse[0])
             } else {
                 callback({
                     "status": "failure",
