@@ -363,6 +363,16 @@ exports.getAllPricingPlans = function (req, callback) {
     })
 }
 
+exports.getApiKeyFromCustomerName = function (req, callback) {
+    apiUsageDao.getApiKeyFromCustomerName(req, (err, result) => {
+        if (err) {
+            callback(err, null)
+        } else {
+            callback(null, result)
+        }
+    })
+}
+
 
 
 
