@@ -955,7 +955,7 @@ exports.getApiKeyFromCustomerName = function (req, callback) {
 
 exports.getAllOrganisations = function (req, callback) {
     let options = {
-        sql: "select CustomerName,APIKey,Email from APICustomer"
+        sql: "select APICustomerId,CustomerName,APIKey,Email from APICustomer"
     }
 
     db.queryWithOptions(options, (dbError, dbResponse) => {
