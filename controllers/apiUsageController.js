@@ -193,19 +193,36 @@ exports.customerApiSubscription = function (req, res, mainCallback) {
                 }
             })
         }, function checkTheCustomerIdAndApiNameIdAndPricingPlanId(response, callback) {
-            apiUsageDao.checkTheCustomerIdAndApiNameIdAndPricingPlanId(response, (err, result) => {
-                if (err) {
-                    callback(err, null)
-                } else {
-                    (result && result.code && result.code === 400) ? mainCallback(result, null) : callback(null, response)
-                }
-            })
+            if ((req.body.apiName).trim()) {
+                apiUsageDao.checkTheCustomerIdAndApiNameIdAndPricingPlanId(response, (err, result) => {
+                    if (err) {
+                        callback(err, null)
+                    } else {
+                        (result && result.code && result.code === 400) ? mainCallback(result, null) : callback(null, response)
+                    }
+                })
+            } else {
+                apiUsageDao.getAllApiNames(req, (err, apiNamesResponse) => {
+                    if (err) {
+                        callback(err, null)
+                    } else {
+                        let apiNameIdArray = []
+                        apiNamesResponse.forEach(apiNameRecord => {
+                            apiNameIdArray.push(apiNameRecord.APINameId)
+                        })
+                        response.apiNameIdArray = apiNameIdArray
+                        callback(null, response)
+                    }
+                })
+            }
         }, function insertOrUpdateToApiRouteSubscription(response, callback) {
             apiUsageDao.insertOrUpdateToApiRouteSubscription(response, (err, response) => {
                 if (err) {
                     callback(err, null)
                 } else {
-                    response.apiName = req.body.apiName
+                    if ((req.body.apiName).trim()) {
+                        response.apiName = req.body.apiName
+                    }
                     response.customerName = req.body.customerName
                     response.pricingPlan = req.body.pricingPlan;
                     (response.code && response.code === 500) ? callback(response, null) : callback(null, response)
