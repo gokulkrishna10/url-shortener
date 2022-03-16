@@ -953,3 +953,29 @@ exports.getApiKeyFromCustomerName = function (req, callback) {
     })
 }
 
+exports.getAllOrganisations = function (req, callback) {
+    let options = {
+        sql: "select CustomerName,APIKey,Email from APICustomer"
+    }
+
+    db.queryWithOptions(options, (dbError, dbResponse) => {
+        if (dbError) {
+            callback(customError.dbError(dbError), null)
+        } else {
+            if (dbResponse && dbResponse.length > 0) {
+                if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
+                    callback(null, parse(dbResponse))
+                } else {
+                    callback(null, dbResponse)
+                }
+            } else {
+                callback({
+                    "status": "failure",
+                    "message": "No organisations found",
+                    code: 400
+                }, null)
+            }
+        }
+    })
+}
+
