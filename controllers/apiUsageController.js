@@ -245,6 +245,9 @@ exports.getAllApiNames = function (req, res, callback) {
             callback(err, null)
         } else {
             if (response && response.length > 0) {
+                response.forEach(responseObject=>{
+                    delete responseObject.APINameId
+                })
                 if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
                     callback(null, parse(response))
                 } else {
