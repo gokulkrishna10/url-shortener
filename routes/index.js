@@ -158,3 +158,13 @@ exports.getApiKeyFromCustomerName = function (req, res) {
         }
     })
 }
+
+exports.getAllOrganisations = function (req, res) {
+    apiUsage.getAllOrganisations(req, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}
