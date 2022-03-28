@@ -1,1 +1,1 @@
-#1. DROP COLUMN APIKey from APIRouteSubscription
+#1. ALTER TABLE APIRouteSubscription DROP COLUMN APIKey
