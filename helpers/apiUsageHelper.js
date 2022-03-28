@@ -106,7 +106,6 @@ exports.getApiRouteSubscriptionAttributes = function (response) {
 
     apiRouteSubscriptionAttributes.APICustomerId = response.APICustomerId
     apiRouteSubscriptionAttributes.APINameId = response.APINameId;
-    apiRouteSubscriptionAttributes.APIKey = uuid.v4();   // need to remove this once the design is finalised
     apiRouteSubscriptionAttributes.IsActive = 1
     apiRouteSubscriptionAttributes.APIPricingPlanId = response.APIPricingPlanId
 

@@ -177,13 +177,7 @@ exports.getCustomerApiSubscriptionValidation = function (req, res, next) {
         err = customError.BadRequest("request needs customerName")
         err.donotUpdateUsage = true;
         next(err)
-    }
-    // else if (util.isNull(req.body.apiName)) {
-    //     err = customError.BadRequest("request needs apiName")
-    //     err.donotUpdateUsage = true;
-    //     next(err)
-    // }
-    else if (util.isNull((req.body.pricingPlan).trim())) {
+    } else if (util.isNull((req.body.pricingPlan).trim())) {
         err = customError.BadRequest("request needs pricingPlanName")
         err.donotUpdateUsage = true;
         next(err)
