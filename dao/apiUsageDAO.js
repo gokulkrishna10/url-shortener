@@ -353,8 +353,8 @@ exports.checkIfApiAndEndpointExists = function (req, callback) {
         sql: "SELECT ar.EndpointName,an.Name " +
             "FROM APIName an " +
             "JOIN APIRoute ar on ar.APINameId = an.APINameId " +
-            "where an.Name = ? AND ar.EndpointName = ?;",
-        values: [req.body.name, req.body.endPointName]
+            "where an.Name = ? AND (ar.EndpointName = ? OR ar.EndpointName = '/') AND ar.APIVersion = ?;",
+        values: [(req.body.name).trim(), (req.body.endPointName).trim(),(req.body.apiVersion).trim()]
     }
 
     db.queryWithOptions(options, (dbError, dbResult) => {
