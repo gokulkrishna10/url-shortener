@@ -5,6 +5,12 @@ Schema : api_usage_report_dev
 userName:  api_usasge_report_devuser
 password: 891f5b0d-6873-4b5f-a0ae-9b890ed0739d
 
+--Connetion details
+Host : oeprodrds.crjdegsnxmp2.eu-west-1.rds.amazonaws.com
+Schema : api_usage_report_prod
+userName:  api_usasge_report_produser
+password: be293b19-5ab2-4cf6-9f4b-85d574e898b9
+
 
 DESIGN DECISIONS:
 1. Pricing Plan:
