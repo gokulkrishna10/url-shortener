@@ -354,7 +354,7 @@ exports.checkIfApiAndEndpointExists = function (req, callback) {
             "FROM APIName an " +
             "JOIN APIRoute ar on ar.APINameId = an.APINameId " +
             "where an.Name = ? AND (ar.EndpointName = ? OR ar.EndpointName = '/') AND ar.APIVersion = ?;",
-        values: [(req.body.name).trim(), (req.body.endPointName).trim(),(req.body.apiVersion).trim()]
+        values: [(req.body.name).trim(), (req.body.endPointName).trim(), (req.body.apiVersion).trim()]
     }
 
     db.queryWithOptions(options, (dbError, dbResult) => {
@@ -484,15 +484,13 @@ exports.addNewCustomer = function (req, callback) {
 
 
 exports.getAPICustomerIdAndApiNameIdAndPricingPlanId = function (req, callback) {
-    let customerName = (req.body.customerName).trim()
-    let apiName = (req.body.apiName).trim()
 
     let options = [{
         sql: "select APICustomerId from APICustomer where CustomerName = ?",
-        values: [customerName]
+        values: [(req.body.customerName).trim()]
     }, {
         sql: "select APINameId from APIName where DisplayName = ?",
-        values: [apiName]
+        values: [(req.body.apiName).trim()]
     }, {
         sql: "select APIPricingPlanId from APIPricingPlan where Name = ?",
         values: [(req.body.pricingPlan).trim()]
@@ -509,7 +507,7 @@ exports.getAPICustomerIdAndApiNameIdAndPricingPlanId = function (req, callback) 
                     "message": "Requested Customer name does not match with our records",
                     code: 400
                 }
-            } else if (dbResponse && dbResponse[1].length === 0 && apiName) {
+            } else if (dbResponse && dbResponse[1].length === 0) {
                 dbSuccessResponse = {
                     "status": "failure",
                     "message": "Requested API name does not match with our records",
@@ -523,9 +521,7 @@ exports.getAPICustomerIdAndApiNameIdAndPricingPlanId = function (req, callback) 
                 }
             } else {
                 dbSuccessResponse.APICustomerId = dbResponse[0][0].APICustomerId
-                if (apiName) {
-                    dbSuccessResponse.APINameId = dbResponse[1][0].APINameId
-                }
+                dbSuccessResponse.APINameId = dbResponse[1][0].APINameId
                 dbSuccessResponse.APIPricingPlanId = dbResponse[2][0].APIPricingPlanId
             }
             callback(null, dbSuccessResponse)
@@ -557,63 +553,39 @@ exports.checkTheCustomerIdAndApiNameIdAndPricingPlanId = function (response, cal
 }
 
 exports.insertOrUpdateToApiRouteSubscription = function (response, callback) {
-    if (response && response.apiNameIdArray && (response.apiNameIdArray).length > 0) {
-        let options = [];
-        for (const nameId of response.apiNameIdArray) {
-            response.APINameId = nameId
-            let apiRouteSubscriptionAttributes = apiUsageAttributesHelper.getApiRouteSubscriptionAttributes(response)
-            options.push({
-                sql: "insert into APIRouteSubscription set ? ON DUPLICATE KEY UPDATE ?",
-                values: [apiRouteSubscriptionAttributes, apiRouteSubscriptionAttributes]
-            })
-        }
-        db.executeMultipleWithOptions(options, true, (dbError, dbResponse) => {
-            if (dbError) {
-                callback(customError.dbError(dbError), null)
-            } else {
-                if (dbResponse && dbResponse.length > 0) {
-                    let finalResponse = {
-                        "status": "successful",
-                        "message": "Customer successfully subscribed to all the APIs"
-                    }
-                    callback(null, finalResponse)
-                }
-            }
-        })
-    } else {
-        let apiRouteSubscriptionAttributes = apiUsageAttributesHelper.getApiRouteSubscriptionAttributes(response)
-        let options = {
-            sql: "insert into APIRouteSubscription set ? ON DUPLICATE KEY UPDATE ?",
-            values: [apiRouteSubscriptionAttributes, apiRouteSubscriptionAttributes]
-        }
 
-        db.queryWithOptions(options, (dbError, dbResponse) => {
-            if (dbError) {
-                callback(customError.dbError(dbError), null)
-            } else {
-                let finalResponse = {}
-                if (dbResponse && dbResponse.affectedRows > 0) {
-                    finalResponse = {
-                        "status": "successful",
-                        "message": "Customer successfully subscribed to the API"
-                    }
-                } else {
-                    finalResponse = {
-                        "status": "failure",
-                        "message": "API route subscription failed",
-                        "code": 500
-                    }
-                }
-                callback(null, finalResponse)
-            }
-        })
+    let apiRouteSubscriptionAttributes = apiUsageAttributesHelper.getApiRouteSubscriptionAttributes(response)
+    let options = {
+        sql: "insert into APIRouteSubscription set ? ON DUPLICATE KEY UPDATE ?",
+        values: [apiRouteSubscriptionAttributes, apiRouteSubscriptionAttributes]
     }
+
+    db.queryWithOptions(options, (dbError, dbResponse) => {
+        if (dbError) {
+            callback(customError.dbError(dbError), null)
+        } else {
+            let finalResponse = {}
+            if (dbResponse && dbResponse.affectedRows > 0) {
+                finalResponse = {
+                    "status": "successful",
+                    "message": "Customer successfully subscribed to the API"
+                }
+            } else {
+                finalResponse = {
+                    "status": "failure",
+                    "message": "API route subscription failed",
+                    "code": 500
+                }
+            }
+            callback(null, finalResponse)
+        }
+    })
 }
 
 
 exports.getAllApiNames = function (req, callback) {
     let options = {
-        sql: "select APINameId,DisplayName,Description from APIName"
+        sql: "select DisplayName,Description from APIName"
     }
 
     db.queryWithOptions(options, (dbError, dbResponse) => {
