@@ -8,7 +8,7 @@ const express = require("express"),
     envFile = require('../env.json');
 
 var ErrorMod = require('../customnodemodules/error_node_module/errors');
-var customeError = new ErrorMod();
+var customError = new ErrorMod();
 const apiUsageValidator = require('../validation/apiUsageValidation')
 const constants = require('../constants/constants')
 
@@ -81,11 +81,12 @@ router.get('/v1/internal/admin-usage', apiUsageValidator.adminValidation, apiUsa
 router.get('/v1/internal/admin-error', apiUsageValidator.adminValidation, apiUsageValidator.getAdminErrorValidation, routes.getAdminError)
 router.get('/v1/internal/api-performance', apiUsageValidator.adminValidation, apiUsageValidator.getAdminApiPerformanceValidation, routes.getApiPerformance)
 router.get('/v1/internal/api-key', apiUsageValidator.adminValidation, apiUsageValidator.getAdminApiKeyFromCustomerNameValidation, routes.getApiKeyFromCustomerName)
+router.get('/v1/internal/organisations', apiUsageValidator.adminValidation, apiUsageValidator.getAdminOrganisationsValidation, routes.getAllOrganisations)
 
 
 router.all('/*', function (req, res) {
     res.status(404);
-    res.send(customeError.NotFound("Endpoint Not Found"));
+    res.send(customError.NotFound("Endpoint Not Found"));
 });
 
 app.listen(app.get("port"), () => {
