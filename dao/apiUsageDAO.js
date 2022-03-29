@@ -353,8 +353,8 @@ exports.checkIfApiAndEndpointExists = function (req, callback) {
         sql: "SELECT ar.EndpointName,an.Name " +
             "FROM APIName an " +
             "JOIN APIRoute ar on ar.APINameId = an.APINameId " +
-            "where an.Name = ? AND ar.EndpointName = ?;",
-        values: [req.body.name, req.body.endPointName]
+            "where an.Name = ? AND (ar.EndpointName = ? OR ar.EndpointName = '/') AND ar.APIVersion = ?;",
+        values: [(req.body.name).trim(), (req.body.endPointName).trim(), (req.body.apiVersion).trim()]
     }
 
     db.queryWithOptions(options, (dbError, dbResult) => {
@@ -484,15 +484,16 @@ exports.addNewCustomer = function (req, callback) {
 
 
 exports.getAPICustomerIdAndApiNameIdAndPricingPlanId = function (req, callback) {
+
     let options = [{
         sql: "select APICustomerId from APICustomer where CustomerName = ?",
-        values: [req.body.customerName]
+        values: [(req.body.customerName).trim()]
     }, {
         sql: "select APINameId from APIName where DisplayName = ?",
-        values: [req.body.apiName]
+        values: [(req.body.apiName).trim()]
     }, {
         sql: "select APIPricingPlanId from APIPricingPlan where Name = ?",
-        values: [req.body.pricingPlan]
+        values: [(req.body.pricingPlan).trim()]
     }]
 
     db.executeMultipleWithOptions(options, true, (dbError, dbResponse) => {
@@ -552,6 +553,7 @@ exports.checkTheCustomerIdAndApiNameIdAndPricingPlanId = function (response, cal
 }
 
 exports.insertOrUpdateToApiRouteSubscription = function (response, callback) {
+
     let apiRouteSubscriptionAttributes = apiUsageAttributesHelper.getApiRouteSubscriptionAttributes(response)
     let options = {
         sql: "insert into APIRouteSubscription set ? ON DUPLICATE KEY UPDATE ?",
@@ -566,8 +568,7 @@ exports.insertOrUpdateToApiRouteSubscription = function (response, callback) {
             if (dbResponse && dbResponse.affectedRows > 0) {
                 finalResponse = {
                     "status": "successful",
-                    "message": "Customer successfully subscribed to the API",
-                    "apiKey": apiRouteSubscriptionAttributes.APIKey  // purge this after the apiKey is removed from apiSubscription table
+                    "message": "Customer successfully subscribed to the API"
                 }
             } else {
                 finalResponse = {
@@ -946,6 +947,32 @@ exports.getApiKeyFromCustomerName = function (req, callback) {
                 callback({
                     "status": "failure",
                     "message": "Check the orgName entered. No apiKey found for the requested organisation",
+                    code: 400
+                }, null)
+            }
+        }
+    })
+}
+
+exports.getAllOrganisations = function (req, callback) {
+    let options = {
+        sql: "select CustomerName,APIKey,Email from APICustomer"
+    }
+
+    db.queryWithOptions(options, (dbError, dbResponse) => {
+        if (dbError) {
+            callback(customError.dbError(dbError), null)
+        } else {
+            if (dbResponse && dbResponse.length > 0) {
+                if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
+                    callback(null, parse(dbResponse))
+                } else {
+                    callback(null, dbResponse)
+                }
+            } else {
+                callback({
+                    "status": "failure",
+                    "message": "No organisations found",
                     code: 400
                 }, null)
             }

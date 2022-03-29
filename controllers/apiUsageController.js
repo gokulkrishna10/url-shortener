@@ -373,6 +373,16 @@ exports.getApiKeyFromCustomerName = function (req, callback) {
     })
 }
 
+exports.getAllOrganisations = function (req, callback) {
+    apiUsageDao.getAllOrganisations(req, (err, result) => {
+        if (err) {
+            callback(err, null)
+        } else {
+            callback(null, result)
+        }
+    })
+}
+
 
 
 
