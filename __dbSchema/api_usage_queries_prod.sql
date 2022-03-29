@@ -3,9 +3,12 @@ Use api_usage_report_prod;
 Select * from APIError;
 
 select * from APIUsage
+#where APIKey = 'faf1111e-ec48-4980-bc30-324a0f205fd3'
 Order By APIUsageId desc;
 
+
 select * from APIError
+where APIErrorId in (2717)
 Order by APIErrorId;
 
 Select * from APIName;
