@@ -24,12 +24,22 @@ CREATE TABLE IF NOT EXISTS APICustomerPricing (
     CONSTRAINT FK_APICustomerPricing_APIRoutePriceId FOREIGN KEY (APIRoutePriceId) REFERENCES APIRoutePrice(APIRoutePriceId)
 );
 
-#5 Record Request and Response along with APIUsage
+#5 Log more details to the APIUsage table
 ALTER TABLE APIUsage
 ADD COLUMN RequestData JSON NULL;
 
 ALTER TABLE APIUsage
-ADD COLUMN ResponseData JSON NULL;
+ADD COLUMN ResponseData BLOB NULL;
 
 ALTER TABLE APIUsage
+ADD COLUMN ModifiedBy varchar(100) NULL;
+
+#5 Log more details to the APIError table
+ALTER TABLE APIError
+ADD COLUMN RequestData JSON NULL;
+
+ALTER TABLE APIError
+ADD COLUMN ResponseData BLOB NULL;
+
+ALTER TABLE APIError
 ADD COLUMN ModifiedBy varchar(100) NULL;
