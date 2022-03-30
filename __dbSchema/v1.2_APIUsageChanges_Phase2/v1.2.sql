@@ -23,3 +23,13 @@ CREATE TABLE IF NOT EXISTS APICustomerPricing (
     CONSTRAINT FK_APICustomerPricing_APICustomerId FOREIGN KEY (APICustomerId) REFERENCES APICustomer(APICustomerId),
     CONSTRAINT FK_APICustomerPricing_APIRoutePriceId FOREIGN KEY (APIRoutePriceId) REFERENCES APIRoutePrice(APIRoutePriceId)
 );
+
+#5 Record Request and Response along with APIUsage
+ALTER TABLE APIUsage
+ADD COLUMN RequestData JSON NULL;
+
+ALTER TABLE APIUsage
+ADD COLUMN ResponseData JSON NULL;
+
+ALTER TABLE APIUsage
+ADD COLUMN ModifiedBy varchar(100) NULL;

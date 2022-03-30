@@ -17,6 +17,10 @@ where APIKey = 'PERSE-TEST-CLIENT-APIKEY'
 And APINameId = 4
 Order By APIUsageId desc;
 
+select * from APIUsage
+Order By APIUsageId desc
+LIMIT 5;
+
 Select * from APIError
 #where APIErrorId = 2
 order by APIErrorId desc
@@ -165,16 +169,3 @@ where product_rank<=10
 AND t.HttpStatusCode = 200;
 
 
-CREATE TABLE IF NOT EXISTS APICustomerPricing (
-	APICustomerPricingId INT NOT NULL AUTO_INCREMENT,
-    APINameId INT NOT NULL,
-    APICustomerId INT NOT NULL,
-    APIRoutePriceId INT NOT NULL,
-    DiscountAmountPerCall DECIMAL(8,2) NULL,
-    DiscountPercentPerCall DECIMAL(4,2)  NULL,
-    SellingPricePerCall DECIMAL(8,2) NOT NULL,
-    CONSTRAINT PK_APICustomerPricing PRIMARY KEY (APICustomerPricingId),
-    CONSTRAINT FK_APICustomerPricing_APINameId FOREIGN KEY (APINameId) REFERENCES APIName(APINameId),
-    CONSTRAINT FK_APICustomerPricing_APICustomerId FOREIGN KEY (APICustomerId) REFERENCES APICustomer(APICustomerId),
-    CONSTRAINT FK_APICustomerPricing_APIRoutePriceId FOREIGN KEY (APIRoutePriceId) REFERENCES APIRoutePrice(APIRoutePriceId)
-);
