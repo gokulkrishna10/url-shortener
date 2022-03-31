@@ -384,5 +384,16 @@ exports.getAllOrganisations = function (req, callback) {
 }
 
 
+exports.getCustomerDetailsByApiKey = function (req, callback) {
+    apiUsageDao.getCustomerDetailsByApiKey(req, (err, result) => {
+        if (err) {
+            callback(err, null)
+        } else {
+            callback(null, result)
+        }
+    })
+}
+
+
 
 
