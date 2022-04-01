@@ -12,7 +12,14 @@ Select * from APIQuotaLimit;
 Select * from APIRoutePrice; 
 Select * from ErrorType;
 
+select * from APIUsage
+where APIKey = 'PERSE-TEST-CLIENT-APIKEY'
+And APINameId = 4
+Order By APIUsageId desc;
 
+select * from APIUsage
+Order By APIUsageId desc
+LIMIT 5;ErrorMessage
 
 Select * from APIError
 #where APIErrorId = 2
@@ -160,3 +167,12 @@ FROM (
 LEFT OUTER JOIN APIName an on an.APINameId = t.APINameId
 where product_rank<=10
 AND t.HttpStatusCode = 200;
+
+
+
+Select * from APIUsage 
+Order By RequestDate desc
+LIMIT 10;
+
+
+

@@ -38,7 +38,7 @@ ADD CONSTRAINT FK_APIRouteSubscription_APIPricingPlanId FOREIGN KEY (APIPricingP
 
 #5 truncate tables to clean up data
 truncate table APIUsage;
-#Drop the FK for APIErrorId from API usage, else it won't allow to truncate
+#Drop the FK for APIErrorId from API usage, else it wont allow to truncate
 truncate table APIError;
 # Add the FK after that
 ALTER TABLE APIUsage
