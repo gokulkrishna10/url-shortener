@@ -84,6 +84,10 @@ router.get('/v1/internal/api-key', apiUsageValidator.adminValidation, apiUsageVa
 router.get('/v1/internal/organisations', apiUsageValidator.adminValidation, apiUsageValidator.getAdminOrganisationsValidation, routes.getAllOrganisations)
 
 
+//required for COS
+router.get('/v1/customer-details', apiUsageValidator.getCustomerDetailsByApiKeyValidation, routes.getCustomerDetailsByApiKey)
+
+
 router.all('/*', function (req, res) {
     res.status(404);
     res.send(customError.NotFound("Endpoint Not Found"));

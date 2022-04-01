@@ -3,9 +3,28 @@ Use api_usage_report_prod;
 Select * from APIError;
 
 select * from APIUsage
+where APIKey = 'faf1111e-ec48-4980-bc30-324a0f205fd3'
 Order By APIUsageId desc;
 
+Select Count(*) from APIUsage
+where APIKey = 'faf1111e-ec48-4980-bc30-324a0f205fd3'
+And ClientIPAddress = '::ffff:10.11.0.250'
+
+Select * from APIUsage
+where APIKey = 'faf1111e-ec48-4980-bc30-324a0f205fd3'
+#And ClientIPAddress = '::ffff:10.11.0.250'
+Order By RequestDate Desc;
+
+
+
+select * from APIUsage
+#where APIKey = 'PERSE-TEST-CLIENT-APIKEY'
+Order By APIUsageId desc;
+
+
+
 select * from APIError
+where APIErrorId in (2717)
 Order by APIErrorId;
 
 Select * from APIName;
@@ -14,14 +33,8 @@ Select * from APIRouteSubscription;
 
 Select * from APICustomer;
 
-
-startTime was not found in the req object. [object Object]
-
-{"executionTime":-1,"apiVersion":"v1","endPointName":"neighbourhood-comparison","clientIpAddress":"::ffff:10.11.0.196","httpStatusCode":401,"errorCode":401,"errorDescription":"startTime was not found in the req object. [object Object]","apiName":"ou-neighbourhood-comparison","validationResult":false}
-
-
-
-
+select @@version;
+SHOW VARIABLES LIKE 'version';
 
 
 
@@ -187,3 +200,31 @@ FROM (
 LEFT OUTER JOIN APIName an on an.APINameId = t.APINameId
 where product_rank<=10
 AND t.HttpStatusCode = 200;
+
+#====================SAMPLE - QUERY JSON from MYSQL==========================
+CREATE TABLE events( 
+  id int auto_increment primary key, 
+  event_name varchar(255), 
+  visitor varchar(255), 
+  properties json, 
+  browser json
+);
+
+INSERT INTO events(event_name, visitor,properties, browser) 
+VALUES
+('pageview', 
+  '2',
+  '{ "page": "/contact" }',
+  '{ "name": "Firefox", "os": "Windows", "resolution": { "x": 2560, "y": 1600 } }'
+),
+(
+  'pageview', 
+  '1',
+  '{ "page": "/products" }',
+  '{ "name": "Safari", "os": "Mac", "resolution": { "x": 1920, "y": 1080 } }'
+);
+
+SELECT id, browser->'$.name' browser
+FROM events;
+
+##=====================================TEMP===============================================

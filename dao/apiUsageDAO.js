@@ -350,9 +350,9 @@ exports.getAPIError = function (req, res, callback) {
 
 exports.checkIfApiAndEndpointExists = function (req, callback) {
     let endPointName;
-    if((req.body.endPointName).trim()){
+    if ((req.body.endPointName).trim()) {
         endPointName = (req.body.endPointName).trim()
-    }else{
+    } else {
         endPointName = '/'
     }
     let options = {
@@ -986,3 +986,30 @@ exports.getAllOrganisations = function (req, callback) {
     })
 }
 
+
+exports.getCustomerDetailsByApiKey = function (req, callback) {
+    let options = {
+        sql: "select APICustomerId,CustomerName,Email from APICustomer where APIKey = ?",
+        values: [req.headers.api_key]
+    }
+
+    db.queryWithOptions(options, (dbError, dbResponse) => {
+        if (dbError) {
+            callback(customError.dbError(dbError), null)
+        } else {
+            if (dbResponse && dbResponse.length > 0) {
+                if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
+                    callback(null, parse(dbResponse))
+                } else {
+                    callback(null, dbResponse[0])
+                }
+            } else {
+                callback({
+                    "status": "failure",
+                    "message": "Customer with this api_key not found",
+                    code: 400
+                }, null)
+            }
+        }
+    })
+}

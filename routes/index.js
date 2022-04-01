@@ -168,3 +168,14 @@ exports.getAllOrganisations = function (req, res) {
         }
     })
 }
+
+
+exports.getCustomerDetailsByApiKey = function (req, res) {
+    apiUsage.getCustomerDetailsByApiKey(req, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}
