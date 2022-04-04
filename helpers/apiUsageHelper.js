@@ -19,6 +19,9 @@ exports.getAPIUsageAttributes = function (req, res, result) {
     apiUsageObject.HttpStatusCode = req.body.apiDetails.httpStatusCode
     apiUsageObject.PricePerCall = result.BasePricePerCall ? result.BasePricePerCall : 0;
     apiUsageObject.TimeTakenMilliseconds = req.body.apiDetails.executionTime
+    apiUsageObject.RequestData = req.body.apiDetails.requestData ? JSON.stringify(req.body.apiDetails.requestData) : null
+    apiUsageObject.ResponseData = req.body.apiDetails.responseBody ? JSON.stringify(req.body.apiDetails.responseBody) : null
+    apiUsageObject.ModifiedBy = req.body.apiDetails.modifiedby ? req.body.apiDetails.modifiedby : null
 
     return apiUsageObject;
 }
@@ -54,6 +57,9 @@ exports.getAPIErrorAttributes = function (req, res) {
     }
 
     apiErrorObject.InputData = JSON.stringify(req.body.apiDetails)
+    apiErrorObject.RequestData = req.body.apiDetails.requestData ? JSON.stringify(req.body.apiDetails.requestData) : null
+    apiErrorObject.ResponseData = req.body.apiDetails.responseBody ? JSON.stringify(req.body.apiDetails.responseBody) : null
+    apiErrorObject.ModifiedBy = req.body.apiDetails.modifiedby ? req.body.apiDetails.modifiedby : null
 
     return apiErrorObject
 }

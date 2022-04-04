@@ -292,3 +292,14 @@ exports.getAdminOrganisationsValidation = function (req, res, next) {
         next()
     }
 }
+
+exports.getCustomerDetailsByApiKeyValidation = function (req, res, next) {
+    let err = null;
+    if (util.isNull(req.headers.api_key)) {
+        err = customError.BadRequest("API key is required");
+        err.donotUpdateUsage = true;
+        next(err)
+    } else {
+        next()
+    }
+}
