@@ -19,7 +19,7 @@ Order By APIUsageId desc;
 
 select * from APIUsage
 Order By APIUsageId desc
-LIMIT 5;ErrorMessage
+LIMIT 5;
 
 Select * from APIError
 #where APIErrorId = 2
@@ -139,8 +139,8 @@ AND RequestDate <= STR_TO_DATE("2021-09-24 23:00:00", "%Y-%m-%d %H:%i:%s")
 AND au.APIErrorId IS NOT NULL
 LIMIT 1000;
 
---get MONTHLY API Errors. (getErrorCountsOnly = true)
---get YEARLY API Errors. (getErrorCountsOnly = true)
+#--get MONTHLY API Errors. (getErrorCountsOnly = true)
+#--get YEARLY API Errors. (getErrorCountsOnly = true)
 
 
 =================================Perfornamce========================
@@ -156,7 +156,7 @@ LEFT OUTER JOIN APIName an on an.APINameId = t.APINameId
 where product_rank<=10
 AND t.HttpStatusCode = 200;
 
---Worst
+#--Worst
 #Ref : https://ubiq.co/database-blog/select-top-10-records-for-each-category-in-mysql/
 SELECT an.DisplayName as APIName, t.EndpointName, DATE(t.RequestDate) as Date, t.TimeTakenMilliseconds as Time
 FROM ( 
@@ -169,10 +169,17 @@ where product_rank<=10
 AND t.HttpStatusCode = 200;
 
 
+# Invoice API
+# 1. We just have to take the price from APIUsage and can't display Price per call, as price can vary during an given period.
+SELECT an.DisplayName as APIName , au.APIVersion, au.EndpointName, Count(*) as Count, SUM(au.PricePerCall ) as TotalPrice 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+where APIKey = 'PERSE-TEST-CLIENT-APIKEY'
+AND (RequestDate) >= DATE_FORMAT("2022-03-01 00:00:00","%Y-%m-%d %H:%i:%s") 
+AND (RequestDate)<= DATE_FORMAT("2022-03-31 23:00:00","%Y-%m-%d %H:%i:%s")  
+GROUP BY APIName, au.EndpointName;
 
-Select * from APIUsage 
-Order By RequestDate desc
-LIMIT 10;
 
-
-
+select * from APIUsage
+Order By APIUsageId desc
+LIMIT 5;

@@ -21,6 +21,16 @@ select * from APIUsage
 #where APIKey = 'PERSE-TEST-CLIENT-APIKEY'
 Order By APIUsageId desc;
 
+select *  from APIUsage
+Order By APIUsageId desc
+LIMIT 30;
+
+select * from Error
+Order By APIErrorId desc
+LIMIT 10;
+
+
+Select * from APIRoute;
 
 
 select * from APIError
@@ -226,5 +236,14 @@ VALUES
 
 SELECT id, browser->'$.name' browser
 FROM events;
+
+# Invoice API
+SELECT an.DisplayName as APIName , au.APIVersion, au.EndpointName, Count(*) as Count, SUM(au.PricePerCall ) as TotalPrice 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+where APIKey = 'PERSE-TEST-CLIENT-APIKEY'
+AND (RequestDate) >= DATE_FORMAT("2022-03-01 00:00:00","%Y-%m-%d %H:%i:%s") 
+AND (RequestDate)<= DATE_FORMAT("2022-03-31 23:00:00","%Y-%m-%d %H:%i:%s")  
+GROUP BY APIName, au.EndpointName;
 
 ##=====================================TEMP===============================================
