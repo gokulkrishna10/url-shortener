@@ -2,6 +2,7 @@ const async = require('async')
 const apiUsageDao = require('../dao/apiUsageDAO')
 const util = require('../customnodemodules/util_node_module/utils')
 const {parse} = require("json2csv");
+const emailSender = require('../helpers/emailHelper')
 
 exports.updateAPIUsage = function (req, res, mainCallback) {
     console.log("inside API usage")
@@ -48,6 +49,11 @@ exports.updateAPIUsage = function (req, res, mainCallback) {
                                     console.log('{"status":"failure","message":"failed to record the error"}')
                                     mainCallback(err, null)
                                 } else {
+                                    emailSender.sendEmail('Selling price', JSON.stringify({
+                                        ApiVersion: req.body.apiDetails.apiVersion,
+                                        ApiName: req.body.apiDetails.apiName,
+                                        EndpointName: req.body.apiDetails.endPointName
+                                    }))
                                     console.log('{"status":"successful","message":"error successfully recorded"}')
                                     mainCallback(null, '{"status":"successful","message":"error successfully recorded"}')
                                 }

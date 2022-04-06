@@ -16,12 +16,13 @@ exports.getCustomerAPIDetails = function (req, res, callback) {
     let endPointName = req.body.apiDetails.endPointName
     let apiName = req.body.apiDetails.apiName
     let options = {
-        sql: "SELECT ars.APINameId,ars.APICustomerId, arp.APIPricingPlanId, arp.BasePricePerCall, ar.APIRouteId, ar.EndPointName " +
+        sql: "SELECT ars.APINameId,ars.APICustomerId, arp.APIPricingPlanId, arp.BasePricePerCall, ar.APIRouteId, ar.EndPointName, acp.SellingPricePerCall " +
             "FROM APIRouteSubscription ars " +
             "JOIN APIName an on an.APINameId = ars.APINameId " +
             "JOIN APIRoute ar on ar.APINameId = ars.APINameId " +
             "JOIN APIRoutePrice arp on ar.APIRouteId = arp.APIRouteId " +
             "JOIN APICustomer ac on ars.APICustomerId = ac.APICustomerId " +
+            "JOIN APICustomerPricing acp on acp.APIRoutePriceId = arp.APIRoutePriceId "+
             "where ac.APIKey = ? AND an.Name = ? " +
             "AND ar.APIVersion = ? " +
             "AND (EndPointName = ? OR EndPointName = '/') " +
