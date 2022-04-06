@@ -6,11 +6,11 @@ exports.updateAPIUsage = (req, res) => {
     apiUsage.updateAPIUsage(req, res, (err, response) => {
         if (err) {
             console.log("updateAPIUsage failed >" + JSON.stringify(err))
-            res.send(err.msg).status(err.code)
+            res.status(err.code).send(err.msg)
         } else {
             console.log("updateAPIUsage succeeded")
             if (!req.isValidationError)
-                res.send(JSON.parse(response)).status(202)
+                res.status(202).send(JSON.parse(response))
         }
     })
 }
