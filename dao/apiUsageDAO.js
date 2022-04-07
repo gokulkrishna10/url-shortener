@@ -1026,9 +1026,12 @@ exports.getInvoice = function (req, callback) {
         moment(req.query.endMonth).format('YYYY-MM-DD HH:mm:ss');
 
     let options = {
-        sql: "SELECT an.DisplayName as APIName , au.APIVersion, au.EndpointName, Count(*) as Count, SUM(au.PricePerCall) as TotalPrice " +
+        sql: "SELECT an.DisplayName as APIName , au.APIVersion, au.EndpointName, Count(*) as Count, SUM(au.PricePerCall) as TotalPrice, acp.SellingPricePerCall as CurrentUnitPrice " +
             "FROM APIUsage au " +
             "JOIN APIName an on au.APINameId = an.APINameId " +
+            "JOIN APIRoute ar on ar.APIRouteId = au.APIRouteId " +
+            "JOIN APIRoutePrice arp on arp.APIRouteId = au.APIRouteId " +
+            "JOIN APICustomerPricing acp on acp.APIRoutePriceId = arp.APIRoutePriceId "+
             "where APIKey = ? " +
             "AND RequestDate >= DATE_FORMAT(?,'%Y-%m-%d %H:%i:%s') " +
             "AND RequestDate <= DATE_FORMAT(?,'%Y-%m-%d %H:%i:%s') " +
