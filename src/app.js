@@ -82,6 +82,7 @@ router.get('/v1/internal/admin-error', apiUsageValidator.adminValidation, apiUsa
 router.get('/v1/internal/api-performance', apiUsageValidator.adminValidation, apiUsageValidator.getAdminApiPerformanceValidation, routes.getApiPerformance)
 router.get('/v1/internal/api-key', apiUsageValidator.adminValidation, apiUsageValidator.getAdminApiKeyFromCustomerNameValidation, routes.getApiKeyFromCustomerName)
 router.get('/v1/internal/organisations', apiUsageValidator.adminValidation, apiUsageValidator.getAdminOrganisationsValidation, routes.getAllOrganisations)
+router.get('/v1/internal/invoice', apiUsageValidator.getInvoiceValidation, routes.getInvoice)
 
 
 //required for COS

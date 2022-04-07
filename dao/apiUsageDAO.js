@@ -22,7 +22,7 @@ exports.getCustomerAPIDetails = function (req, res, callback) {
             "JOIN APIRoute ar on ar.APINameId = ars.APINameId " +
             "JOIN APIRoutePrice arp on ar.APIRouteId = arp.APIRouteId " +
             "JOIN APICustomer ac on ars.APICustomerId = ac.APICustomerId " +
-            "JOIN APICustomerPricing acp on acp.APIRoutePriceId = arp.APIRoutePriceId "+
+            "JOIN APICustomerPricing acp on acp.APIRoutePriceId = arp.APIRoutePriceId " +
             "where ac.APIKey = ? AND an.Name = ? " +
             "AND ar.APIVersion = ? " +
             "AND (EndPointName = ? OR EndPointName = '/') " +
@@ -1011,6 +1011,36 @@ exports.getCustomerDetailsByApiKey = function (req, callback) {
                     code: 400
                 }, null)
             }
+        }
+    })
+}
+
+exports.getInvoice = function (req, callback) {
+
+    let startMonth = moment(req.query.startMonth, 'YYYY-MM', true).isValid() ?
+        moment(req.query.startMonth).startOf('month').format('YYYY-MM-DD HH:mm:ss') :
+        moment(req.query.startMonth).format('YYYY-MM-DD HH:mm:ss');
+
+    let endMonth = moment(req.query.endMonth, 'YYYY-MM', true).isValid() ?
+        moment(req.query.endMonth).endOf('month').format('YYYY-MM-DD HH:mm:ss') :
+        moment(req.query.endMonth).format('YYYY-MM-DD HH:mm:ss');
+
+    let options = {
+        sql: "SELECT an.DisplayName as APIName , au.APIVersion, au.EndpointName, Count(*) as Count, SUM(au.PricePerCall) as TotalPrice " +
+            "FROM APIUsage au " +
+            "JOIN APIName an on au.APINameId = an.APINameId " +
+            "where APIKey = ? " +
+            "AND RequestDate >= DATE_FORMAT(?,'%Y-%m-%d %H:%i:%s') " +
+            "AND RequestDate <= DATE_FORMAT(?,'%Y-%m-%d %H:%i:%s') " +
+            "GROUP BY APIName, au.APIVersion,au.EndpointName;",
+        values: [req.headers.api_key, startMonth, endMonth]
+    }
+
+    db.queryWithOptions(options, (dbError, dbResp) => {
+        if (dbError) {
+            callback(customError.dbError(dbError), null)
+        } else {
+            callback(null, dbResp)
         }
     })
 }

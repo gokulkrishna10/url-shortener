@@ -401,5 +401,16 @@ exports.getCustomerDetailsByApiKey = function (req, callback) {
 }
 
 
+exports.getInvoice = function (req, callback) {
+    apiUsageDao.getInvoice(req, (err, result) => {
+        if (err) {
+            callback(err, null)
+        } else {
+            callback(null, result)
+        }
+    })
+}
+
+
 
 
