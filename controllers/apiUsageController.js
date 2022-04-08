@@ -441,7 +441,11 @@ exports.getInvoice = function (req, mainCallback) {
                         if (finalResponse.TotalPrice) {
                             result.push(finalResponse)
                         }
-                        callback(null, result)
+                        if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
+                            callback(null, parse(result))
+                        } else {
+                            callback(null, result)
+                        }
                     }
                 })
             },

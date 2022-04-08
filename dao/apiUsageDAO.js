@@ -9,7 +9,6 @@ const {parse} = require('json2csv');
 const {environment} = require('../environments')
 const util = require('../customnodemodules/util_node_module/utils')
 const axios = require('axios')
-const {response} = require("express");
 
 exports.getCustomerAPIDetails = function (req, res, callback) {
 
