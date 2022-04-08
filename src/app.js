@@ -72,6 +72,8 @@ router.get('/v1/usage', routes.apiUsageClientValidationByKey, apiUsageValidator.
 router.get('/v1/error', routes.apiUsageClientValidationByKey, apiUsageValidator.getErrorValidation, routes.getAPIError)
 router.get('/v1/api-names', routes.getAllApiNames)
 router.get('/v1/pricing-plans', routes.getAllPricingPlans)
+router.get('/v1/invoice', routes.apiUsageClientValidationByKey, apiUsageValidator.getInvoiceValidation, routes.getInvoice)
+
 //Admin-internal
 
 router.post('/v1/internal/onboard-api', apiUsageValidator.adminValidation, apiUsageValidator.getAPIOnboardValidation, routes.onBoardNewApi)
@@ -82,7 +84,6 @@ router.get('/v1/internal/admin-error', apiUsageValidator.adminValidation, apiUsa
 router.get('/v1/internal/api-performance', apiUsageValidator.adminValidation, apiUsageValidator.getAdminApiPerformanceValidation, routes.getApiPerformance)
 router.get('/v1/internal/api-key', apiUsageValidator.adminValidation, apiUsageValidator.getAdminApiKeyFromCustomerNameValidation, routes.getApiKeyFromCustomerName)
 router.get('/v1/internal/organisations', apiUsageValidator.adminValidation, apiUsageValidator.getAdminOrganisationsValidation, routes.getAllOrganisations)
-router.get('/v1/internal/invoice', apiUsageValidator.getInvoiceValidation, routes.getInvoice)
 
 
 //required for COS

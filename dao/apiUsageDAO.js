@@ -8,6 +8,8 @@ const sqlQueries = require('./sqlQueries')
 const {parse} = require('json2csv');
 const {environment} = require('../environments')
 const util = require('../customnodemodules/util_node_module/utils')
+const axios = require('axios')
+const {response} = require("express");
 
 exports.getCustomerAPIDetails = function (req, res, callback) {
 
@@ -1015,6 +1017,32 @@ exports.getCustomerDetailsByApiKey = function (req, callback) {
     })
 }
 
+
+exports.getCostPerMPAN = function (req, callback) {
+    let options = {
+        sql: "SELECT acp.SellingPricePerCall, ar.APIVersion " +
+            "FROM APICustomerPricing acp " +
+            "JOIN APICustomer ac on ac.APICustomerId = acp.APICustomerId " +
+            "JOIN APIRoutePrice arp on arp.APIRoutePriceId = acp.APIRoutePriceId " +
+            "JOIN APIRoute ar on ar.APIRouteId = arp.APIRouteId " +
+            "WHERE ac.APIKey = ? AND ar.EndpointName = ?;",
+        values: [req.headers.api_key, constants.costPerMpanEndpoint]
+    }
+
+    db.queryWithOptions(options, (dbError, dbResp) => {
+        if (dbError) {
+            callback(customError.dbError(dbError), null)
+        } else {
+            if (dbResp && dbResp.length > 0) {
+                callback(null, dbResp[0])
+            } else {
+                callback(null, null)
+            }
+        }
+    })
+}
+
+
 exports.getInvoice = function (req, callback) {
 
     let startMonth = moment(req.query.startMonth, 'YYYY-MM', true).isValid() ?
@@ -1026,17 +1054,15 @@ exports.getInvoice = function (req, callback) {
         moment(req.query.endMonth).format('YYYY-MM-DD HH:mm:ss');
 
     let options = {
-        sql: "SELECT an.DisplayName as APIName , au.APIVersion, au.EndpointName, Count(*) as Count, SUM(au.PricePerCall) as TotalPrice, acp.SellingPricePerCall as CurrentUnitPrice " +
+        sql: "SELECT an.DisplayName as APIName , au.APIVersion, au.EndpointName, Count(*) as Count, SUM(au.PricePerCall ) as TotalPrice " +
             "FROM APIUsage au " +
             "JOIN APIName an on au.APINameId = an.APINameId " +
-            "JOIN APIRoute ar on ar.APIRouteId = au.APIRouteId " +
-            "JOIN APIRoutePrice arp on arp.APIRouteId = au.APIRouteId " +
-            "JOIN APICustomerPricing acp on acp.APIRoutePriceId = arp.APIRoutePriceId "+
             "where APIKey = ? " +
             "AND RequestDate >= DATE_FORMAT(?,'%Y-%m-%d %H:%i:%s') " +
             "AND RequestDate <= DATE_FORMAT(?,'%Y-%m-%d %H:%i:%s') " +
-            "GROUP BY APIName, au.APIVersion,au.EndpointName;",
-        values: [req.headers.api_key, startMonth, endMonth]
+            "AND an.DisplayName != ? " +
+            "GROUP BY APIName, au.APIVersion, au.EndpointName ",
+        values: [req.headers.api_key, startMonth, endMonth, constants.meterHistoryApiName]
     }
 
     db.queryWithOptions(options, (dbError, dbResp) => {
@@ -1046,4 +1072,31 @@ exports.getInvoice = function (req, callback) {
             callback(null, dbResp)
         }
     })
+}
+
+
+exports.getActiveMeters = function (req, callback) {
+    let options = {
+        url: environment.ACTIVE_METERS_URL,
+        method: "GET",
+        rejectUnauthorized: false,
+        params: {
+            fromDate: req.query.startMonth,
+            toDate: req.query.endMonth
+        },
+        headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "api_key": req.headers.api_key
+        },
+        json: true
+    }
+
+    axios.get(options.url, {params: options.params, headers: options.headers})
+        .then(response => {
+            callback(null, response.data)
+        })
+        .catch(err => {
+            callback(err, null)
+        })
 }
