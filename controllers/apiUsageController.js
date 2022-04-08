@@ -413,7 +413,7 @@ exports.getInvoice = function (req, mainCallback) {
                     } else {
                         if (response) {
                             finalResponse.APIVersion = response.APIVersion
-                            finalResponse.EndpointName = constants.costPerMpanEndpoint
+                            finalResponse.EndpointName = constants.costForActiveMeter
                             finalResponse.costPerMpan = response.SellingPricePerCall
                             callback(null, finalResponse)
                         } else {
