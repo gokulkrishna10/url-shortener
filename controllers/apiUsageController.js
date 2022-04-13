@@ -3,6 +3,7 @@ const apiUsageDao = require('../dao/apiUsageDAO')
 const util = require('../customnodemodules/util_node_module/utils')
 const {parse} = require("json2csv");
 const emailSender = require('../helpers/emailHelper')
+const constants = require('../constants/constants')
 
 exports.updateAPIUsage = function (req, res, mainCallback) {
     console.log("inside API usage")
@@ -398,6 +399,64 @@ exports.getCustomerDetailsByApiKey = function (req, callback) {
             callback(null, result)
         }
     })
+}
+
+
+exports.getInvoice = function (req, mainCallback) {
+    let finalResponse = {}
+    finalResponse.APIName = constants.meterHistoryApiName
+    async.waterfall([
+            function getCostPerMPAN(callback) {
+                apiUsageDao.getCostPerMPAN(req, (err, response) => {
+                    if (err) {
+                        callback(err, null)
+                    } else {
+                        if (response) {
+                            finalResponse.APIVersion = response.APIVersion
+                            finalResponse.EndpointName = constants.costForActiveMeter
+                            finalResponse.costPerMpan = response.SellingPricePerCall
+                            callback(null, finalResponse)
+                        } else {
+                            mainCallback({status: "failure", message: "cost per mpan was not found", code: 400}, null)
+                        }
+                    }
+                })
+            }, function getActiveMeters(finalResponse, callback) {
+                apiUsageDao.getActiveMeters(req, (err, response) => {
+                    if (err) {
+                        callback(err, null)
+                    } else {
+                        finalResponse.Count = response.length
+                        finalResponse.TotalPrice = (finalResponse.Count * finalResponse.costPerMpan)
+                        callback(null, finalResponse)
+                    }
+                })
+            },
+            function getInvoice(finalResponse, callback) {
+                apiUsageDao.getInvoice(req, (err, result) => {
+                    if (err) {
+                        callback(err, null)
+                    } else {
+                        delete finalResponse.costPerMpan
+                        if (finalResponse.TotalPrice) {
+                            result.push(finalResponse)
+                        }
+                        if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
+                            callback(null, parse(result))
+                        } else {
+                            callback(null, result)
+                        }
+                    }
+                })
+            },
+        ],
+        function finalCallback(finalError, finalResult) {
+            if (finalError) {
+                mainCallback(finalError, null)
+            } else {
+                mainCallback(null, finalResult)
+            }
+        })
 }
 
 

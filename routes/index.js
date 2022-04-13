@@ -179,3 +179,14 @@ exports.getCustomerDetailsByApiKey = function (req, res) {
         }
     })
 }
+
+
+exports.getInvoice = function (req, res) {
+    apiUsage.getInvoice(req, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}
