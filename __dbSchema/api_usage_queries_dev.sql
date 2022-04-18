@@ -171,15 +171,40 @@ AND t.HttpStatusCode = 200;
 
 # Invoice API
 # 1. We just have to take the price from APIUsage and can't display Price per call, as price can vary during an given period.
+#2 Current Unit Price :  Displays the current unit ptice. NOITE the selected period might have had a aprice increase.
+SELECT an.DisplayName as APIName , au.APIVersion, au.EndpointName, Count(*) as Count, SUM(au.PricePerCall ) as TotalPrice 
+# , acp.SellingPrice as CurrentUnitPrice
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+JOIN APIRoute ar on ar.APIRouteId = au.APIRouteId
+JOIN APIRoutePrice arp on arp.APIRouteId = au.APIRouteId
+# Uncomment after entering the APIPrice for each customer
+#JOIN APICustomerPricing acp on acp.APIRoutePriceId = arp.APIRoutePriceId
+where APIKey = 'PERSE-TEST-CLIENT-APIKEY'
+AND (RequestDate) >= DATE_FORMAT("2022-03-01 00:00:00","%Y-%m-%d %H:%i:%s") 
+AND (RequestDate)<= DATE_FORMAT("2022-03-31 23:00:00","%Y-%m-%d %H:%i:%s")  
+GROUP BY APIName, au.EndpointName;
+
+Select * from APIName;
+Select * from APICustomer;
+Select * from APIRoutePrice;
+Select * from APICustomerPricing;
+
+select * from APIUsage
+Order By APIUsageId desc
+LIMIT 5;
+
+
+
+
+
+
 SELECT an.DisplayName as APIName , au.APIVersion, au.EndpointName, Count(*) as Count, SUM(au.PricePerCall ) as TotalPrice 
 FROM APIUsage au
 JOIN APIName an on au.APINameId = an.APINameId
 where APIKey = 'PERSE-TEST-CLIENT-APIKEY'
 AND (RequestDate) >= DATE_FORMAT("2022-03-01 00:00:00","%Y-%m-%d %H:%i:%s") 
 AND (RequestDate)<= DATE_FORMAT("2022-03-31 23:00:00","%Y-%m-%d %H:%i:%s")  
-GROUP BY APIName, au.EndpointName;
+GROUP BY APIName, au.APIVersion, au.EndpointName;
 
 
-select * from APIUsage
-Order By APIUsageId desc
-LIMIT 5;
