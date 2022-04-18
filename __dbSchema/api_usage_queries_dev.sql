@@ -8,14 +8,8 @@ Select * from APICustomer;
 Select * from APIRoute; 
 Select * from APIPricingPlan; 
 Select * from APIRouteSubscription; 
-Select * from APIQuotaLimit; 
 Select * from APIRoutePrice; 
 Select * from ErrorType;
-
-select * from APIUsage
-where APIKey = 'PERSE-TEST-CLIENT-APIKEY'
-And APINameId = 4
-Order By APIUsageId desc;
 
 select * from APIUsage
 Order By APIUsageId desc
@@ -26,16 +20,10 @@ Select * from APIError
 order by APIErrorId desc
 LIMIT 5; 
 
-Select * from APIUsage
-order by APIUsageId desc
-LIMIT 5; 
-
-
 
 #--------------Update Usage Queries------------------
 
-select * from APIRoute
-#-- Regular
+
 Select ar.APIRouteId, ar.EndPointName, ars.APINameId,ars.APICustomerId, arp.APIPricingPlanId, arp.BasePricePerCall 
 FROM APIRouteSubscription ars
 JOIN APIRoute ar on ar.APINameId = ars.APINameId
@@ -185,26 +173,5 @@ AND (RequestDate) >= DATE_FORMAT("2022-03-01 00:00:00","%Y-%m-%d %H:%i:%s")
 AND (RequestDate)<= DATE_FORMAT("2022-03-31 23:00:00","%Y-%m-%d %H:%i:%s")  
 GROUP BY APIName, au.EndpointName;
 
-Select * from APIName;
-Select * from APICustomer;
-Select * from APIRoutePrice;
-Select * from APICustomerPricing;
-
-select * from APIUsage
-Order By APIUsageId desc
-LIMIT 5;
-
-
-
-
-
-
-SELECT an.DisplayName as APIName , au.APIVersion, au.EndpointName, Count(*) as Count, SUM(au.PricePerCall ) as TotalPrice 
-FROM APIUsage au
-JOIN APIName an on au.APINameId = an.APINameId
-where APIKey = 'PERSE-TEST-CLIENT-APIKEY'
-AND (RequestDate) >= DATE_FORMAT("2022-03-01 00:00:00","%Y-%m-%d %H:%i:%s") 
-AND (RequestDate)<= DATE_FORMAT("2022-03-31 23:00:00","%Y-%m-%d %H:%i:%s")  
-GROUP BY APIName, au.APIVersion, au.EndpointName;
 
 
