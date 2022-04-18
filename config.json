@@ -8,7 +8,13 @@
     "RDS_FAILOVER_NO_OF_CONNECTIONS": 5,
     "RDS_CONNECTION_TIMEOUT": 10000,
     "MAX_ERROR_GET_COUNT": 1000,
-    "ADMIN_API_KEY": "e08f40b3-05ce-4fe3-bfea-27c744fa6b90"
+    "ADMIN_API_KEY": "e08f40b3-05ce-4fe3-bfea-27c744fa6b90",
+    "ISSUE_EMAIL_RECIPIENTS":{
+      "TO":"sudheer.k@digitalapicraft.com",
+      "COPY":"gokul.k@digitalapicraft.com"
+    },
+    "ENVIRONMENT_NAME": "dev",
+    "ACTIVE_METERS_URL": "http://127.0.0.1:7400/v1/active-meters"
   },
   "dev": {
     "RDS_HOST": "openenergy.crjdegsnxmp2.eu-west-1.rds.amazonaws.com",
@@ -19,7 +25,13 @@
     "RDS_FAILOVER_NO_OF_CONNECTIONS": 5,
     "RDS_CONNECTION_TIMEOUT": 10000,
     "MAX_ERROR_GET_COUNT": 1000,
-    "ADMIN_API_KEY": "e08f40b3-05ce-4fe3-bfea-27c744fa6b90"
+    "ADMIN_API_KEY": "e08f40b3-05ce-4fe3-bfea-27c744fa6b90",
+    "ISSUE_EMAIL_RECIPIENTS":{
+      "TO":"sudheer.k@digitalapicraft.com",
+      "COPY":"gokul.k@digitalapicraft.com"
+    },
+    "ENVIRONMENT_NAME": "dev",
+    "ACTIVE_METERS_URL": "http://127.0.0.1:7400/v1/active-meters"
   },
   "preprod": {
     "RDS_HOST": "openenergy.crjdegsnxmp2.eu-west-1.rds.amazonaws.com",
@@ -30,7 +42,13 @@
     "RDS_FAILOVER_NO_OF_CONNECTIONS": 5,
     "RDS_CONNECTION_TIMEOUT": 10000,
     "MAX_ERROR_GET_COUNT": 1000,
-    "ADMIN_API_KEY": "e08f40b3-05ce-4fe3-bfea-27c744fa6b90"
+    "ADMIN_API_KEY": "e08f40b3-05ce-4fe3-bfea-27c744fa6b90",
+    "ISSUE_EMAIL_RECIPIENTS":{
+      "TO":"sudheer.k@digitalapicraft.com",
+      "COPY":"gokul.k@digitalapicraft.com"
+    },
+    "ENVIRONMENT_NAME": "preprod",
+    "ACTIVE_METERS_URL": "http://127.0.0.1:7500/v1/active-meters"
   },
   "sandbox": {
     "RDS_HOST": "openenergy.crjdegsnxmp2.eu-west-1.rds.amazonaws.com",
@@ -41,7 +59,13 @@
     "RDS_FAILOVER_NO_OF_CONNECTIONS": 5,
     "RDS_CONNECTION_TIMEOUT": 10000,
     "MAX_ERROR_GET_COUNT": 1000,
-    "ADMIN_API_KEY": "e08f40b3-05ce-4fe3-bfea-27c744fa6b90"
+    "ADMIN_API_KEY": "e08f40b3-05ce-4fe3-bfea-27c744fa6b90",
+    "ISSUE_EMAIL_RECIPIENTS":{
+      "TO":"sudheer.k@digitalapicraft.com",
+      "COPY":"gokul.k@digitalapicraft.com"
+    },
+    "ENVIRONMENT_NAME": "sandbox",
+    "ACTIVE_METERS_URL": "http://127.0.0.1:7300/v1/active-meters"
   },
   "prod": {
     "RDS_HOST": "oeprodrds.crjdegsnxmp2.eu-west-1.rds.amazonaws.com",
@@ -52,7 +76,13 @@
     "RDS_FAILOVER_NO_OF_CONNECTIONS": 5,
     "RDS_CONNECTION_TIMEOUT": 10000,
     "MAX_ERROR_GET_COUNT": 1000,
-    "ADMIN_API_KEY": "e08f40b3-05ce-4fe3-bfea-27c744fa6b90"
+    "ADMIN_API_KEY": "e08f40b3-05ce-4fe3-bfea-27c744fa6b90",
+    "ISSUE_EMAIL_RECIPIENTS":{
+      "TO":"sudheer.k@digitalapicraft.com",
+      "COPY":"gokul.k@digitalapicraft.com"
+    },
+    "ENVIRONMENT_NAME": "prod",
+    "ACTIVE_METERS_URL": "http://127.0.0.1:7000/v1/active-meters"
   }
 }
 
