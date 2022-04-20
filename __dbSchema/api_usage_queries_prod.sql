@@ -8,7 +8,7 @@ Order By APIUsageId desc;
 
 Select Count(*) from APIUsage
 where APIKey = 'faf1111e-ec48-4980-bc30-324a0f205fd3'
-And ClientIPAddress = '::ffff:10.11.0.250'
+And ClientIPAddress = '::ffff:10.11.0.250';
 
 Select * from APIUsage
 where APIKey = 'faf1111e-ec48-4980-bc30-324a0f205fd3'
@@ -242,8 +242,17 @@ SELECT an.DisplayName as APIName , au.APIVersion, au.EndpointName, Count(*) as C
 FROM APIUsage au
 JOIN APIName an on au.APINameId = an.APINameId
 where APIKey = 'PERSE-TEST-CLIENT-APIKEY'
-AND (RequestDate) >= DATE_FORMAT("2022-03-01 00:00:00","%Y-%m-%d %H:%i:%s") 
-AND (RequestDate)<= DATE_FORMAT("2022-03-31 23:00:00","%Y-%m-%d %H:%i:%s")  
+AND (RequestDate) >= DATE_FORMAT("2022-04-01 00:00:00","%Y-%m-%d %H:%i:%s") 
+AND (RequestDate)<= DATE_FORMAT("2022-04-30 23:00:00","%Y-%m-%d %H:%i:%s")  
 GROUP BY APIName, au.EndpointName;
 
 ##=====================================TEMP===============================================
+
+SELECT an.DisplayName as APIName , au.APIVersion, au.EndpointName, Count(*) as Count, SUM(au.PricePerCall ) as TotalPrice 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+where APIKey = 'faf1111e-ec48-4980-bc30-324a0f205fd3'
+AND (RequestDate) >= DATE_FORMAT("2022-03-01 00:00:00","%Y-%m-%d %H:%i:%s") 
+AND (RequestDate)<= DATE_FORMAT("2022-03-31 23:00:00","%Y-%m-%d %H:%i:%s")  
+GROUP BY APIName, au.APIVersion, au.EndpointName;
+

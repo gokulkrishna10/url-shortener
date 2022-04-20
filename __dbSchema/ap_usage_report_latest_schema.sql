@@ -176,17 +176,34 @@ NOTE: The discount could be negative to sell at a higer price than vase price
 */
 CREATE TABLE IF NOT EXISTS APICustomerPricing (
 	APICustomerPricingId INT NOT NULL AUTO_INCREMENT,
+    APIRoute_PricingTier_MapId INT NOT NULL REFERENCES APIRoute_PricingTier_Map,
     APINameId INT NOT NULL,
     APICustomerId INT NOT NULL,
     APIRoutePriceId INT NOT NULL,
-    DiscountAmountPerCall DECIMAL(8,2) NULL,
-    DiscountPercentPerCall DECIMAL(4,2)  NULL,
-    SellingPricePerCall DECIMAL(8,2) NOT NULL,
     CONSTRAINT PK_APICustomerPricing PRIMARY KEY (APICustomerPricingId),
     CONSTRAINT FK_APICustomerPricing_APINameId FOREIGN KEY (APINameId) REFERENCES APIName(APINameId),
     CONSTRAINT FK_APICustomerPricing_APICustomerId FOREIGN KEY (APICustomerId) REFERENCES APICustomer(APICustomerId),
     CONSTRAINT FK_APICustomerPricing_APIRoutePriceId FOREIGN KEY (APIRoutePriceId) REFERENCES APIRoutePrice(APIRoutePriceId)
 );
+
+CREATE TABLE IF NOT EXISTS APIRoute_PricingTier_Map (
+	APIRoute_PricingTier_MapId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    APIRoutePriceId INT NOT NULL REFERENCES APIRoutePrice,
+    APIPricingTierId INT NOT NULL REFERENCES APIPricingTier,
+    SellingPricePerCall DECIMAL(8,2) NOT NULL,
+    CONSTRAINT UK_APIPricingTier UNIQUE(APIRoutePriceId, APIPricingTierId)
+);
+
+CREATE TABLE IF NOT EXISTS APIPricingTier (
+	APIPricingTierId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(30) NOT NULL,
+    CONSTRAINT UK_APIPricingTier UNIQUE(Name)
+);
+
+INSERT INTO APIPricingTier(Name) VALUES ('TIER1');
+INSERT INTO APIPricingTier(Name) VALUES ('TIER2');
+INSERT INTO APIPricingTier(Name) VALUES ('TIER3');
+
 
 #TBD: Invoice API rules
  
