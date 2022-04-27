@@ -40,7 +40,7 @@ exports.updateAPIUsage = function (req, res, mainCallback) {
             function getCustomerAPIDetails(req, callback) {
                 apiUsageDao.getCustomerAPIDetails(req, res, function (err, result) {
                     if (err) {
-                        callback(err, null)
+                        mainCallback(err, null)
                     } else {
                         if (result && result.length === 0) {
                             req.isInternalProcessingError = true
@@ -50,7 +50,7 @@ exports.updateAPIUsage = function (req, res, mainCallback) {
                                     console.log('{"status":"failure","message":"failed to record the error"}')
                                     mainCallback(err, null)
                                 } else {
-                                    emailSender.sendEmail('Selling price', JSON.stringify({
+                                    emailSender.sendEmail('Failed to find Customer Pricing data', JSON.stringify({
                                         ApiVersion: req.body.apiDetails.apiVersion,
                                         ApiName: req.body.apiDetails.apiName,
                                         EndpointName: req.body.apiDetails.endPointName
@@ -441,7 +441,7 @@ exports.getInvoice = function (req, mainCallback) {
                         if (finalResponse.TotalPrice) {
                             result.push(finalResponse)
                         }
-                        if (req.headers["content-type"] && req.headers["content-type"].includes("csv")) {
+                        if (req.headers["accept"] && req.headers["accept"].includes("csv")) {
                             callback(null, parse(result))
                         } else {
                             callback(null, result)

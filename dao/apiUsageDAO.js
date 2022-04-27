@@ -17,18 +17,27 @@ exports.getCustomerAPIDetails = function (req, res, callback) {
     let endPointName = req.body.apiDetails.endPointName
     let apiName = req.body.apiDetails.apiName
     let options = {
-        sql: "SELECT ars.APINameId,ars.APICustomerId, arp.APIPricingPlanId, arp.BasePricePerCall, ar.APIRouteId, ar.EndPointName, acp.SellingPricePerCall " +
-            "FROM APIRouteSubscription ars " +
-            "JOIN APIName an on an.APINameId = ars.APINameId " +
-            "JOIN APIRoute ar on ar.APINameId = ars.APINameId " +
-            "JOIN APIRoutePrice arp on ar.APIRouteId = arp.APIRouteId " +
-            "JOIN APICustomer ac on ars.APICustomerId = ac.APICustomerId " +
-            "JOIN APICustomerPricing acp on acp.APIRoutePriceId = arp.APIRoutePriceId " +
-            "where ac.APIKey = ? AND an.Name = ? " +
-            "AND ar.APIVersion = ? " +
-            "AND (EndPointName = ? OR EndPointName = '/') " +
-            "ORDER BY LENGTH(ar.EndPointName) DESC " +
-            "LIMIT 1;",
+        sql: `SELECT ars.APINameId,
+        ars.APICustomerId, 
+        arp.APIPricingPlanId, 
+        arp.BasePricePerCall, 
+        ar.APIRouteId, 
+        ar.EndPointName, 
+        acp.SellingPricePerCall
+    FROM APIRouteSubscription ars
+    JOIN APIName an on an.APINameId = ars.APINameId
+    JOIN APIRoute ar on ar.APINameId = ars.APINameId
+    JOIN APIRoutePrice arp on ar.APIRouteId = arp.APIRouteId
+    JOIN APICustomer ac on ars.APICustomerId = ac.APICustomerId
+    JOIN APICustomerPricing acp on acp.APIRouteId = ar.APIRouteId
+    where ac.APIKey = ?
+    AND an.Name = ?
+    AND ar.APIVersion = ?
+    AND (EndPointName = ? OR EndPointName = '/')
+    AND acp.StartDate < NOW()
+    AND (acp.EndDate IS NULL OR acp.EndDate > NOW())
+    ORDER BY LENGTH(ar.EndPointName) DESC
+    LIMIT 1;`,
 
         values: [apiKey, apiName, apiVersion, endPointName]
     }
@@ -1019,12 +1028,11 @@ exports.getCustomerDetailsByApiKey = function (req, callback) {
 
 exports.getCostPerMPAN = function (req, callback) {
     let options = {
-        sql: "SELECT acp.SellingPricePerCall, ar.APIVersion " +
-            "FROM APICustomerPricing acp " +
-            "JOIN APICustomer ac on ac.APICustomerId = acp.APICustomerId " +
-            "JOIN APIRoutePrice arp on arp.APIRoutePriceId = acp.APIRoutePriceId " +
-            "JOIN APIRoute ar on ar.APIRouteId = arp.APIRouteId " +
-            "WHERE ac.APIKey = ? AND ar.EndpointName = ?;",
+        sql: `SELECT acp.SellingPricePerCall, ar.APIVersion
+            FROM APICustomerPricing acp
+            JOIN APICustomer ac on ac.APICustomerId = acp.APICustomerId
+            JOIN APIRoute ar on ar.APIRouteId = acp.APIRouteId
+            WHERE ac.APIKey = ? AND ar.EndpointName = ?;`,
         values: [req.headers.api_key, constants.costPerMpanEndpoint]
     }
 
@@ -1053,14 +1061,19 @@ exports.getInvoice = function (req, callback) {
         moment(req.query.endMonth).format('YYYY-MM-DD HH:mm:ss');
 
     let options = {
-        sql: "SELECT an.DisplayName as APIName , au.APIVersion, au.EndpointName, Count(*) as Count, SUM(au.PricePerCall ) as TotalPrice " +
-            "FROM APIUsage au " +
-            "JOIN APIName an on au.APINameId = an.APINameId " +
-            "where APIKey = ? " +
-            "AND RequestDate >= DATE_FORMAT(?,'%Y-%m-%d %H:%i:%s') " +
-            "AND RequestDate <= DATE_FORMAT(?,'%Y-%m-%d %H:%i:%s') " +
-            "AND an.DisplayName != ? " +
-            "GROUP BY APIName, au.APIVersion, au.EndpointName ",
+        sql: `SELECT an.DisplayName as APIName , 
+        au.APIVersion, 
+        au.EndpointName,
+        au.PricePerCall as UnitPrice,
+        Count(*) as Count, 
+        SUM(au.PricePerCall ) as TotalPrice 
+        FROM APIUsage au 
+        JOIN APIName an on au.APINameId = an.APINameId
+        WHERE APIKey = ?
+        AND RequestDate >= DATE_FORMAT(?,'%Y-%m-%d %H:%i:%s')
+        AND RequestDate <= DATE_FORMAT(?,'%Y-%m-%d %H:%i:%s')
+        AND an.DisplayName != ?
+        GROUP BY APIName, au.APIVersion, au.EndpointName`,
         values: [req.headers.api_key, startMonth, endMonth, constants.meterHistoryApiName]
     }
 

@@ -10,6 +10,9 @@ Select * from APIPricingPlan;
 Select * from APIRouteSubscription; 
 Select * from APIRoutePrice; 
 Select * from ErrorType;
+Select * from APICustomerPricing;
+Select * from APIRoutePricingTierMap;
+Select * from APIPricingTier;
 
 select * from APIUsage
 Order By APIUsageId desc
@@ -19,6 +22,8 @@ Select * from APIError
 #where APIErrorId = 2
 order by APIErrorId desc
 LIMIT 5; 
+
+
 
 
 #--------------Update Usage Queries------------------
@@ -156,22 +161,125 @@ LEFT OUTER JOIN APIName an on an.APINameId = t.APINameId
 where product_rank<=10
 AND t.HttpStatusCode = 200;
 
+#=========================================== Invoice Endpoint=============================================
 
-# Invoice API
-# 1. We just have to take the price from APIUsage and can't display Price per call, as price can vary during an given period.
-#2 Current Unit Price :  Displays the current unit ptice. NOITE the selected period might have had a aprice increase.
-SELECT an.DisplayName as APIName , au.APIVersion, au.EndpointName, Count(*) as Count, SUM(au.PricePerCall ) as TotalPrice 
-# , acp.SellingPrice as CurrentUnitPrice
-FROM APIUsage au
-JOIN APIName an on au.APINameId = an.APINameId
-JOIN APIRoute ar on ar.APIRouteId = au.APIRouteId
-JOIN APIRoutePrice arp on arp.APIRouteId = au.APIRouteId
-# Uncomment after entering the APIPrice for each customer
-#JOIN APICustomerPricing acp on acp.APIRoutePriceId = arp.APIRoutePriceId
-where APIKey = 'PERSE-TEST-CLIENT-APIKEY'
-AND (RequestDate) >= DATE_FORMAT("2022-03-01 00:00:00","%Y-%m-%d %H:%i:%s") 
-AND (RequestDate)<= DATE_FORMAT("2022-03-31 23:00:00","%Y-%m-%d %H:%i:%s")  
-GROUP BY APIName, au.EndpointName;
+SELECT an.DisplayName as APIName , 
+	au.APIVersion, 
+    au.EndpointName,
+    au.PricePerCall as UnitPrice,
+    Count(*) as Count, 
+    SUM(au.PricePerCall ) as TotalPrice 
+	FROM APIUsage au 
+	JOIN APIName an on au.APINameId = an.APINameId 
+	WHERE APIKey = 'PERSE-TEST-CLIENT-APIKEY'
+	AND RequestDate >= DATE_FORMAT('2022-04-27 12:30:00','%Y-%m-%d %H:%i:%s')
+	AND RequestDate <= DATE_FORMAT('2022-04-27 23:59:59','%Y-%m-%d %H:%i:%s')
+	AND an.DisplayName != 'Half Hourly Meter History API'
+	GROUP BY APIName, au.APIVersion, au.EndpointName;
+    
+select * from APIUsage
+Order By APIUsageId desc
+LIMIT 5;
+
+
+Select * from APIError
+#where APIErrorId = 2
+order by APIErrorId desc
+LIMIT 5; 
+
+##==============================Enter Customer Pricing Manually========================================
+SELECT * FROM api_usage_report_dev.APIRoute;
+SELECT * FROM api_usage_report_dev.APIName;
+SELECT * FROM api_usage_report_dev.APICustomer;
 
 
 
+##-------------------------------Add New Endpoint Prices to : APICustomerPricing----------------------------
+
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
+VALUES (89,86,46,1,0,0,0.2,1);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
+VALUES (89,87,46,2,0,0,0.2,1);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
+VALUES (89,88,46,3,0,0,0.25,1);
+
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
+VALUES (89,89,46,1,0,0,0.2,1);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
+VALUES (89,90,46,2,0,0,0.53,1);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
+VALUES (89,77,46,1,0,0,0.6,1);
+
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
+VALUES (89,91,46,1,0,0,0.5,1);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
+VALUES (89,92,46,2,0,0,0.08,1);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
+VALUES (89,93,46,1,0,0,0.1,1);
+
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
+VALUES (89,94,46,1,0,0,0.2,1);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
+VALUES (89,95,46,1,0,0,0.5,1);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
+VALUES (89,90,46,1,0,0,0.6,1);
+
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
+VALUES (89,79,46,1,0,0,1.0,1);
+
+
+Select * from APICustomerPricing;
+
+##-------------------------------Add New Endpoint Prices to : APIRoutePricingTierMap----------------------------
+Select * from APIRoutePricingTierMap;
+SELECT * FROM api_usage_report_dev.APIRoute;
+
+INSERT INTO APIRoutePricingTierMap (APIRouteId, APIPricingTierId, BasePricePerCall)
+VALUES (94,1,0.2);
+INSERT INTO APIRoutePricingTierMap (APIRouteId, APIPricingTierId, BasePricePerCall)
+VALUES (94,2,0.2);
+INSERT INTO APIRoutePricingTierMap (APIRouteId, APIPricingTierId, BasePricePerCall)
+VALUES (94,3,0.2);
+
+
+
+
+#######================================TRIGGER TEST - Make the tale not updateable==============================
+
+use devdb;
+create table trigger_test
+(
+    id int not null
+);
+Select * from trigger_test;
+
+
+DELIMITER $$
+-- before inserting new id
+DROP TRIGGER IF EXISTS before_update_id$$
+CREATE TRIGGER before_update_id
+    BEFORE INSERT ON test_trigger FOR EACH ROW
+    BEGIN
+        -- condition to check
+        IF NEW.id < 0 THEN
+            -- hack to solve absence of SIGNAL/prepared statements in triggers
+            UPDATE `Error: CAN NOT update any pricing record in this table.` SET x=1;
+        END IF;
+    END$$
+
+DELIMITER ;
+
+### BUT Trigger creation is failing with error
+###Error Code: 1419. You do not have the SUPER privilege and binary logging is enabled (you *might* want to use the less safe log_bin_trust_function_creators variable)
+## Probable solutions:
+# https://serverfault.com/questions/420480/when-trying-to-create-a-trigger-in-rds-i-get-an-error-about-binary-logging
+# https://www.thesysadmin.rocks/2020/08/19/aws-rds-you-do-not-have-the-super-privilege-and-binary-logging-is-enabled/
+
+-- run the following as seperate statements:
+insert into trigger_test values (1), (-1), (2); -- everything fails as one row is bad
+select * from trigger_test;
+insert into trigger_test values (1); -- succeeds as expected
+insert into trigger_test values (-1); -- fails as expected
+select * from trigger_test;
+
+##==========================END - TRIGGER TEST=============================================
