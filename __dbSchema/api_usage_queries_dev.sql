@@ -210,11 +210,14 @@ SELECT ars.APINameId,
     where ac.APIKey = 'PERSE-TEST-CLIENT-APIKEY'
     AND an.Name = 'oe-address-meter'
     AND ar.APIVersion = 'v1'
-    AND (EndPointName = 'meter-details' OR EndPointName = '/')
+    AND (EndPointName = 'std-tariff' OR EndPointName = '/')
     AND acp.StartDate < NOW()
     AND (acp.EndDate IS NULL OR acp.EndDate > NOW())
     ORDER BY LENGTH(ar.EndPointName) DESC
     LIMIT 1;
+
+Select * from APICustomerPricing;
+SELECT * FROM api_usage_report_dev.APIRoute;
 
 ##==============================Enter Customer Pricing Manually========================================
 SELECT * FROM api_usage_report_dev.APIRoute;
@@ -251,7 +254,7 @@ VALUES (89,94,46,1,0,0,0.2,1);
 INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
 VALUES (89,95,46,1,0,0,0.5,1);
 INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
-VALUES (89,90,46,1,0,0,0.6,1);
+VALUES (89,76,46,1,0,0,0.6,1);
 
 INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
 VALUES (89,79,46,1,0,0,1.0,1);
