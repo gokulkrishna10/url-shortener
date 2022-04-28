@@ -5,6 +5,7 @@ JOIN APIName an on au.APINameId = an.APINameId
 where APIKey = ? 
 AND (RequestDate) >= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
 AND (RequestDate)<= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s")  
+AND APIErrorId IS NULL
 GROUP BY Date, APIVersion, EndpointName, APIName`;
 module.exports.GET_DAILY_USAGE_WO_ENDPOINTS_QUERY = `SELECT DATE(RequestDate) as Date, an.DisplayName as APIName , APIVersion, Count(*) as Count 
 FROM APIUsage au
@@ -12,6 +13,7 @@ JOIN APIName an on au.APINameId = an.APINameId
 where APIKey = ?
 AND (RequestDate) >= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
 AND (RequestDate)<= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s")  
+AND APIErrorId IS NULL
 GROUP BY Date, APIVersion, APIName`;
 
 
@@ -23,13 +25,15 @@ JOIN APIName an on au.APINameId = an.APINameId
 where APIKey = ? and DisplayName = ? 
 AND (RequestDate) >= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
 AND (RequestDate)<= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s")  
+AND APIErrorId IS NULL
 GROUP BY Date, APIVersion, EndpointName`;
 module.exports.GET_DAILY_USAGE_WO_ENDPOINTS_AND_API_NAME_QUERY = `SELECT DATE(RequestDate) as Date, an.DisplayName as APIName , APIVersion, Count(*) as Count 
 FROM APIUsage au
 JOIN APIName an on au.APINameId = an.APINameId
 where APIKey = ? and DisplayName = ?
 AND (RequestDate) >= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
-AND (RequestDate)<= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s")  
+AND (RequestDate)<= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
+AND APIErrorId IS NULL 
 GROUP BY Date, APIVersion`;
 
 
@@ -41,6 +45,7 @@ JOIN APIName an on au.APINameId = an.APINameId
 where APIKey = ? 
 AND (RequestDate) >= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
 AND (RequestDate)<= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s")  
+AND APIErrorId IS NULL
 GROUP BY Month, APIVersion, EndpointName, APIName`;
 module.exports.GET_MONTHLY_USAGE_WO_ENDPOINTS_QUERY = `SELECT DATE_FORMAT(RequestDate,'%M %Y') AS Month, an.DisplayName as APIName , APIVersion, Count(*) as Count 
 FROM APIUsage au
@@ -48,6 +53,7 @@ JOIN APIName an on au.APINameId = an.APINameId
 where APIKey = ?
 AND (RequestDate) >= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
 AND (RequestDate)<= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s")  
+AND APIErrorId IS NULL
 GROUP BY Month, APIVersion, APIName`;
 
 
@@ -59,6 +65,7 @@ JOIN APIName an on au.APINameId = an.APINameId
 where APIKey = ? and DisplayName = ?
 AND (RequestDate) >= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
 AND (RequestDate)<= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s")  
+AND APIErrorId IS NULL
 GROUP BY Month, APIVersion, EndpointName`;
 module.exports.GET_MONTHLY_USAGE_WO_ENDPOINTS_AND_API_NAME_QUERY = `SELECT DATE_FORMAT(RequestDate,'%M %Y') AS Month, an.DisplayName as APIName , APIVersion, Count(*) as Count 
 FROM APIUsage au
@@ -66,6 +73,7 @@ JOIN APIName an on au.APINameId = an.APINameId
 where APIKey = ? and DisplayName = ?
 AND (RequestDate) >= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
 AND (RequestDate)<= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s")  
+AND APIErrorId IS NULL
 GROUP BY Month, APIVersion`;
 
 
@@ -77,6 +85,7 @@ JOIN APIName an on au.APINameId = an.APINameId
 where APIKey = ? 
 AND (RequestDate) >= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
 AND (RequestDate)<= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
+AND APIErrorId IS NULL
 GROUP BY Year, APIVersion, EndpointName, APIName`;
 module.exports.GET_YEARLY_USAGE_WO_ENDPOINTS_QUERY = `SELECT YEAR(RequestDate) AS Year, an.DisplayName as APIName , APIVersion, Count(*) as Count 
 FROM APIUsage au
@@ -84,6 +93,7 @@ JOIN APIName an on au.APINameId = an.APINameId
 where APIKey = ?
 AND (RequestDate) >= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
 AND (RequestDate)<= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
+AND APIErrorId IS NULL
 GROUP BY Year, APIVersion, APIName`;
 
 
@@ -95,6 +105,7 @@ JOIN APIName an on au.APINameId = an.APINameId
 where APIKey = ? and DisplayName = ?
 AND (RequestDate) >= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
 AND (RequestDate)<= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
+AND APIErrorId IS NULL
 GROUP BY Year, APIVersion, EndpointName`;
 module.exports.GET_YEARLY_USAGE_WO_ENDPOINTS_AND_API_NAME_QUERY = `SELECT YEAR(RequestDate) AS Year, an.DisplayName as APIName , APIVersion, Count(*) as Count 
 FROM APIUsage au
@@ -102,6 +113,7 @@ JOIN APIName an on au.APINameId = an.APINameId
 where APIKey = ? and DisplayName = ?
 AND (RequestDate) >= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
 AND (RequestDate)<= DATE_FORMAT(?,"%Y-%m-%d %H:%i:%s") 
+AND APIErrorId IS NULL
 GROUP BY Year, APIVersion`;
 
 

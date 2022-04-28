@@ -3,6 +3,7 @@ const ErrorMod = require('../customnodemodules/error_node_module/errors')
 const customError = new ErrorMod()
 const constants = require('../constants/constants')
 const {environment} = require("../environments");
+const moment = require('moment')
 
 
 exports.apiKeyAndApiNameValidation = function (req, res, next) {
@@ -301,5 +302,39 @@ exports.getCustomerDetailsByApiKeyValidation = function (req, res, next) {
         next(err)
     } else {
         next()
+    }
+}
+
+exports.getInvoiceValidation = function (req, res, next) {
+    let err = null;
+    if (util.isNull(req.headers.api_key)) {
+        err = customError.BadRequest("API key is required");
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (util.isNull(req.query.startMonth)) {
+        err = customError.BadRequest("startMonth is required");
+        err.donotUpdateUsage = true;
+        next(err)
+    } else if (util.isNull(req.query.endMonth)) {
+        err = customError.BadRequest("endMonth is required");
+        err.donotUpdateUsage = true;
+        next(err)
+    } else {
+        let startDate = moment(req.query.startMonth, 'YYYY-MM', true).isValid() ?
+            moment(req.query.startMonth).startOf('month').format('YYYY-MM-DD HH:mm:ss') :
+            moment(req.query.startMonth).format('YYYY-MM-DD HH:mm:ss');
+
+        let endDate = moment(req.query.endMonth, 'YYYY-MM', true).isValid() ?
+            moment(req.query.endMonth).endOf('month').format('YYYY-MM-DD HH:mm:ss') :
+            moment(req.query.endMonth).format('YYYY-MM-DD HH:mm:ss');
+
+
+        if (endDate < startDate) {
+            err = customError.BadRequest("endMonth has to be greater than startMonth.")
+            err.donotUpdateUsage = true;
+            next(err)
+        } else {
+            next();
+        }
     }
 }
