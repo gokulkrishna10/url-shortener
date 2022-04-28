@@ -4,8 +4,8 @@ AWS.config.update({region: 'eu-west-1'});
 const sqs = new AWS.SQS({apiVersion: '2012-11-05'});
 
 var GENERIC_MAIL_META = {
-    subject: 'Customer pricing Failed',
-    previewText: 'Customer pricing Failed',
+    subject: 'Customer pricing data not found',
+    previewText: 'Customer pricing data not found',
     acqPartyDisplayName: 'Labrador',
     acqPartyLogo: 'https://s3-eu-west-1.amazonaws.com/assets.dev.thelabrador.co.uk/email-assets/logo.png',
     buttoncolor: '#2196F3',

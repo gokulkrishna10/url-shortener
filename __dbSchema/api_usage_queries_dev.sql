@@ -18,6 +18,11 @@ select * from APIUsage
 Order By APIUsageId desc
 LIMIT 5;
 
+
+select * from APIUsage
+where APIKey = 'PERSE-TEST-CLIENT-APIKEY'
+Order By APIUsageId desc;
+
 Select * from APIError
 #where APIErrorId = 2
 order by APIErrorId desc

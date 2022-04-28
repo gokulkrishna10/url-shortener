@@ -50,7 +50,7 @@ exports.updateAPIUsage = function (req, res, mainCallback) {
                                     console.log('{"status":"failure","message":"failed to record the error"}')
                                     mainCallback(err, null)
                                 } else {
-                                    emailSender.sendEmail('Failed to find Customer Pricing data', JSON.stringify({
+                                    emailSender.sendEmail('Customer Pricing data', JSON.stringify({
                                         ApiVersion: req.body.apiDetails.apiVersion,
                                         ApiName: req.body.apiDetails.apiName,
                                         EndpointName: req.body.apiDetails.endPointName
