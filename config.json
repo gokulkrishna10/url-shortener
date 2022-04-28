@@ -27,8 +27,8 @@
     "MAX_ERROR_GET_COUNT": 1000,
     "ADMIN_API_KEY": "e08f40b3-05ce-4fe3-bfea-27c744fa6b90",
     "ISSUE_EMAIL_RECIPIENTS":{
-      "TO":"sudheer.k@digitalapicraft.com,vikash.m@digitalapicraft.com",
-      "COPY":"gokul.k@digitalapicraft.com,vishnu.s@digitalapicraft.com"
+      "TO":"sudheer.k@digitalapicraft.com",
+      "COPY":"gokul.k@digitalapicraft.com,vishnu.s@digitalapicraft.com,vikash.m@digitalapicraft.com"
     },
     "ENVIRONMENT_NAME": "dev",
     "ACTIVE_METERS_URL": "http://127.0.0.1:7400/v1/active-meters"
