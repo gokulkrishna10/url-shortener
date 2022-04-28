@@ -172,7 +172,7 @@ SELECT an.DisplayName as APIName ,
 	FROM APIUsage au 
 	JOIN APIName an on au.APINameId = an.APINameId 
 	WHERE APIKey = 'PERSE-TEST-CLIENT-APIKEY'
-	AND RequestDate >= DATE_FORMAT('2022-04-27 12:30:00','%Y-%m-%d %H:%i:%s')
+	AND RequestDate >= DATE_FORMAT('2022-04-27 00:00:00','%Y-%m-%d %H:%i:%s')
 	AND RequestDate <= DATE_FORMAT('2022-04-27 23:59:59','%Y-%m-%d %H:%i:%s')
 	AND an.DisplayName != 'Half Hourly Meter History API'
 	GROUP BY APIName, au.APIVersion, au.EndpointName;
@@ -186,6 +186,30 @@ Select * from APIError
 #where APIErrorId = 2
 order by APIErrorId desc
 LIMIT 5; 
+
+
+### Get Price per Call
+SELECT ars.APINameId,
+        ars.APICustomerId, 
+        arp.APIPricingPlanId, 
+        arp.BasePricePerCall, 
+        ar.APIRouteId, 
+        ar.EndPointName, 
+        acp.SellingPricePerCall
+    FROM APIRouteSubscription ars
+    JOIN APIName an on an.APINameId = ars.APINameId
+    JOIN APIRoute ar on ar.APINameId = ars.APINameId
+    JOIN APIRoutePrice arp on ar.APIRouteId = arp.APIRouteId
+    JOIN APICustomer ac on ars.APICustomerId = ac.APICustomerId
+    JOIN APICustomerPricing acp on acp.APIRouteId = ar.APIRouteId
+    where ac.APIKey = 'PERSE-TEST-CLIENT-APIKEY'
+    AND an.Name = 'oe-address-meter'
+    AND ar.APIVersion = 'v1'
+    AND (EndPointName = 'meter-details' OR EndPointName = '/')
+    AND acp.StartDate < NOW()
+    AND (acp.EndDate IS NULL OR acp.EndDate > NOW())
+    ORDER BY LENGTH(ar.EndPointName) DESC
+    LIMIT 1;
 
 ##==============================Enter Customer Pricing Manually========================================
 SELECT * FROM api_usage_report_dev.APIRoute;
