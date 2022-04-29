@@ -19,23 +19,16 @@ exports.getCustomerAPIDetails = function (req, res, callback) {
     let options = {
         sql: `SELECT ars.APINameId,
         ars.APICustomerId, 
-        arp.APIPricingPlanId, 
-        arp.BasePricePerCall, 
         ar.APIRouteId, 
-        ar.EndPointName, 
-        acp.SellingPricePerCall
+        ar.EndPointName
     FROM APIRouteSubscription ars
     JOIN APIName an on an.APINameId = ars.APINameId
     JOIN APIRoute ar on ar.APINameId = ars.APINameId
-    JOIN APIRoutePrice arp on ar.APIRouteId = arp.APIRouteId
     JOIN APICustomer ac on ars.APICustomerId = ac.APICustomerId
-    JOIN APICustomerPricing acp on acp.APIRouteId = ar.APIRouteId
     where ac.APIKey = ?
     AND an.Name = ?
     AND ar.APIVersion = ?
     AND (EndPointName = ? OR EndPointName = '/')
-    AND acp.StartDate < NOW()
-    AND (acp.EndDate IS NULL OR acp.EndDate > NOW())
     ORDER BY LENGTH(ar.EndPointName) DESC
     LIMIT 1;`,
 
@@ -1062,19 +1055,25 @@ exports.getInvoice = function (req, callback) {
 
     let options = {
         sql: `SELECT an.DisplayName as APIName , 
-        au.APIVersion, 
-        au.EndpointName,
-        au.PricePerCall as UnitPrice,
-        Count(*) as Count, 
-        SUM(au.PricePerCall ) as TotalPrice 
-        FROM APIUsage au 
-        JOIN APIName an on au.APINameId = an.APINameId
-        WHERE APIKey = ?
-        AND RequestDate >= DATE_FORMAT(?,'%Y-%m-%d %H:%i:%s')
-        AND RequestDate <= DATE_FORMAT(?,'%Y-%m-%d %H:%i:%s')
-        AND an.DisplayName != ?
-        GROUP BY APIName, au.APIVersion, au.EndpointName`,
-        values: [req.headers.api_key, startMonth, endMonth, constants.meterHistoryApiName]
+            au.APIVersion, 
+            au.EndpointName,
+            acp.SellingPricePerCall as UnitPrice,
+            Count(*) as Count, 
+            (Count(*) * acp.SellingPricePerCall) as TotalPrice 
+            FROM APIUsage au 
+            JOIN APIName an on au.APINameId = an.APINameId 
+            LEFT OUTER JOIN (
+                Select APIRouteId, SellingPricePerCall, StartDate, EndDate
+                FROM APICustomerPricing acp 
+                WHERE StartDate <= ?
+                AND (EndDate IS NULL OR EndDate >= ?)
+            ) acp on acp.APIRouteId = au.APIRouteId
+            WHERE APIKey = ?
+            AND RequestDate >= ?
+            AND RequestDate <= ?
+            AND an.DisplayName != ?
+            GROUP BY APIName, au.APIVersion, au.EndpointName;`,
+        values: [startMonth, endMonth, req.headers.api_key, startMonth, endMonth, constants.meterHistoryApiName]
     }
 
     db.queryWithOptions(options, (dbError, dbResp) => {
