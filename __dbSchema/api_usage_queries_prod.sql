@@ -228,6 +228,9 @@ VALUES (19,2,0.2);
 INSERT INTO APIRoutePricingTierMap (APIRouteId, APIPricingTierId, BasePricePerCall)
 VALUES (19,3,0.2);
 
+Select * from APIRoutePricingTierMap
+Order by APIRouteId asc, APIPricingTierId asc;
+
 ## TODO for other endpoints
 
 Select * from APICustomerPricing;
@@ -236,36 +239,37 @@ Select * from APICustomerPricing;
 # 1 - RenewableExchange
 INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
 VALUES (4,19,1,1,0,0,0.2);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,20,1,1,0,0,0.2);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,21,1,1,0,0,0.25);
 
 INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
-VALUES (4,87,1,2,0,0,0.2);
+VALUES (4,22,1,1,0,0,0.2);
 INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
-VALUES (4,88,1,3,0,0,0.25);
+VALUES (4,23,1,1,0,0,0.50);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,24,1,1,0,0,0.5);
 
 INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
-VALUES (4,89,1,1,0,0,0.2);
+VALUES (4,25,1,1,0,0,0.1);
 INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
-VALUES (4,90,1,2,0,0,0.53);
+VALUES (4,26,1,1,0,0,0.1);
 INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
-VALUES (4,77,1,1,0,0,0.6);
+VALUES (4,27,1,1,0,0,0.2);
 
 INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
-VALUES (4,91,1,1,0,0,0.5);
+VALUES (4,28,1,1,0,0,0.5);
 INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
-VALUES (4,92,1,2,0,0,0.08,1);
+VALUES (4,14,1,1,0,0,0.6);
 INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
-VALUES (4,93,1,1,0,0,0.1,1);
+VALUES (4,15,1,1,0,0,0.6);
 
 INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
-VALUES (4,94,1,1,0,0,0.2,1);
-INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
-VALUES (4,95,1,1,0,0,0.5,1);
-INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
-VALUES (4,76,1,1,0,0,0.6,1);
+VALUES (1,29,1,1,0,0,1.0);
 
-INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
-VALUES (1,79,1,1,0,0,1.0,1);
 
+#2 - RenewableExchange
 
 
 
