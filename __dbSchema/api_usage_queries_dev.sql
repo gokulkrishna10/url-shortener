@@ -168,20 +168,44 @@ AND t.HttpStatusCode = 200;
 
 #=========================================== Invoice Endpoint=============================================
 
+Set @startDate = DATE_FORMAT('2022-04-27 00:00:00','%Y-%m-%d %H:%i:%s');
+Set @endDate = DATE_FORMAT('2022-04-29 23:59:59','%Y-%m-%d %H:%i:%s');
+/*
+Select APIRouteId, SellingPricePerCall, StartDate, EndDate
+        FROM APICustomerPricing acp 
+        WHERE StartDate <= @startDate
+        AND (EndDate IS NULL OR EndDate >= @endDate);
+*/
 SELECT an.DisplayName as APIName , 
 	au.APIVersion, 
     au.EndpointName,
-    au.PricePerCall as UnitPrice,
+    acp.SellingPricePerCall as UnitPrice,
     Count(*) as Count, 
-    SUM(au.PricePerCall ) as TotalPrice 
+    (Count(*) * acp.SellingPricePerCall) as TotalPrice 
 	FROM APIUsage au 
 	JOIN APIName an on au.APINameId = an.APINameId 
-	WHERE APIKey = 'PERSE-TEST-CLIENT-APIKEY'
-	AND RequestDate >= DATE_FORMAT('2022-04-27 00:00:00','%Y-%m-%d %H:%i:%s')
-	AND RequestDate <= DATE_FORMAT('2022-04-27 23:59:59','%Y-%m-%d %H:%i:%s')
+    LEFT OUTER JOIN (
+		Select APIRouteId, SellingPricePerCall, StartDate, EndDate
+        FROM APICustomerPricing acp 
+        WHERE StartDate <= @startDate
+        AND (EndDate IS NULL OR EndDate >= @endDate)
+    ) acp on acp.APIRouteId = au.APIRouteId
+    WHERE APIKey = 'PERSE-TEST-CLIENT-APIKEY'
+	AND RequestDate >= @startDate
+	AND RequestDate <= @endDate
 	AND an.DisplayName != 'Half Hourly Meter History API'
 	GROUP BY APIName, au.APIVersion, au.EndpointName;
     
+    
+    
+ ### Get Usage by endpoint
+ select * from APIUsage
+where EndpointName = 'std-tariff'
+AND RequestDate >= DATE_FORMAT('2022-04-27 00:00:00','%Y-%m-%d %H:%i:%s')
+AND RequestDate <= DATE_FORMAT('2022-04-29 23:59:59','%Y-%m-%d %H:%i:%s')
+AND APIKey = 'PERSE-TEST-CLIENT-APIKEY'
+and APIVersion = 'v1';
+
 select * from APIUsage
 Order By APIUsageId desc
 LIMIT 5;
@@ -193,28 +217,27 @@ order by APIErrorId desc
 LIMIT 5; 
 
 
-### Get Price per Call
+### =============================Get Details for usage entry===================================
 SELECT ars.APINameId,
         ars.APICustomerId, 
-        arp.APIPricingPlanId, 
-        arp.BasePricePerCall, 
         ar.APIRouteId, 
-        ar.EndPointName, 
-        acp.SellingPricePerCall
+        ar.EndPointName
     FROM APIRouteSubscription ars
     JOIN APIName an on an.APINameId = ars.APINameId
     JOIN APIRoute ar on ar.APINameId = ars.APINameId
-    JOIN APIRoutePrice arp on ar.APIRouteId = arp.APIRouteId
     JOIN APICustomer ac on ars.APICustomerId = ac.APICustomerId
-    JOIN APICustomerPricing acp on acp.APIRouteId = ar.APIRouteId
     where ac.APIKey = 'PERSE-TEST-CLIENT-APIKEY'
     AND an.Name = 'oe-address-meter'
-    AND ar.APIVersion = 'v1'
-    AND (EndPointName = 'meter-details' OR EndPointName = '/')
-    AND acp.StartDate < NOW()
-    AND (acp.EndDate IS NULL OR acp.EndDate > NOW())
+    AND ar.APIVersion = 'v2'
+    AND (EndPointName = 'meter-data-advanced' OR EndPointName = '/')
+    
     ORDER BY LENGTH(ar.EndPointName) DESC
     LIMIT 1;
+
+Select * from APICustomerPricing;
+SELECT * FROM api_usage_report_dev.APIRoute;
+
+
 
 ##==============================Enter Customer Pricing Manually========================================
 SELECT * FROM api_usage_report_dev.APIRoute;
@@ -251,17 +274,20 @@ VALUES (89,94,46,1,0,0,0.2,1);
 INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
 VALUES (89,95,46,1,0,0,0.5,1);
 INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
-VALUES (89,90,46,1,0,0,0.6,1);
+VALUES (89,76,46,1,0,0,0.6,1);
 
 INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
-VALUES (89,79,46,1,0,0,1.0,1);
+VALUES (1,79,46,1,0,0,1.0,1);
+
+Select * from APIName;
+Select * from APIRoute;
 
 
 Select * from APICustomerPricing;
 
 ##-------------------------------Add New Endpoint Prices to : APIRoutePricingTierMap----------------------------
 Select * from APIRoutePricingTierMap;
-SELECT * FROM api_usage_report_dev.APIRoute;
+SELECT * FROM APIRoute;
 
 INSERT INTO APIRoutePricingTierMap (APIRouteId, APIPricingTierId, BasePricePerCall)
 VALUES (94,1,0.2);

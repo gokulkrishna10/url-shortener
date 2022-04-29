@@ -191,7 +191,7 @@ CREATE TABLE IF NOT EXISTS APICustomerPricing (
     SellingPricePerCall DECIMAL(8,2) NOT NULL,
     StartDate TIMESTAMP NOT NULL DEFAULT NOW(),
     EnDate TIMESTAMP NULL,
-    CONSTRAINT UK_APICustomerPricing_PricePerRoute UNIQUE(APICustomerId, APINameId, APIRouteId, APIPricingTierId, IsActive)
+    CONSTRAINT UK_APICustomerPricing_PricePerRoute UNIQUE(APICustomerId, APINameId, APIRouteId, APIPricingTierId, StartDate, EnDate)
 );
 
 
