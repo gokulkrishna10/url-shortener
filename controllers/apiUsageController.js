@@ -439,7 +439,7 @@ exports.getInvoice = function (req, mainCallback) {
                     } else {
                         //delete finalResponse.costPerMpan
                         if (finalResponse.APICost) {
-                            result.push(finalResponse)
+                            result.unshift(finalResponse)
                         }
                         if (req.headers["accept"] && req.headers["accept"].includes("csv")) {
                             callback(null, parse(result))
