@@ -20,7 +20,8 @@ exports.getCustomerAPIDetails = function (req, res, callback) {
         sql: `SELECT ars.APINameId,
         ars.APICustomerId, 
         ar.APIRouteId, 
-        ar.EndPointName
+        ar.EndPointName,
+        ars.APIPricingPlanId
     FROM APIRouteSubscription ars
     JOIN APIName an on an.APINameId = ars.APINameId
     JOIN APIRoute ar on ar.APINameId = ars.APINameId
@@ -1054,7 +1055,7 @@ exports.getInvoice = function (req, callback) {
         moment(req.query.endMonth).format('YYYY-MM-DD HH:mm:ss');
 
     let options = {
-        sql: `SELECT an.DisplayName as APIName , 
+        sql: `SELECT au.APIRouteId, an.DisplayName as APIName , 
                 au.APIVersion, 
                 au.EndpointName,
                 acp.SellingPricePerCall as UnitPrice,
@@ -1065,7 +1066,9 @@ exports.getInvoice = function (req, callback) {
                 LEFT OUTER JOIN (
                     Select APIRouteId, SellingPricePerCall, StartDate, EndDate
                     FROM APICustomerPricing acp 
-                    WHERE(
+                    JOIN APICustomer ac on ac.APICustomerId = acp.APICustomerId
+                    WHERE ac.APIKey = ?
+                    AND (
             
                         (EndDate > '${startDate}'   AND EndDate < '${endDate}' AND StartDate < '${endDate}' )  #1.1
                         OR (StartDate < '${endDate}'  AND EndDate >= '${endDate}')  #1.2
@@ -1078,9 +1081,10 @@ exports.getInvoice = function (req, callback) {
                 AND RequestDate >= '${startDate}'
                 AND RequestDate <= '${endDate}'
                 AND an.DisplayName != ?
-                GROUP BY APIName, au.APIVersion, au.EndpointName;
+                GROUP BY APIName, au.APIVersion, au.EndpointName
+                Order By SellingPricePerCall desc;
         `,
-        values: [req.headers.api_key, constants.meterHistoryApiName]
+        values: [req.headers.api_key, req.headers.api_key, constants.meterHistoryApiName]
     }
 
     db.queryWithOptions(options, (dbError, dbResp) => {
