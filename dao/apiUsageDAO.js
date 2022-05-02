@@ -1067,8 +1067,8 @@ exports.getInvoice = function (req, callback) {
                     FROM APICustomerPricing acp 
                     WHERE(
             
-                        ((EndDate > '${startDate}'   AND EndDate < '${endDate}') AND StartDate < '${endDate}' )  #1.1
-                        OR (StartDate < '${endDate}'  AND EndDate >= '${endDate}'  #1.2
+                        (EndDate > '${startDate}'   AND EndDate < '${endDate}' AND StartDate < '${endDate}' )  #1.1
+                        OR (StartDate < '${endDate}'  AND EndDate >= '${endDate}')  #1.2
                         OR ((StartDate < '${endDate}') AND EndDate IS NULL)  #2.1
                         OR ((StartDate > '${startDate}'  AND StartDate < '${endDate}') AND (EndDate > @startdate AND EndDate < '${endDate}')) #3.1
                         OR (StartDate = '${startDate}'  AND EndDate = '${endDate}')
