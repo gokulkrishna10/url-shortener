@@ -36,11 +36,13 @@ CREATE TABLE IF NOT EXISTS APICustomer (
 	Address VARCHAR(500) NULL,
     Email VARCHAR(255) NOT NULL,
     IsActive TINYINT NOT NULL,
+    PlatformFee DECIMAL(4,2)  NULL,
+    Credit DECIMAL(4,2)  NULL,
+    Comments VARCHAR(300)  NULL
 	CreateDate DATETIME NOT NULL DEFAULT NOW(),
 	UpdateDate DATETIME NOT NULL DEFAULT NOW(),
     CONSTRAINT PK_APICustomer PRIMARY KEY (APICustomerId) 
 );
-
 
 
 /* ====================================================================================================
