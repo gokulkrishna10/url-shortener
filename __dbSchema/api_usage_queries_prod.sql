@@ -336,17 +336,7 @@ AND APIKey = 'PERSE-TEST-CLIENT-APIKEY';
 Set @startDate = DATE_FORMAT('2022-03-01 00:00:00','%Y-%m-%d %H:%i:%s');
 Set @endDate = DATE_FORMAT('2022-03-31 23:59:59','%Y-%m-%d %H:%i:%s');
 
-Set @startDate = DATE_FORMAT('2022-04-01 00:00:00','%Y-%m-%d %H:%i:%s');
-Set @endDate = DATE_FORMAT('2022-05-02 23:59:59','%Y-%m-%d %H:%i:%s');
-
-Select * from APIUsage au
-Where APICustomerId = 5
-And EndpointName = 'address-line'
-AND RequestDate >= @startDate
-AND RequestDate <= @endDate;
-
-
-SELECT acp.SellingPricePerCall, an.DisplayName as APIName , 
+SELECT au.APIRouteId, acp.SellingPricePerCall, an.DisplayName as APIName , 
 	au.APIVersion, 
     au.EndpointName,
     acp.SellingPricePerCall as UnitPrice,
@@ -371,10 +361,27 @@ SELECT acp.SellingPricePerCall, an.DisplayName as APIName ,
 	AND RequestDate >= @startDate
 	AND RequestDate <= @endDate
 	AND an.DisplayName != 'Half Hourly Meter History API'
-	GROUP BY APIName, au.APIVersion, au.EndpointName;
+	GROUP BY APIName, au.APIVersion, au.EndpointName
+    Order By SellingPricePerCall desc;
     
 
+#### Fixx the Routeids in APIUsage table
+
+Set @epName = 'addresses';
+Set @routeId = 20;
+Select COUNT(*), MAX(RequestDate) from APIUsage 
+Where EndpointName = @epName
+AND APIRouteId != @routeId;
+
+
+Update APIUsage
+Set APIRouteId = @routeId
+Where EndpointName = @epName
+AND APIRouteId != @routeId;
 
 
 
-Select * from APICustomerPricing;
+SET SQL_SAFE_UPDATES = 0;
+
+SET SQL_SAFE_UPDATES = 1;
+

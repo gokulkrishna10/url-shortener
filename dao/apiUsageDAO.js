@@ -1055,7 +1055,7 @@ exports.getInvoice = function (req, callback) {
         moment(req.query.endMonth).format('YYYY-MM-DD HH:mm:ss');
 
     let options = {
-        sql: `SELECT an.DisplayName as APIName , 
+        sql: `SELECT au.APIRouteId, an.DisplayName as APIName , 
                 au.APIVersion, 
                 au.EndpointName,
                 acp.SellingPricePerCall as UnitPrice,
@@ -1081,7 +1081,8 @@ exports.getInvoice = function (req, callback) {
                 AND RequestDate >= '${startDate}'
                 AND RequestDate <= '${endDate}'
                 AND an.DisplayName != ?
-                GROUP BY APIName, au.APIVersion, au.EndpointName;
+                GROUP BY APIName, au.APIVersion, au.EndpointName
+                Order By SellingPricePerCall desc;
         `,
         values: [req.headers.api_key, req.headers.api_key, constants.meterHistoryApiName]
     }
