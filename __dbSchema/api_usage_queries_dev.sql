@@ -168,35 +168,53 @@ AND t.HttpStatusCode = 200;
 
 #=========================================== Invoice Endpoint=============================================
 
-Set @startDate = DATE_FORMAT('2022-04-27 00:00:00','%Y-%m-%d %H:%i:%s');
-Set @endDate = DATE_FORMAT('2022-04-29 23:59:59','%Y-%m-%d %H:%i:%s');
-/*
+Select * from APIRoute;
+Select * from APICustomerPricing;
+
+##-- Get the cusotmer fees for a given period
+Set @startDate = DATE_FORMAT('2022-05-01 00:00:00','%Y-%m-%d %H:%i:%s');
+Set @endDate = DATE_FORMAT('2022-05-02 23:59:59','%Y-%m-%d %H:%i:%s');
 Select APIRouteId, SellingPricePerCall, StartDate, EndDate
-        FROM APICustomerPricing acp 
-        WHERE StartDate <= @startDate
-        AND (EndDate IS NULL OR EndDate >= @endDate);
-*/
+FROM APICustomerPricing acp 
+WHERE(
+
+	(EndDate > @startdate  AND EndDate < @endDate AND StartDate < @endDate )  #1.1
+	OR (StartDate < @endDate  AND EndDate >= @endDate)  #1.2
+	OR ((StartDate < @endDate) AND EndDate IS NULL)  #2.1
+	OR ((StartDate > @startdate  AND StartDate < @endDate) AND (EndDate > @startdate AND EndDate < @endDate)) #3.1
+	OR (StartDate = @startdate  AND EndDate = @endDate)
+);
+
+
+##-- Get the Invoice fees for a given period
+Set @startDate = DATE_FORMAT('2022-05-01 00:00:00','%Y-%m-%d %H:%i:%s');
+Set @endDate = DATE_FORMAT('2022-05-02 23:59:59','%Y-%m-%d %H:%i:%s');
+
 SELECT an.DisplayName as APIName , 
 	au.APIVersion, 
     au.EndpointName,
     acp.SellingPricePerCall as UnitPrice,
     Count(*) as Count, 
-    (Count(*) * acp.SellingPricePerCall) as TotalPrice 
+    (Count(*) * acp.SellingPricePerCall) as APICost 
 	FROM APIUsage au 
 	JOIN APIName an on au.APINameId = an.APINameId 
     LEFT OUTER JOIN (
 		Select APIRouteId, SellingPricePerCall, StartDate, EndDate
-        FROM APICustomerPricing acp 
-        WHERE StartDate <= @startDate
-        AND (EndDate IS NULL OR EndDate >= @endDate)
+		FROM APICustomerPricing acp 
+		WHERE(
+
+			(EndDate > @startdate  AND EndDate < @endDate AND StartDate < @endDate )  #1.1
+			OR (StartDate < @endDate  AND EndDate >= @endDate)  #1.2
+			OR ((StartDate < @endDate) AND EndDate IS NULL)  #2.1
+			OR ((StartDate > @startdate  AND StartDate < @endDate) AND (EndDate > @startdate AND EndDate < @endDate)) #3.1
+			OR (StartDate = @startdate  AND EndDate = @endDate)
+		)
     ) acp on acp.APIRouteId = au.APIRouteId
     WHERE APIKey = 'PERSE-TEST-CLIENT-APIKEY'
 	AND RequestDate >= @startDate
 	AND RequestDate <= @endDate
 	AND an.DisplayName != 'Half Hourly Meter History API'
 	GROUP BY APIName, au.APIVersion, au.EndpointName;
-    
-    
     
  ### Get Usage by endpoint
  select * from APIUsage
@@ -216,6 +234,32 @@ Select * from APIError
 order by APIErrorId desc
 LIMIT 5; 
 
+SELECT an.DisplayName as APIName , 
+                au.APIVersion, 
+                au.EndpointName,
+                acp.SellingPricePerCall as UnitPrice,
+                Count(*) as Count, 
+                (Count(*) * acp.SellingPricePerCall) as APICost 
+                FROM APIUsage au 
+                JOIN APIName an on au.APINameId = an.APINameId 
+                LEFT OUTER JOIN (
+                    Select APIRouteId, SellingPricePerCall, StartDate, EndDate
+                    FROM APICustomerPricing acp 
+                    WHERE(
+            
+                        (EndDate > '2022-04-27 12:30:00'   AND EndDate < '2022-04-29 23:59:59' AND StartDate < '2022-04-29 23:59:59' )  #1.1
+                        OR (StartDate < '2022-04-29 23:59:59'  AND EndDate >= '2022-04-29 23:59:59')  #1.2
+                        OR ((StartDate < '2022-04-29 23:59:59') AND EndDate IS NULL)  #2.1
+                        OR ((StartDate > '2022-04-27 12:30:00'  AND StartDate < '2022-04-29 23:59:59') AND (EndDate > @startdate AND EndDate < '2022-04-29 23:59:59')) #3.1
+                        OR (StartDate = '2022-04-27 12:30:00'  AND EndDate = '2022-04-29 23:59:59')
+                    )
+                ) acp on acp.APIRouteId = au.APIRouteId
+                WHERE APIKey = ?
+                AND RequestDate >= '2022-04-27 12:30:00'
+                AND RequestDate <= '2022-04-29 23:59:59'
+                AND an.DisplayName != ?
+                GROUP BY APIName, au.APIVersion, au.EndpointName;
+
 
 ### =============================Get Details for usage entry===================================
 SELECT ars.APINameId,
@@ -230,9 +274,10 @@ SELECT ars.APINameId,
     AND an.Name = 'oe-address-meter'
     AND ar.APIVersion = 'v2'
     AND (EndPointName = 'meter-data-advanced' OR EndPointName = '/')
-    
     ORDER BY LENGTH(ar.EndPointName) DESC
     LIMIT 1;
+    
+
 
 Select * from APICustomerPricing;
 SELECT * FROM api_usage_report_dev.APIRoute;
@@ -278,6 +323,12 @@ VALUES (89,76,46,1,0,0,0.6,1);
 
 INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall, IsActive)
 VALUES (1,79,46,1,0,0,1.0,1);
+
+## Updated Pricing Test
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (89,86,46,1,0,0,0.3);
+
+
 
 Select * from APIName;
 Select * from APIRoute;

@@ -427,7 +427,7 @@ exports.getInvoice = function (req, mainCallback) {
                         callback(err, null)
                     } else {
                         finalResponse.Count = response.length
-                        finalResponse.TotalPrice = (finalResponse.Count * finalResponse.UnitPrice)
+                        finalResponse.APICost = (finalResponse.Count * finalResponse.UnitPrice)
                         callback(null, finalResponse)
                     }
                 })
@@ -438,7 +438,7 @@ exports.getInvoice = function (req, mainCallback) {
                         callback(err, null)
                     } else {
                         //delete finalResponse.costPerMpan
-                        if (finalResponse.TotalPrice) {
+                        if (finalResponse.APICost) {
                             result.push(finalResponse)
                         }
                         if (req.headers["accept"] && req.headers["accept"].includes("csv")) {
