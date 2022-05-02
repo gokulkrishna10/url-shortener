@@ -178,7 +178,7 @@ Select APIRouteId, SellingPricePerCall, StartDate, EndDate
 FROM APICustomerPricing acp 
 WHERE(
 
-	((EndDate > @startdate  AND EndDate < @endDate) AND StartDate < @endDate )  #1.1
+	(EndDate > @startdate  AND EndDate < @endDate AND StartDate < @endDate )  #1.1
 	OR (StartDate < @endDate  AND EndDate >= @endDate)  #1.2
 	OR ((StartDate < @endDate) AND EndDate IS NULL)  #2.1
 	OR ((StartDate > @startdate  AND StartDate < @endDate) AND (EndDate > @startdate AND EndDate < @endDate)) #3.1
@@ -195,16 +195,15 @@ SELECT an.DisplayName as APIName ,
     au.EndpointName,
     acp.SellingPricePerCall as UnitPrice,
     Count(*) as Count, 
-    (Count(*) * acp.SellingPricePerCall) as TotalCost
+    (Count(*) * acp.SellingPricePerCall) as APICost 
 	FROM APIUsage au 
-    JOIN APICustomer on ac on ac.APICustomerId = au.APICustomerId
 	JOIN APIName an on au.APINameId = an.APINameId 
     LEFT OUTER JOIN (
 		Select APIRouteId, SellingPricePerCall, StartDate, EndDate
 		FROM APICustomerPricing acp 
 		WHERE(
 
-			((EndDate > @startdate  AND EndDate < @endDate) AND StartDate < @endDate )  #1.1
+			(EndDate > @startdate  AND EndDate < @endDate AND StartDate < @endDate )  #1.1
 			OR (StartDate < @endDate  AND EndDate >= @endDate)  #1.2
 			OR ((StartDate < @endDate) AND EndDate IS NULL)  #2.1
 			OR ((StartDate > @startdate  AND StartDate < @endDate) AND (EndDate > @startdate AND EndDate < @endDate)) #3.1
@@ -235,6 +234,31 @@ Select * from APIError
 order by APIErrorId desc
 LIMIT 5; 
 
+SELECT an.DisplayName as APIName , 
+                au.APIVersion, 
+                au.EndpointName,
+                acp.SellingPricePerCall as UnitPrice,
+                Count(*) as Count, 
+                (Count(*) * acp.SellingPricePerCall) as APICost 
+                FROM APIUsage au 
+                JOIN APIName an on au.APINameId = an.APINameId 
+                LEFT OUTER JOIN (
+                    Select APIRouteId, SellingPricePerCall, StartDate, EndDate
+                    FROM APICustomerPricing acp 
+                    WHERE(
+            
+                        (EndDate > '2022-04-27 12:30:00'   AND EndDate < '2022-04-29 23:59:59' AND StartDate < '2022-04-29 23:59:59' )  #1.1
+                        OR (StartDate < '2022-04-29 23:59:59'  AND EndDate >= '2022-04-29 23:59:59')  #1.2
+                        OR ((StartDate < '2022-04-29 23:59:59') AND EndDate IS NULL)  #2.1
+                        OR ((StartDate > '2022-04-27 12:30:00'  AND StartDate < '2022-04-29 23:59:59') AND (EndDate > @startdate AND EndDate < '2022-04-29 23:59:59')) #3.1
+                        OR (StartDate = '2022-04-27 12:30:00'  AND EndDate = '2022-04-29 23:59:59')
+                    )
+                ) acp on acp.APIRouteId = au.APIRouteId
+                WHERE APIKey = ?
+                AND RequestDate >= '2022-04-27 12:30:00'
+                AND RequestDate <= '2022-04-29 23:59:59'
+                AND an.DisplayName != ?
+                GROUP BY APIName, au.APIVersion, au.EndpointName;
 
 
 ### =============================Get Details for usage entry===================================
