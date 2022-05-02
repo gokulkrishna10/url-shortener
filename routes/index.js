@@ -6,11 +6,11 @@ exports.updateAPIUsage = (req, res) => {
     apiUsage.updateAPIUsage(req, res, (err, response) => {
         if (err) {
             console.log("updateAPIUsage failed >" + JSON.stringify(err))
-            res.send(err.msg).status(err.code)
+            res.status(err.code).send(err.msg)
         } else {
             console.log("updateAPIUsage succeeded")
             if (!req.isValidationError)
-                res.send(JSON.parse(response)).status(202)
+                res.status(202).send(JSON.parse(response))
         }
     })
 }
@@ -172,6 +172,17 @@ exports.getAllOrganisations = function (req, res) {
 
 exports.getCustomerDetailsByApiKey = function (req, res) {
     apiUsage.getCustomerDetailsByApiKey(req, (err, response) => {
+        if (err) {
+            res.status(err.code).send(err)
+        } else {
+            res.status(200).send(response)
+        }
+    })
+}
+
+
+exports.getInvoice = function (req, res) {
+    apiUsage.getInvoice(req, (err, response) => {
         if (err) {
             res.status(err.code).send(err)
         } else {

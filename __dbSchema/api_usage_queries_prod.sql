@@ -1,44 +1,3 @@
-Use api_usage_report_prod;
-
-Select * from APIError;
-
-select * from APIUsage
-where APIKey = 'faf1111e-ec48-4980-bc30-324a0f205fd3'
-Order By APIUsageId desc;
-
-Select Count(*) from APIUsage
-where APIKey = 'faf1111e-ec48-4980-bc30-324a0f205fd3'
-And ClientIPAddress = '::ffff:10.11.0.250'
-
-Select * from APIUsage
-where APIKey = 'faf1111e-ec48-4980-bc30-324a0f205fd3'
-#And ClientIPAddress = '::ffff:10.11.0.250'
-Order By RequestDate Desc;
-
-
-
-select * from APIUsage
-#where APIKey = 'PERSE-TEST-CLIENT-APIKEY'
-Order By APIUsageId desc;
-
-
-
-select * from APIError
-where APIErrorId in (2717)
-Order by APIErrorId;
-
-Select * from APIName;
-
-Select * from APIRouteSubscription;
-
-Select * from APICustomer;
-
-select @@version;
-SHOW VARIABLES LIKE 'version';
-
-
-
-
 USE api_usage_report_prod;
 
 Select * from APIUsage;
@@ -51,23 +10,31 @@ Select * from APIRouteSubscription;
 Select * from APIQuotaLimit; 
 Select * from APIRoutePrice; 
 Select * from ErrorType;
+Select * from APIError;
+
+select * from APIUsage
+where APIKey = 'faf1111e-ec48-4980-bc30-324a0f205fd3'
+Order By APIUsageId desc;
 
 
+select *  from APIUsage
+Order By APIUsageId desc
+LIMIT 30;
 
-Select * from APIError
-#where APIErrorId = 2
-order by APIErrorId desc
-LIMIT 5; 
+select * from Error
+Order By APIErrorId desc
+LIMIT 10;
 
-Select * from APIUsage
-order by APIUsageId desc
-LIMIT 5; 
+
+select @@version;
+SHOW VARIABLES LIKE 'version';
+
 
 
 
 #--------------Update Usage Queries------------------
 
-select * from APIRoute
+select * from APIRoute;
 #-- Regular
 Select ar.APIRouteId, ar.EndPointName, ars.APINameId,ars.APICustomerId, arp.APIPricingPlanId, arp.BasePricePerCall 
 FROM APIRouteSubscription ars
@@ -227,4 +194,82 @@ VALUES
 SELECT id, browser->'$.name' browser
 FROM events;
 
+# Invoice API
+SELECT an.DisplayName as APIName , au.APIVersion, au.EndpointName, Count(*) as Count, SUM(au.PricePerCall ) as TotalPrice 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+where APIKey = 'PERSE-TEST-CLIENT-APIKEY'
+AND (RequestDate) >= DATE_FORMAT("2022-04-01 00:00:00","%Y-%m-%d %H:%i:%s") 
+AND (RequestDate)<= DATE_FORMAT("2022-04-30 23:00:00","%Y-%m-%d %H:%i:%s")  
+GROUP BY APIName, au.EndpointName;
+
 ##=====================================TEMP===============================================
+
+SELECT an.DisplayName as APIName , au.APIVersion, au.EndpointName, Count(*) as Count, SUM(au.PricePerCall ) as TotalPrice 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+where APIKey = 'faf1111e-ec48-4980-bc30-324a0f205fd3'
+AND (RequestDate) >= DATE_FORMAT("2022-03-01 00:00:00","%Y-%m-%d %H:%i:%s") 
+AND (RequestDate)<= DATE_FORMAT("2022-03-31 23:00:00","%Y-%m-%d %H:%i:%s")  
+GROUP BY APIName, au.APIVersion, au.EndpointName;
+
+####=================================APICustomerPricing - Manual===============================
+#1. Make sure the endpoints are present
+SELECT * FROM APIRoute;
+
+#2. On-board the required endpoints
+	## To be done from Postman
+#3. Enter the price data for the endpoints in APIRoutePricingTierMap
+	
+INSERT INTO APIRoutePricingTierMap (APIRouteId, APIPricingTierId, BasePricePerCall)
+VALUES (19,1,0.2);
+INSERT INTO APIRoutePricingTierMap (APIRouteId, APIPricingTierId, BasePricePerCall)
+VALUES (19,2,0.2);
+INSERT INTO APIRoutePricingTierMap (APIRouteId, APIPricingTierId, BasePricePerCall)
+VALUES (19,3,0.2);
+
+Select * from APIRoutePricingTierMap
+Order by APIRouteId asc, APIPricingTierId asc;
+
+## TODO for other endpoints
+
+Select * from APICustomerPricing;
+
+#4. Enter the Customer pricing for each API
+# 1 - RenewableExchange
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,19,1,1,0,0,0.2);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,20,1,1,0,0,0.2);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,21,1,1,0,0,0.25);
+
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,22,1,1,0,0,0.2);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,23,1,1,0,0,0.50);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,24,1,1,0,0,0.5);
+
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,25,1,1,0,0,0.1);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,26,1,1,0,0,0.1);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,27,1,1,0,0,0.2);
+
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,28,1,1,0,0,0.5);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,14,1,1,0,0,0.6);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,15,1,1,0,0,0.6);
+
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (1,29,1,1,0,0,1.0);
+
+
+#2 - RenewableExchange
+
+
+

@@ -36,11 +36,13 @@ CREATE TABLE IF NOT EXISTS APICustomer (
 	Address VARCHAR(500) NULL,
     Email VARCHAR(255) NOT NULL,
     IsActive TINYINT NOT NULL,
+    PlatformFee DECIMAL(4,2)  NULL,
+    Credit DECIMAL(4,2)  NULL,
+    Comments VARCHAR(300)  NULL
 	CreateDate DATETIME NOT NULL DEFAULT NOW(),
 	UpdateDate DATETIME NOT NULL DEFAULT NOW(),
     CONSTRAINT PK_APICustomer PRIMARY KEY (APICustomerId) 
 );
-
 
 
 /* ====================================================================================================
@@ -168,27 +170,52 @@ CREATE TABLE IF NOT EXISTS APIRouteSubscription(
 /* ====================================================================================================
 Description: This table stores the pricing at the customer level
 DiscountPerCall - Unit pence
-SellingPricePerCall = BasePricePerCall - DiscountAmountPerCall OR 
+FinalSellingPricePerCall = BasePricePerCall - DiscountAmountPerCall OR 
                     if DiscountAmountPerCall = NA
                         = BasePricePerCall - BasePricePerCall*DiscountPercentPerCall*100
 
-NOTE: The discount could be negative to sell at a higer price than vase price
+NOTE: 
+1. The discount could be negative to sell at a higer price than vase price
+2. When you modify the price of an API endpoint, you shouldn't modify the existing value, 
+INSTEAD should create a new entry making the old entry as INACTIVE.
+
+TODO: Make the table not updateable : APIRoutePricingTierMap & APICustomerPricing
+
 */
 CREATE TABLE IF NOT EXISTS APICustomerPricing (
-	APICustomerPricingId INT NOT NULL AUTO_INCREMENT,
-    APINameId INT NOT NULL,
-    APICustomerId INT NOT NULL,
-    APIRoutePriceId INT NOT NULL,
+	APICustomerPricingId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    APINameId INT NOT NULL REFERENCES APIName,
+    APIRouteId INT NOT NULL REFERENCES APIRoute,
+    APICustomerId INT NOT NULL REFERENCES APICustomer,
+    APIPricingTierId INT NOT NULL REFERENCES APIPricingTier,
     DiscountAmountPerCall DECIMAL(8,2) NULL,
     DiscountPercentPerCall DECIMAL(4,2)  NULL,
     SellingPricePerCall DECIMAL(8,2) NOT NULL,
-    CONSTRAINT PK_APICustomerPricing PRIMARY KEY (APICustomerPricingId),
-    CONSTRAINT FK_APICustomerPricing_APINameId FOREIGN KEY (APINameId) REFERENCES APIName(APINameId),
-    CONSTRAINT FK_APICustomerPricing_APICustomerId FOREIGN KEY (APICustomerId) REFERENCES APICustomer(APICustomerId),
-    CONSTRAINT FK_APICustomerPricing_APIRoutePriceId FOREIGN KEY (APIRoutePriceId) REFERENCES APIRoutePrice(APIRoutePriceId)
+    StartDate TIMESTAMP NOT NULL DEFAULT NOW(),
+    EnDate TIMESTAMP NULL,
+    CONSTRAINT UK_APICustomerPricing_PricePerRoute UNIQUE(APICustomerId, APINameId, APIRouteId, APIPricingTierId, StartDate, EnDate)
 );
 
-#TBD: Invoice API rules
+
+CREATE TABLE IF NOT EXISTS APIRoutePricingTierMap (
+	APIRoutePricingTierMapId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    APIRouteId INT NOT NULL REFERENCES APIRoutePrice,
+    APIPricingTierId INT NOT NULL REFERENCES APIPricingTier,
+    BasePricePerCall DECIMAL(8,2) NOT NULL,
+    CONSTRAINT UK_APIPricingTier UNIQUE(APIRouteId, APIPricingTierId)
+);
+
+CREATE TABLE IF NOT EXISTS APIPricingTier (
+	APIPricingTierId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(30) NOT NULL,
+    CONSTRAINT UK_APIPricingTier UNIQUE(Name)
+);
+
+INSERT INTO APIPricingTier(Name) VALUES ('TIER1');
+INSERT INTO APIPricingTier(Name) VALUES ('TIER2');
+INSERT INTO APIPricingTier(Name) VALUES ('TIER3');
+
+
  
 
 /* ===============================================PHASE 3=====================================================
@@ -275,12 +302,13 @@ those end points that have special pricing.
 */
 CREATE TABLE IF NOT EXISTS APIUsage (
     APIUsageId INT NOT NULL AUTO_INCREMENT,
-    APICustomerId INT NOT NULL,
-    APIRouteId INT NOT NULL,
-    APIErrorId INT NULL,
-    APIPricingPlanId INT NULL,
+    APINameId INT NOT NULL REFERENCES APIName,
+    APIRouteId INT NOT NULL REFERENCES APIRoute,
+    APICustomerId INT NOT NULL REFERENCES APICustomer,
+    APIErrorId INT NULL REFERENCES APIError,
+    APIPricingPlanId INT NULL REFERENCES APIPricingPlan,
+    APICustomerPricingId INT NULL REFERENCES APICustomerPricing,
 	APIKey VARCHAR(100) NOT NULL,
-	APINameId INT NOT NULL,
     APIVersion VARCHAR(10) NULL,
     EndpointName VARCHAR(100) NOT NULL,
 	ClientIPAddress VARCHAR(30) NOT NULL,
@@ -288,16 +316,11 @@ CREATE TABLE IF NOT EXISTS APIUsage (
     RequestDate DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP,
     PricePerCall DECIMAL(4,2) NOT NULL,
     TimeTakenMilliseconds INT NOT NULL,
-    CONSTRAINT PK_APIUsage PRIMARY KEY (APIUsageId),
-    CONSTRAINT FK_APIUsage_APINameId FOREIGN KEY (APINameId) REFERENCES APIName(APINameId),
-    CONSTRAINT FK_APIUsage_APIRouteId FOREIGN KEY (APIRouteId) REFERENCES APIRoute(APIRouteId),
-    CONSTRAINT FK_APIUsage_APIErrorId FOREIGN KEY (APIErrorId) REFERENCES APIError(APIErrorId),
-	CONSTRAINT FK_APIUsage_APICustomerId FOREIGN KEY (APICustomerId) REFERENCES APICustomer(APICustomerId),
-    CONSTRAINT FK_APIUsage_APIPricingPlanId FOREIGN KEY (APIPricingPlanId) REFERENCES APIPricingPlan(APIPricingPlanId)
+    CONSTRAINT PK_APIUsage PRIMARY KEY (APIUsageId)
 );
 
 
-
+##TODO: Need to store the invoice.
 
 	
 			
