@@ -187,22 +187,23 @@ WHERE(
 
 
 ##-- Get the Invoice fees for a given period
-Set @startDate = DATE_FORMAT('2022-05-01 00:00:00','%Y-%m-%d %H:%i:%s');
-Set @endDate = DATE_FORMAT('2022-05-02 23:59:59','%Y-%m-%d %H:%i:%s');
+Set @startDate = DATE_FORMAT('2022-03-01 00:00:00','%Y-%m-%d %H:%i:%s');
+Set @endDate = DATE_FORMAT('2022-03-31 23:59:59','%Y-%m-%d %H:%i:%s');
 
-SELECT an.DisplayName as APIName , 
+SELECT au.APIRouteId, acp.SellingPricePerCall, an.DisplayName as APIName , 
 	au.APIVersion, 
     au.EndpointName,
     acp.SellingPricePerCall as UnitPrice,
     Count(*) as Count, 
-    (Count(*) * acp.SellingPricePerCall) as APICost 
+    (Count(*) * acp.SellingPricePerCall) as APICost
 	FROM APIUsage au 
 	JOIN APIName an on au.APINameId = an.APINameId 
     LEFT OUTER JOIN (
 		Select APIRouteId, SellingPricePerCall, StartDate, EndDate
 		FROM APICustomerPricing acp 
-		WHERE(
-
+        JOIN APICustomer ac on ac.APICustomerId = acp.APICustomerId
+		WHERE ac.APIKey = 'PERSE-TEST-CLIENT-APIKEY'
+        AND (
 			(EndDate > @startdate  AND EndDate < @endDate AND StartDate < @endDate )  #1.1
 			OR (StartDate < @endDate  AND EndDate >= @endDate)  #1.2
 			OR ((StartDate < @endDate) AND EndDate IS NULL)  #2.1
@@ -214,51 +215,10 @@ SELECT an.DisplayName as APIName ,
 	AND RequestDate >= @startDate
 	AND RequestDate <= @endDate
 	AND an.DisplayName != 'Half Hourly Meter History API'
-	GROUP BY APIName, au.APIVersion, au.EndpointName;
+	GROUP BY APIName, au.APIVersion, au.EndpointName
+    Order By SellingPricePerCall desc;
     
- ### Get Usage by endpoint
- select * from APIUsage
-where EndpointName = 'std-tariff'
-AND RequestDate >= DATE_FORMAT('2022-04-27 00:00:00','%Y-%m-%d %H:%i:%s')
-AND RequestDate <= DATE_FORMAT('2022-04-29 23:59:59','%Y-%m-%d %H:%i:%s')
-AND APIKey = 'PERSE-TEST-CLIENT-APIKEY'
-and APIVersion = 'v1';
-
-select * from APIUsage
-Order By APIUsageId desc
-LIMIT 5;
-
-
-Select * from APIError
-#where APIErrorId = 2
-order by APIErrorId desc
-LIMIT 5; 
-
-SELECT an.DisplayName as APIName , 
-                au.APIVersion, 
-                au.EndpointName,
-                acp.SellingPricePerCall as UnitPrice,
-                Count(*) as Count, 
-                (Count(*) * acp.SellingPricePerCall) as APICost 
-                FROM APIUsage au 
-                JOIN APIName an on au.APINameId = an.APINameId 
-                LEFT OUTER JOIN (
-                    Select APIRouteId, SellingPricePerCall, StartDate, EndDate
-                    FROM APICustomerPricing acp 
-                    WHERE(
-            
-                        (EndDate > '2022-04-27 12:30:00'   AND EndDate < '2022-04-29 23:59:59' AND StartDate < '2022-04-29 23:59:59' )  #1.1
-                        OR (StartDate < '2022-04-29 23:59:59'  AND EndDate >= '2022-04-29 23:59:59')  #1.2
-                        OR ((StartDate < '2022-04-29 23:59:59') AND EndDate IS NULL)  #2.1
-                        OR ((StartDate > '2022-04-27 12:30:00'  AND StartDate < '2022-04-29 23:59:59') AND (EndDate > @startdate AND EndDate < '2022-04-29 23:59:59')) #3.1
-                        OR (StartDate = '2022-04-27 12:30:00'  AND EndDate = '2022-04-29 23:59:59')
-                    )
-                ) acp on acp.APIRouteId = au.APIRouteId
-                WHERE APIKey = ?
-                AND RequestDate >= '2022-04-27 12:30:00'
-                AND RequestDate <= '2022-04-29 23:59:59'
-                AND an.DisplayName != ?
-                GROUP BY APIName, au.APIVersion, au.EndpointName;
+    
 
 
 ### =============================Get Details for usage entry===================================

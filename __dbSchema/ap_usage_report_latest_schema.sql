@@ -191,7 +191,7 @@ CREATE TABLE IF NOT EXISTS APICustomerPricing (
     DiscountAmountPerCall DECIMAL(8,2) NULL,
     DiscountPercentPerCall DECIMAL(4,2)  NULL,
     SellingPricePerCall DECIMAL(8,2) NOT NULL,
-    StartDate TIMESTAMP NOT NULL DEFAULT NOW(),
+    StartDate TIMESTAMP NOT NULL,
     EnDate TIMESTAMP NULL,
     CONSTRAINT UK_APICustomerPricing_PricePerRoute UNIQUE(APICustomerId, APINameId, APIRouteId, APIPricingTierId, StartDate, EnDate)
 );
