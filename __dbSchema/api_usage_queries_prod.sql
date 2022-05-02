@@ -11,6 +11,13 @@ Select * from APIQuotaLimit;
 Select * from APIRoutePrice; 
 Select * from ErrorType;
 Select * from APIError;
+Select * from APICustomerPricing;
+Select * from APIRoutePricingTierMap;
+Select * from APIPricingTier;
+
+
+Select * from APICustomerPricing
+Where APICustomerId = 5;
 
 select * from APIUsage
 where APIKey = 'faf1111e-ec48-4980-bc30-324a0f205fd3'
@@ -269,7 +276,105 @@ INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricing
 VALUES (1,29,1,1,0,0,1.0);
 
 
-#2 - RenewableExchange
+Select * from APICustomerPricing
+Where APICustomerId = 5;
+
+#2 - Perse Test Clienbt
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,19,5,1,0,0,0.2);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,20,5,1,0,0,0.2);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,21,5,1,0,0,0.25);
+
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,22,5,1,0,0,0.2);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,23,5,1,0,0,0.50);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,24,5,1,0,0,0.5);
+
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,25,5,1,0,0,0.1);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,26,5,1,0,0,0.1);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,27,5,1,0,0,0.2);
+
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,28,5,1,0,0,0.5);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,14,5,1,0,0,0.6);
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (4,15,5,1,0,0,0.6);
+
+INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricingTierId, DiscountAmountPerCall, DiscountPercentPerCall, SellingPricePerCall)
+VALUES (1,29,5,1,0,0,1.0);
+
+###--------------------------------------------------------------------------------------------------
+#=========================================== Invoice Endpoint=============================================
+
+Select * from APIRoute;
+Select * from APICustomerPricing;
+
+##-- Get the cusotmer fees for a given period
+Set @startDate = DATE_FORMAT('2022-03-01 00:00:00','%Y-%m-%d %H:%i:%s');
+Set @endDate = DATE_FORMAT('2022-03-31 23:59:59','%Y-%m-%d %H:%i:%s');
+Select APIRouteId, SellingPricePerCall, StartDate, EndDate
+FROM APICustomerPricing acp 
+WHERE(
+	(EndDate > @startdate  AND EndDate < @endDate AND StartDate < @endDate )  #1.1
+	OR (StartDate < @endDate  AND EndDate >= @endDate)  #1.2
+	OR ((StartDate < @endDate) AND EndDate IS NULL)  #2.1
+	OR ((StartDate > @startdate  AND StartDate < @endDate) AND (EndDate > @startdate AND EndDate < @endDate)) #3.1
+	OR (StartDate = @startdate  AND EndDate = @endDate)
+)
+AND APIKey = 'PERSE-TEST-CLIENT-APIKEY';
+
+
+##-- Get the Invoice fees for a given period
+Set @startDate = DATE_FORMAT('2022-03-01 00:00:00','%Y-%m-%d %H:%i:%s');
+Set @endDate = DATE_FORMAT('2022-03-31 23:59:59','%Y-%m-%d %H:%i:%s');
+
+Set @startDate = DATE_FORMAT('2022-04-01 00:00:00','%Y-%m-%d %H:%i:%s');
+Set @endDate = DATE_FORMAT('2022-05-02 23:59:59','%Y-%m-%d %H:%i:%s');
+
+Select * from APIUsage au
+Where APICustomerId = 5
+And EndpointName = 'address-line'
+AND RequestDate >= @startDate
+AND RequestDate <= @endDate;
+
+
+SELECT acp.SellingPricePerCall, an.DisplayName as APIName , 
+	au.APIVersion, 
+    au.EndpointName,
+    acp.SellingPricePerCall as UnitPrice,
+    Count(*) as Count, 
+    (Count(*) * acp.SellingPricePerCall) as APICost
+	FROM APIUsage au 
+	JOIN APIName an on au.APINameId = an.APINameId 
+    LEFT OUTER JOIN (
+		Select APIRouteId, SellingPricePerCall, StartDate, EndDate
+		FROM APICustomerPricing acp 
+        JOIN APICustomer ac on ac.APICustomerId = acp.APICustomerId
+		WHERE ac.APIKey = 'PERSE-TEST-CLIENT-APIKEY'
+        AND (
+			(EndDate > @startdate  AND EndDate < @endDate AND StartDate < @endDate )  #1.1
+			OR (StartDate < @endDate  AND EndDate >= @endDate)  #1.2
+			OR ((StartDate < @endDate) AND EndDate IS NULL)  #2.1
+			OR ((StartDate > @startdate  AND StartDate < @endDate) AND (EndDate > @startdate AND EndDate < @endDate)) #3.1
+			OR (StartDate = @startdate  AND EndDate = @endDate)
+		)
+    ) acp on acp.APIRouteId = au.APIRouteId
+    WHERE APIKey = 'PERSE-TEST-CLIENT-APIKEY'
+	AND RequestDate >= @startDate
+	AND RequestDate <= @endDate
+	AND an.DisplayName != 'Half Hourly Meter History API'
+	GROUP BY APIName, au.APIVersion, au.EndpointName;
+    
 
 
 
+
+Select * from APICustomerPricing;

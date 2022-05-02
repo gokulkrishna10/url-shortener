@@ -20,7 +20,8 @@ exports.getCustomerAPIDetails = function (req, res, callback) {
         sql: `SELECT ars.APINameId,
         ars.APICustomerId, 
         ar.APIRouteId, 
-        ar.EndPointName
+        ar.EndPointName,
+        ars.APIPricingPlanId
     FROM APIRouteSubscription ars
     JOIN APIName an on an.APINameId = ars.APINameId
     JOIN APIRoute ar on ar.APINameId = ars.APINameId
@@ -1065,7 +1066,9 @@ exports.getInvoice = function (req, callback) {
                 LEFT OUTER JOIN (
                     Select APIRouteId, SellingPricePerCall, StartDate, EndDate
                     FROM APICustomerPricing acp 
-                    WHERE(
+                    JOIN APICustomer ac on ac.APICustomerId = acp.APICustomerId
+                    WHERE ac.APIKey = ?
+                    AND (
             
                         (EndDate > '${startDate}'   AND EndDate < '${endDate}' AND StartDate < '${endDate}' )  #1.1
                         OR (StartDate < '${endDate}'  AND EndDate >= '${endDate}')  #1.2
@@ -1080,7 +1083,7 @@ exports.getInvoice = function (req, callback) {
                 AND an.DisplayName != ?
                 GROUP BY APIName, au.APIVersion, au.EndpointName;
         `,
-        values: [req.headers.api_key, constants.meterHistoryApiName]
+        values: [req.headers.api_key, req.headers.api_key, constants.meterHistoryApiName]
     }
 
     db.queryWithOptions(options, (dbError, dbResp) => {
