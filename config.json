@@ -31,7 +31,7 @@
       "COPY":"vikash.m@digitalapicraft.com"
     },
     "ENVIRONMENT_NAME": "dev",
-    "ACTIVE_METERS_URL": "http://127.0.0.1:7400/v1/active-meters"
+    "ACTIVE_METERS_URL": "http://34.249.3.126:7400/v1/active-meters"
   },
   "preprod": {
     "RDS_HOST": "openenergy.crjdegsnxmp2.eu-west-1.rds.amazonaws.com",
