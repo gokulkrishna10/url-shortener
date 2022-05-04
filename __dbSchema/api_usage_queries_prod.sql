@@ -215,9 +215,9 @@ GROUP BY APIName, au.EndpointName;
 SELECT an.DisplayName as APIName , au.APIVersion, au.EndpointName, Count(*) as Count, SUM(au.PricePerCall ) as TotalPrice 
 FROM APIUsage au
 JOIN APIName an on au.APINameId = an.APINameId
-where APIKey = 'faf1111e-ec48-4980-bc30-324a0f205fd3'
+where APIKey = '274d7269-3e31-425c-9620-42c8e99f30cf'
 AND (RequestDate) >= DATE_FORMAT("2022-03-01 00:00:00","%Y-%m-%d %H:%i:%s") 
-AND (RequestDate)<= DATE_FORMAT("2022-03-31 23:00:00","%Y-%m-%d %H:%i:%s")  
+AND (RequestDate)<= DATE_FORMAT("2022-03-31 23:59:59","%Y-%m-%d %H:%i:%s")  
 GROUP BY APIName, au.APIVersion, au.EndpointName;
 
 ####=================================APICustomerPricing - Manual===============================
@@ -348,7 +348,7 @@ SELECT au.APIRouteId, acp.SellingPricePerCall, an.DisplayName as APIName ,
 		Select APIRouteId, SellingPricePerCall, StartDate, EndDate
 		FROM APICustomerPricing acp 
         JOIN APICustomer ac on ac.APICustomerId = acp.APICustomerId
-		WHERE ac.APIKey = 'PERSE-TEST-CLIENT-APIKEY'
+		WHERE ac.APIKey = '4e628695-23ed-4759-9529-b4fc19e0b0b7'
         AND (
 			(EndDate > @startdate  AND EndDate < @endDate AND StartDate < @endDate )  #1.1
 			OR (StartDate < @endDate  AND EndDate >= @endDate)  #1.2
@@ -357,7 +357,7 @@ SELECT au.APIRouteId, acp.SellingPricePerCall, an.DisplayName as APIName ,
 			OR (StartDate = @startdate  AND EndDate = @endDate)
 		)
     ) acp on acp.APIRouteId = au.APIRouteId
-    WHERE APIKey = 'PERSE-TEST-CLIENT-APIKEY'
+    WHERE APIKey = '4e628695-23ed-4759-9529-b4fc19e0b0b7'
 	AND RequestDate >= @startDate
 	AND RequestDate <= @endDate
 	AND an.DisplayName != 'Half Hourly Meter History API'
@@ -367,16 +367,20 @@ SELECT au.APIRouteId, acp.SellingPricePerCall, an.DisplayName as APIName ,
 
 #### Fixx the Routeids in APIUsage table
 
-Set @epName = 'addresses';
-Set @routeId = 20;
+Set @epName = 'meter-details-advanced';
+Set @routeId = 15;
+Set @apiVersion = "v2";
 Select COUNT(*), MAX(RequestDate) from APIUsage 
 Where EndpointName = @epName
+AND APIVersion = @apiVersion
 AND APIRouteId != @routeId;
+
 
 
 Update APIUsage
 Set APIRouteId = @routeId
 Where EndpointName = @epName
+AND APIVersion = @apiVersion
 AND APIRouteId != @routeId;
 
 
