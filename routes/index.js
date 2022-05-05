@@ -6,7 +6,7 @@ exports.updateAPIUsage = (req, res) => {
     apiUsage.updateAPIUsage(req, res, (err, response) => {
         if (err) {
             console.log("updateAPIUsage failed >" + JSON.stringify(err))
-            res.status(err.code).send(err.msg)
+            res.status(err.code?err.code:500).send(err.msg)
         } else {
             console.log("updateAPIUsage succeeded")
             if (!req.isValidationError)
@@ -20,7 +20,7 @@ exports.apiUsageRequestValidation = function (req, res) {
     apiUsageDao.validateApiKeyAndName(req, res, (err, response) => {
         if (err) {
             console.log(err)
-            res.send(err).status(err.code)
+            res.send(err).status(err.code?err.code:500)
         } else {
             if (response && response.length > 0) {
                 console.log('{status:success, message:Validation successful}')
@@ -47,7 +47,7 @@ exports.apiUsageClientValidationByKey = function (req, res, next) {
 exports.getApiUsage = function (req, res) {
     apiUsageDao.getAPIUsage(req, res, (err, response) => {
         if (err) {
-            res.status(err.code).send(err.msg)
+            res.status(err.code?err.code:500).send(err.msg)
         } else {
             res.status(200).send(response)
         }
@@ -57,7 +57,7 @@ exports.getApiUsage = function (req, res) {
 exports.getAPIError = function (req, res) {
     apiUsageDao.getAPIError(req, res, (err, response) => {
         if (err) {
-            res.status(err.code).send(err.msg)
+            res.status(err.code?err.code:500).send(err.msg)
         } else {
             res.status(200).send(response)
         }
@@ -67,7 +67,7 @@ exports.getAPIError = function (req, res) {
 exports.onBoardNewApi = function (req, res) {
     apiUsage.onBoardNewApi(req, res, (err, response) => {
         if (err) {
-            res.status(err.code).send(err)
+            res.status(err.code?err.code:500).send(err)
         } else {
             res.status(201).send(response)
         }
@@ -78,7 +78,7 @@ exports.onBoardNewApi = function (req, res) {
 exports.addNewCustomer = function (req, res) {
     apiUsage.addNewCustomer(req, res, (err, response) => {
         if (err) {
-            res.status(err.code).send(err)
+            res.status(err.code?err.code:500).send(err)
         } else {
             res.status(201).send(response)
         }
@@ -89,7 +89,7 @@ exports.addNewCustomer = function (req, res) {
 exports.customerApiSubscription = function (req, res) {
     apiUsage.customerApiSubscription(req, res, (err, response) => {
         if (err) {
-            res.status(err.code).send(err)
+            res.status(err.code?err.code:500).send(err)
         } else {
             res.status(201).send(response)
         }
@@ -100,7 +100,7 @@ exports.customerApiSubscription = function (req, res) {
 exports.getAllApiNames = function (req, res) {
     apiUsage.getAllApiNames(req, res, (err, response) => {
         if (err) {
-            res.status(err.code).send(err)
+            res.status(err.code?err.code:500).send(err)
         } else {
             res.status(200).send(response)
         }
@@ -110,7 +110,7 @@ exports.getAllApiNames = function (req, res) {
 exports.getAdminUsage = function (req, res) {
     apiUsage.getAdminUsage(req, res, (err, response) => {
         if (err) {
-            res.status(err.code).send(err)
+            res.status(err.code?err.code:500).send(err)
         } else {
             res.status(200).send(response)
         }
@@ -121,7 +121,7 @@ exports.getAdminUsage = function (req, res) {
 exports.getAdminError = function (req, res) {
     apiUsage.getAdminError(req, res, (err, response) => {
         if (err) {
-            res.status(err.code).send(err.msg)
+            res.status(err.code?err.code:500).send(err.msg)
         } else {
             res.status(200).send(response)
         }
@@ -131,7 +131,7 @@ exports.getAdminError = function (req, res) {
 exports.getApiPerformance = function (req, res) {
     apiUsage.getApiPerformance(req, res, (err, response) => {
         if (err) {
-            res.status(err.code).send(err.msg)
+            res.status(err.code?err.code:500).send(err.msg)
         } else {
             res.status(200).send(response)
         }
@@ -142,7 +142,7 @@ exports.getApiPerformance = function (req, res) {
 exports.getAllPricingPlans = function (req, res) {
     apiUsage.getAllPricingPlans(req, (err, response) => {
         if (err) {
-            res.status(err.code).send(err.msg)
+            res.status(err.code?err.code:500).send(err.msg)
         } else {
             res.status(200).send(response)
         }
@@ -152,7 +152,7 @@ exports.getAllPricingPlans = function (req, res) {
 exports.getApiKeyFromCustomerName = function (req, res) {
     apiUsage.getApiKeyFromCustomerName(req, (err, response) => {
         if (err) {
-            res.status(err.code).send(err)
+            res.status(err.code?err.code:500).send(err)
         } else {
             res.status(200).send(response)
         }
@@ -162,7 +162,7 @@ exports.getApiKeyFromCustomerName = function (req, res) {
 exports.getAllOrganisations = function (req, res) {
     apiUsage.getAllOrganisations(req, (err, response) => {
         if (err) {
-            res.status(err.code).send(err)
+            res.status(err.code?err.code:500).send(err)
         } else {
             res.status(200).send(response)
         }
@@ -173,7 +173,7 @@ exports.getAllOrganisations = function (req, res) {
 exports.getCustomerDetailsByApiKey = function (req, res) {
     apiUsage.getCustomerDetailsByApiKey(req, (err, response) => {
         if (err) {
-            res.status(err.code).send(err)
+            res.status(err.code?err.code:500).send(err)
         } else {
             res.status(200).send(response)
         }
@@ -184,7 +184,7 @@ exports.getCustomerDetailsByApiKey = function (req, res) {
 exports.getInvoice = function (req, res) {
     apiUsage.getInvoice(req, (err, response) => {
         if (err) {
-            res.status(err.code).send(err)
+            res.status(err.code?err.code:500).send(err)
         } else {
             res.status(200).send(response)
         }

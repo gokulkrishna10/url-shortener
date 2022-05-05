@@ -145,15 +145,25 @@ exports.validateApiKey = function (req, res, callback) {
 exports.getAPIUsage = function (req, res, callback) {
     //Dont use moment.format("YYYY-MM-DD HH:MM:SS"), istead use the format : ("YYYY-MM-DD[T]HH:mm:ss"). The former, at times ,gives seconds > 60 and makes the date inmvalid creating unpredictable issues.
     //Ref : https://github.com/moment/moment/issues/4300
-    let fromDate = moment(req.query.fromDate).format("YYYY-MM-DD[T]HH:mm:ss")
-    let toDate;
-    if (!req.query.toDate) {
-        toDate = moment(new Date()).format("YYYY-MM-DD[T]23:59:ss");
-    } else if (req.query.toDate && (moment(req.query.toDate).format("HH:mm:ss")) === "00:00:00") {
-        toDate = moment(req.query.toDate).format("YYYY-MM-DD[T]23:59:ss");
-    } else {
-        toDate = moment(req.query.toDate).format("YYYY-MM-DD[T]HH:mm:ss");
-    }
+    // let fromDate = moment(req.query.fromDate).format("YYYY-MM-DD[T]HH:mm:ss")
+    // let toDate;
+    // if (!req.query.toDate) {
+    //     toDate = moment(new Date()).format("YYYY-MM-DD[T]23:59:ss");
+    // } else if (req.query.toDate && (moment(req.query.toDate).format("HH:mm:ss")) === "00:00:00") {
+    //     toDate = moment(req.query.toDate).format("YYYY-MM-DD[T]23:59:59");
+    // } else {
+    //     toDate = moment(req.query.toDate).format("YYYY-MM-DD[T]HH:mm:ss");
+    // }
+
+    let fromDate = moment(req.query.fromDate, 'YYYY-MM', true).isValid() ?
+    moment(req.query.fromDate).startOf('month').format('YYYY-MM-DD HH:mm:ss') :
+    moment(req.query.fromDate).format('YYYY-MM-DD HH:mm:ss');
+
+    let toDate = moment(req.query.toDate, 'YYYY-MM', true).isValid() ?
+    moment(req.query.toDate).endOf('month').format('YYYY-MM-DD HH:mm:ss') :
+    moment(req.query.toDate).format('YYYY-MM-DD HH:mm:ss');
+
+
     let apiKey = req.headers.api_key
     let apiName = req.query.apiName
     let options;
@@ -249,15 +259,14 @@ exports.getAPIUsage = function (req, res, callback) {
 }
 
 exports.getAPIError = function (req, res, callback) {
-    let fromDate = moment(req.query.fromDate).format("YYYY-MM-DD[T]HH:mm:ss")
-    let toDate;
-    if (!req.query.toDate) {
-        toDate = moment(new Date()).format("YYYY-MM-DD[T]23:59:ss");
-    } else if (req.query.toDate && (moment(req.query.toDate).format("HH:mm:ss")) === "00:00:00") {
-        toDate = moment(req.query.toDate).format("YYYY-MM-DD[T]23:59:ss");
-    } else {
-        toDate = moment(req.query.toDate).format("YYYY-MM-DD[T]HH:mm:ss");
-    }
+    let fromDate = moment(req.query.fromDate, 'YYYY-MM', true).isValid() ?
+    moment(req.query.fromDate).startOf('month').format('YYYY-MM-DD HH:mm:ss') :
+    moment(req.query.fromDate).format('YYYY-MM-DD HH:mm:ss');
+
+    let toDate = moment(req.query.toDate, 'YYYY-MM', true).isValid() ?
+    moment(req.query.toDate).endOf('month').format('YYYY-MM-DD HH:mm:ss') :
+    moment(req.query.toDate).format('YYYY-MM-DD HH:mm:ss');
+
     let apiKey = req.headers.api_key
     let apiName = req.query.apiName
     let options;
@@ -1081,6 +1090,7 @@ exports.getInvoice = function (req, callback) {
                 AND RequestDate >= '${startDate}'
                 AND RequestDate <= '${endDate}'
                 AND an.DisplayName != ?
+                AND APIErrorId IS NULL
                 GROUP BY APIName, au.APIVersion, au.EndpointName
                 Order By SellingPricePerCall desc;
         `,
