@@ -409,7 +409,7 @@ exports.getInvoice = function (req, mainCallback) {
             function getCostPerMPAN(callback) {
                 apiUsageDao.getCostPerMPAN(req, (err, response) => {
                     if (err) {
-                        callback(err, null)
+                        mainCallback(err, null)
                     } else {
                         if (response) {
                             finalResponse.APIVersion = response.APIVersion
@@ -424,7 +424,7 @@ exports.getInvoice = function (req, mainCallback) {
             }, function getActiveMeters(finalResponse, callback) {
                 apiUsageDao.getActiveMeters(req, (err, response) => {
                     if (err) {
-                        callback(err, null)
+                        mainCallback(err, null)
                     } else {
                         finalResponse.Count = response.length
                         finalResponse.APICost = (finalResponse.Count * finalResponse.UnitPrice)
@@ -435,7 +435,7 @@ exports.getInvoice = function (req, mainCallback) {
             function getInvoice(finalResponse, callback) {
                 apiUsageDao.getInvoice(req, (err, result) => {
                     if (err) {
-                        callback(err, null)
+                        mainCallback(err, null)
                     } else {
                         //delete finalResponse.costPerMpan
                         if (finalResponse.APICost) {

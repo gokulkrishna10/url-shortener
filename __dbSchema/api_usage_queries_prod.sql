@@ -210,15 +210,7 @@ AND (RequestDate) >= DATE_FORMAT("2022-04-01 00:00:00","%Y-%m-%d %H:%i:%s")
 AND (RequestDate)<= DATE_FORMAT("2022-04-30 23:00:00","%Y-%m-%d %H:%i:%s")  
 GROUP BY APIName, au.EndpointName;
 
-##=====================================TEMP===============================================
 
-SELECT an.DisplayName as APIName , au.APIVersion, au.EndpointName, Count(*) as Count, SUM(au.PricePerCall ) as TotalPrice 
-FROM APIUsage au
-JOIN APIName an on au.APINameId = an.APINameId
-where APIKey = 'faf1111e-ec48-4980-bc30-324a0f205fd3'
-AND (RequestDate) >= DATE_FORMAT("2022-03-01 00:00:00","%Y-%m-%d %H:%i:%s") 
-AND (RequestDate)<= DATE_FORMAT("2022-03-31 23:00:00","%Y-%m-%d %H:%i:%s")  
-GROUP BY APIName, au.APIVersion, au.EndpointName;
 
 ####=================================APICustomerPricing - Manual===============================
 #1. Make sure the endpoints are present
@@ -312,12 +304,35 @@ INSERT INTO APICustomerPricing (APINameId, APIRouteId, APICustomerId, APIPricing
 VALUES (1,29,5,1,0,0,1.0);
 
 ###--------------------------------------------------------------------------------------------------
+
+##=====================================UsageCount===============================================
+
+SELECT an.DisplayName as APIName , au.APIVersion, au.EndpointName, Count(*) as Count, SUM(au.PricePerCall ) as TotalPrice 
+FROM APIUsage au
+JOIN APIName an on au.APINameId = an.APINameId
+where APIKey = '4e628695-23ed-4759-9529-b4fc19e0b0b7'
+AND (RequestDate) >= DATE_FORMAT("2022-04-01 00:00:00","%Y-%m-%d %H:%i:%s") 
+AND (RequestDate)<= DATE_FORMAT("2022-04-30 23:59:59","%Y-%m-%d %H:%i:%s")  
+AND APIErrorId IS NULL
+GROUP BY APIName, au.APIVersion, au.EndpointName;
+
+
+### Neeed to make sure HH has got the entry for the Customer, else Invoice call will fail while trying to get ActiveMeterCount
+SELECT Customer.Name AS CustomerName,
+Customer.CustomerId as cid, 
+ServiceType.Name AS ServiceName, 
+ServiceMetadata.ServiceMetadataId AS ServiceMetadataId
+FROM Customer 
+INNER JOIN ServiceMetadata ON Customer.CustomerId = ServiceMetadata.CustomerId 
+INNER JOIN ServiceType ON ServiceType.ServiceTypeId = ServiceMetadata.ServiceTypeId 
+WHERE Customer.ApiKey = '67afbb34-2191-4e14-9b03-4b827dd74ff9';
+
 #=========================================== Invoice Endpoint=============================================
 
 Select * from APIRoute;
 Select * from APICustomerPricing;
 
-##-- Get the cusotmer fees for a given period
+##---------------- Get the cusotmer fees for a given period
 Set @startDate = DATE_FORMAT('2022-03-01 00:00:00','%Y-%m-%d %H:%i:%s');
 Set @endDate = DATE_FORMAT('2022-03-31 23:59:59','%Y-%m-%d %H:%i:%s');
 Select APIRouteId, SellingPricePerCall, StartDate, EndDate
@@ -332,9 +347,9 @@ WHERE(
 AND APIKey = 'PERSE-TEST-CLIENT-APIKEY';
 
 
-##-- Get the Invoice fees for a given period
-Set @startDate = DATE_FORMAT('2022-03-01 00:00:00','%Y-%m-%d %H:%i:%s');
-Set @endDate = DATE_FORMAT('2022-03-31 23:59:59','%Y-%m-%d %H:%i:%s');
+##-------------------- Get the Invoice fees for a given period
+Set @startDate = DATE_FORMAT('2022-04-01 00:00:00','%Y-%m-%d %H:%i:%s');
+Set @endDate = DATE_FORMAT('2022-04-30 23:59:59','%Y-%m-%d %H:%i:%s');
 
 SELECT au.APIRouteId, acp.SellingPricePerCall, an.DisplayName as APIName , 
 	au.APIVersion, 
@@ -348,7 +363,7 @@ SELECT au.APIRouteId, acp.SellingPricePerCall, an.DisplayName as APIName ,
 		Select APIRouteId, SellingPricePerCall, StartDate, EndDate
 		FROM APICustomerPricing acp 
         JOIN APICustomer ac on ac.APICustomerId = acp.APICustomerId
-		WHERE ac.APIKey = 'PERSE-TEST-CLIENT-APIKEY'
+		WHERE ac.APIKey = '67afbb34-2191-4e14-9b03-4b827dd74ff9'
         AND (
 			(EndDate > @startdate  AND EndDate < @endDate AND StartDate < @endDate )  #1.1
 			OR (StartDate < @endDate  AND EndDate >= @endDate)  #1.2
@@ -357,13 +372,19 @@ SELECT au.APIRouteId, acp.SellingPricePerCall, an.DisplayName as APIName ,
 			OR (StartDate = @startdate  AND EndDate = @endDate)
 		)
     ) acp on acp.APIRouteId = au.APIRouteId
-    WHERE APIKey = 'PERSE-TEST-CLIENT-APIKEY'
+    WHERE APIKey = '67afbb34-2191-4e14-9b03-4b827dd74ff9'
 	AND RequestDate >= @startDate
 	AND RequestDate <= @endDate
 	AND an.DisplayName != 'Half Hourly Meter History API'
+    AND APIErrorId IS NULL
 	GROUP BY APIName, au.APIVersion, au.EndpointName
     Order By SellingPricePerCall desc;
     
+    Select * from APIUsage
+    WHERE APIKey = '67afbb34-2191-4e14-9b03-4b827dd74ff9'
+	AND RequestDate >= @startDate
+	AND RequestDate <= @endDate
+    AND APIErrorId IS NOT NULL
 
 #### Fixx the Routeids in APIUsage table
 
@@ -384,4 +405,10 @@ AND APIRouteId != @routeId;
 SET SQL_SAFE_UPDATES = 0;
 
 SET SQL_SAFE_UPDATES = 1;
+
+
+Select * from APIRouteSubscription
+Where APICustomerId = 100
+
+Select * from APIName;
 
