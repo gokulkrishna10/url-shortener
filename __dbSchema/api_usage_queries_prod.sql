@@ -401,14 +401,14 @@ Where EndpointName = @epName
 AND APIRouteId != @routeId;
 
 
+#### Get the Most Used APIs from APiUsage module
 
-SET SQL_SAFE_UPDATES = 0;
+Select ar.APIRouteId, an.Name, ar.EndpointName, Count(*) as Count
+from APIUsage au
+Join APIName an on an.APINameId = au.APINameId
+JOIN APIRoute ar on ar.APIRouteId = au.APIRouteId
+Group by an.Name, ar.EndpointName;
 
-SET SQL_SAFE_UPDATES = 1;
 
-
-Select * from APIRouteSubscription
-Where APICustomerId = 100
-
-Select * from APIName;
-
+Select * from APIUsage
+where APIRouteId = 5;

@@ -11,7 +11,11 @@ const util = require('../customnodemodules/util_node_module/utils')
 const axios = require('axios')
 
 exports.getCustomerAPIDetails = function (req, res, callback) {
-
+/*
+Here no need to filter by API verdsion. If an endpoint needs monetization, then
+it will have a new enrty in APIRoute table. If it is not a monetizable endpoint,
+then v1 or v2 doesn't really matter, hence removing the version to get rid of false alarms.
+*/
     let apiKey = req.headers.api_key
     let apiVersion = req.body.apiDetails.apiVersion
     let endPointName = req.body.apiDetails.endPointName
@@ -28,12 +32,11 @@ exports.getCustomerAPIDetails = function (req, res, callback) {
     JOIN APICustomer ac on ars.APICustomerId = ac.APICustomerId
     where ac.APIKey = ?
     AND an.Name = ?
-    AND ar.APIVersion = ?
     AND (EndPointName = ? OR EndPointName = '/')
     ORDER BY LENGTH(ar.EndPointName) DESC
     LIMIT 1;`,
 
-        values: [apiKey, apiName, apiVersion, endPointName]
+        values: [apiKey, apiName, endPointName]
     }
 
     db.queryWithOptions(options, function (err, dbResponse) {
