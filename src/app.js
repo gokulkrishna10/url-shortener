@@ -14,7 +14,7 @@ const urlValidator = require('../validation/urlValidation')
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(router);
-app.set("port", portConfiguration[envFile.stage] || 7400);
+app.set("port", portConfiguration[envFile.stage] || 8888);
 
 app.use(function error_handler(err, req, res, next) {
     res.header("Content-Type", "application/json; charset=utf-8");
