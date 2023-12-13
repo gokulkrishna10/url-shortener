@@ -1,5 +1,5 @@
 {
-  "name": "api-usage-micro-service",
+  "name": "url-shortener",
   "version": "1.0.0",
   "description": "",
   "main": "src/app.js",
@@ -7,17 +7,14 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "Gokul",
   "license": "ISC",
   "dependencies": {
     "async": "^3.2.0",
-    "aws-sdk": "^2.1107.0",
-    "axios": "^0.26.1",
+    "crypto": "^1.0.1",
     "express": "^4.17.1",
-    "json2csv": "^5.0.6",
-    "moment": "^2.29.1",
-    "morgan": "^1.10.0",
-    "mysql": "^2.18.1",
-    "uuid": "^8.3.2"
+    "mysql2": "^3.6.5",
+    "uuid": "^8.3.2",
+    "validator": "^13.11.0"
   }
 }

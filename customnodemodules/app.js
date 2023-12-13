@@ -1,4 +1,4 @@
-const mysql = require("mysql");
+const mysql = require("mysql2");
 const rdsConfigVal = require("../customnodemodules/project_config/rds_config/rdsconfig");
 
 const read_connection = mysql.createConnection({
@@ -6,22 +6,22 @@ const read_connection = mysql.createConnection({
     user: rdsConfigVal.rds_user,
     password: rdsConfigVal.rds_password,
     database: rdsConfigVal.rds_data_base,
-    connectionLimit: rdsConfigVal.rds_no_of_connections, 
+    connectionLimit: rdsConfigVal.rds_no_of_connections,
     debug: false,
-    acquireTimeout: rdsConfigVal.rds_connections_timeout,
-    waitForConnection: true,
+    //acquireTimeout: rdsConfigVal.rds_connections_timeout,
+    waitForConnections: true,
     connectTimeout: rdsConfigVal.rds_connections_timeout
 });
 
 const read_pool = mysql.createPool({
-    connectionLimit: rdsConfigVal.rds_no_of_connections, 
+    connectionLimit: rdsConfigVal.rds_no_of_connections,
     host: rdsConfigVal.rds_host,
     user: rdsConfigVal.rds_user,
     password: rdsConfigVal.rds_password,
     database: rdsConfigVal.rds_data_base,
     debug: false,
-    acquireTimeout: rdsConfigVal.rds_connections_timeout,
-    waitForConnection: true,
+    //acquireTimeout: rdsConfigVal.rds_connections_timeout,
+    waitForConnections: true,
     connectTimeout: rdsConfigVal.rds_connections_timeout
 });
 
@@ -33,8 +33,8 @@ const failover_read_pool = mysql.createPool({
     password: rdsConfigVal.rds_password,
     database: rdsConfigVal.rds_data_base,
     debug: false,
-    acquireTimeout: rdsConfigVal.rds_connections_timeout,
-    waitForConnection: true,
+    //acquireTimeout: rdsConfigVal.rds_connections_timeout,
+    waitForConnections: true,
     connectTimeout: rdsConfigVal.rds_failover_no_of_connection
 });
 
@@ -103,7 +103,7 @@ function getReadConnection(callback) {
 }
 
 function getFailoverReadConnection(callback) {
-    failover_read_pool.getConnection( async (err, conn)=> {
+    failover_read_pool.getConnection(async (err, conn) => {
         if (err) {
             await sleep(500);
             read_connection.connect();

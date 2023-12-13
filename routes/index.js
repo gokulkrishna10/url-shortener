@@ -1,192 +1,23 @@
-const apiUsage = require('../controllers/apiUsageController')
-const apiUsageDao = require('../dao/apiUsageDAO')
+const apiUsage = require('../controllers/shortenUrlController')
+const util = require("../customnodemodules/util_node_module/utils");
 
 
-exports.updateAPIUsage = (req, res) => {
-    apiUsage.updateAPIUsage(req, res, (err, response) => {
+exports.shortenUrl = function (req, res) {
+    apiUsage.shortenUrl(req, (err, response) => {
         if (err) {
-            console.log("updateAPIUsage failed >" + JSON.stringify(err))
-            res.status(err.code?err.code:500).send(err.msg)
+            res.status(err.code ? err.code : 500).send(err)
         } else {
-            console.log("updateAPIUsage succeeded")
-            if (!req.isValidationError)
-                res.status(202).send(JSON.parse(response))
+            res.status(response.code).send({"shortURl": response.shortUrl, "longUrl": response.longUrl})
         }
     })
 }
 
-// check if the requested API key is registered with the requested API name in the APIRouteSubscription table
-exports.apiUsageRequestValidation = function (req, res) {
-    apiUsageDao.validateApiKeyAndName(req, res, (err, response) => {
-        if (err) {
-            console.log(err)
-            res.send(err).status(err.code?err.code:500)
+exports.redirectUsingShortUrl = function (req, res) {
+    apiUsage.redirectUsingShortUrl(req, (err, response) => {
+        if (err || util.isNull(response)) {
+            res.status(404).send('Resource not found')
         } else {
-            if (response && response.length > 0) {
-                console.log('{status:success, message:Validation successful}')
-                res.send(JSON.parse('{"status":"success", "message":"Validation successful"}')).status(200)
-            } else {
-                console.log('{status:failure, message:Validation failed}')
-                res.status(200).send(JSON.parse('{"status":"failure", "message":"Validation failed. Please check the apiKey or the apiName entered"}'))
-            }
-        }
-    })
-}
-
-exports.apiUsageClientValidationByKey = function (req, res, next) {
-    apiUsageDao.validateApiKey(req, res, (err, response) => {
-        if (err) {
-            next(err)
-        } else {
-            next();
-        }
-    })
-}
-
-
-exports.getApiUsage = function (req, res) {
-    apiUsageDao.getAPIUsage(req, res, (err, response) => {
-        if (err) {
-            res.status(err.code?err.code:500).send(err.msg)
-        } else {
-            res.status(200).send(response)
-        }
-    })
-}
-
-exports.getAPIError = function (req, res) {
-    apiUsageDao.getAPIError(req, res, (err, response) => {
-        if (err) {
-            res.status(err.code?err.code:500).send(err.msg)
-        } else {
-            res.status(200).send(response)
-        }
-    })
-}
-
-exports.onBoardNewApi = function (req, res) {
-    apiUsage.onBoardNewApi(req, res, (err, response) => {
-        if (err) {
-            res.status(err.code?err.code:500).send(err)
-        } else {
-            res.status(201).send(response)
-        }
-    })
-}
-
-
-exports.addNewCustomer = function (req, res) {
-    apiUsage.addNewCustomer(req, res, (err, response) => {
-        if (err) {
-            res.status(err.code?err.code:500).send(err)
-        } else {
-            res.status(201).send(response)
-        }
-    })
-}
-
-
-exports.customerApiSubscription = function (req, res) {
-    apiUsage.customerApiSubscription(req, res, (err, response) => {
-        if (err) {
-            res.status(err.code?err.code:500).send(err)
-        } else {
-            res.status(201).send(response)
-        }
-    })
-}
-
-
-exports.getAllApiNames = function (req, res) {
-    apiUsage.getAllApiNames(req, res, (err, response) => {
-        if (err) {
-            res.status(err.code?err.code:500).send(err)
-        } else {
-            res.status(200).send(response)
-        }
-    })
-}
-
-exports.getAdminUsage = function (req, res) {
-    apiUsage.getAdminUsage(req, res, (err, response) => {
-        if (err) {
-            res.status(err.code?err.code:500).send(err)
-        } else {
-            res.status(200).send(response)
-        }
-    })
-}
-
-
-exports.getAdminError = function (req, res) {
-    apiUsage.getAdminError(req, res, (err, response) => {
-        if (err) {
-            res.status(err.code?err.code:500).send(err.msg)
-        } else {
-            res.status(200).send(response)
-        }
-    })
-}
-
-exports.getApiPerformance = function (req, res) {
-    apiUsage.getApiPerformance(req, res, (err, response) => {
-        if (err) {
-            res.status(err.code?err.code:500).send(err.msg)
-        } else {
-            res.status(200).send(response)
-        }
-    })
-}
-
-
-exports.getAllPricingPlans = function (req, res) {
-    apiUsage.getAllPricingPlans(req, (err, response) => {
-        if (err) {
-            res.status(err.code?err.code:500).send(err.msg)
-        } else {
-            res.status(200).send(response)
-        }
-    })
-}
-
-exports.getApiKeyFromCustomerName = function (req, res) {
-    apiUsage.getApiKeyFromCustomerName(req, (err, response) => {
-        if (err) {
-            res.status(err.code?err.code:500).send(err)
-        } else {
-            res.status(200).send(response)
-        }
-    })
-}
-
-exports.getAllOrganisations = function (req, res) {
-    apiUsage.getAllOrganisations(req, (err, response) => {
-        if (err) {
-            res.status(err.code?err.code:500).send(err)
-        } else {
-            res.status(200).send(response)
-        }
-    })
-}
-
-
-exports.getCustomerDetailsByApiKey = function (req, res) {
-    apiUsage.getCustomerDetailsByApiKey(req, (err, response) => {
-        if (err) {
-            res.status(err.code?err.code:500).send(err)
-        } else {
-            res.status(200).send(response)
-        }
-    })
-}
-
-
-exports.getInvoice = function (req, res) {
-    apiUsage.getInvoice(req, (err, response) => {
-        if (err) {
-            res.status(err.code?err.code:500).send(err)
-        } else {
-            res.status(200).send(response)
+            res.redirect(response.longUrl)
         }
     })
 }

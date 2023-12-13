@@ -3,40 +3,22 @@ const express = require("express"),
     app = express(),
     router = express.Router(),
     routes = require("../routes"),
-    morgan = require("morgan"),
     portConfiguration = require('../portConfiguration.json'),
     envFile = require('../env.json');
 
 var ErrorMod = require('../customnodemodules/error_node_module/errors');
 var customError = new ErrorMod();
-const apiUsageValidator = require('../validation/apiUsageValidation')
-const constants = require('../constants/constants')
+const urlValidator = require('../validation/urlValidation')
 
-app.use(
-    morgan(function (tokens, req, res) {
-        return [
-            tokens.method(req, res),
-            tokens.url(req, res),
-            tokens.status(req, res),
-            tokens['response-time'](req, res), 'ms',
-        ].join(' ')
-    })
-);
+
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(router);
-Error.prototype.stack = "";
 app.set("port", portConfiguration[envFile.stage] || 7400);
 
 app.use(function error_handler(err, req, res, next) {
     res.header("Content-Type", "application/json; charset=utf-8");
     res.status(err.code || 500).send(err)
-    if (!(Boolean(err.donotUpdateUsage)
-        || err.errorId == constants.errorCodeExcludeFromAPIUsageLogging)) {
-        var errData = {};
-        errData.responseData = err;
-        routes.updateAPIUsage(req, err)
-    }
 });
 
 router.all("*", function (req, res, next) {
@@ -63,31 +45,9 @@ router.all("*", function (req, res, next) {
     next();
 });
 
-//routes
-//APIUsage tracking - internal
-router.post('/v1/api-usage', apiUsageValidator.apiUsageValidation, routes.updateAPIUsage);
-router.post('/v1/validate-api-usage', apiUsageValidator.apiKeyAndApiNameValidation, routes.apiUsageRequestValidation)
-//public
-router.get('/v1/usage', routes.apiUsageClientValidationByKey, apiUsageValidator.getUsageValidation, routes.getApiUsage)
-router.get('/v1/error', routes.apiUsageClientValidationByKey, apiUsageValidator.getErrorValidation, routes.getAPIError)
-router.get('/v1/api-names', routes.getAllApiNames)
-router.get('/v1/pricing-plans', routes.getAllPricingPlans)
-router.get('/v1/invoice', routes.apiUsageClientValidationByKey, apiUsageValidator.getInvoiceValidation, routes.getInvoice)
-
-//Admin-internal
-
-router.post('/v1/internal/onboard-api', apiUsageValidator.adminValidation, apiUsageValidator.getAPIOnboardValidation, routes.onBoardNewApi)
-router.post('/v1/internal/customer', apiUsageValidator.adminValidation, apiUsageValidator.getNewCustomerValidation, routes.addNewCustomer)
-router.post('/v1/internal/api-subscription', apiUsageValidator.adminValidation, apiUsageValidator.getCustomerApiSubscriptionValidation, routes.customerApiSubscription)
-router.get('/v1/internal/admin-usage', apiUsageValidator.adminValidation, apiUsageValidator.getAdminUsageValidation, routes.getAdminUsage)
-router.get('/v1/internal/admin-error', apiUsageValidator.adminValidation, apiUsageValidator.getAdminErrorValidation, routes.getAdminError)
-router.get('/v1/internal/api-performance', apiUsageValidator.adminValidation, apiUsageValidator.getAdminApiPerformanceValidation, routes.getApiPerformance)
-router.get('/v1/internal/api-key', apiUsageValidator.adminValidation, apiUsageValidator.getAdminApiKeyFromCustomerNameValidation, routes.getApiKeyFromCustomerName)
-router.get('/v1/internal/organisations', apiUsageValidator.adminValidation, apiUsageValidator.getAdminOrganisationsValidation, routes.getAllOrganisations)
-
-
-//required for COS
-router.get('/v1/customer-details', apiUsageValidator.getCustomerDetailsByApiKeyValidation, routes.getCustomerDetailsByApiKey)
+//routes for url-shortener
+router.post('/shorten-url', urlValidator.validateInputUrl, routes.shortenUrl)
+router.get('/shorturl.co/:token', urlValidator.validateShortUrl, routes.redirectUsingShortUrl)
 
 
 router.all('/*', function (req, res) {

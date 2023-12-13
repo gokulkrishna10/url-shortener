@@ -1,6 +1,6 @@
-const mysql = require("mysql");
+// const mysql = require("mysql");
+const mysql = require('mysql2')
 const rdsConfigVal = require("../project_config/rds_config/rdsconfig");
-
 
 const read_connection = mysql.createConnection({
     host: rdsConfigVal.rds_host,
@@ -9,8 +9,8 @@ const read_connection = mysql.createConnection({
     database: rdsConfigVal.rds_data_base,
     connectionLimit: rdsConfigVal.rds_no_of_connections, //important
     debug: false,
-    acquireTimeout: rdsConfigVal.rds_connections_timeout,
-    waitForConnection: true,
+    //acquireTimeout: rdsConfigVal.rds_connections_timeout,
+    waitForConnections: true,
     connectTimeout: rdsConfigVal.rds_connections_timeout
 });
 
@@ -21,22 +21,12 @@ const read_pool = mysql.createPool({
     password: rdsConfigVal.rds_password,
     database: rdsConfigVal.rds_data_base,
     debug: false,
-    acquireTimeout: rdsConfigVal.rds_connections_timeout,
-    waitForConnection: true,
+    //acquireTimeout: rdsConfigVal.rds_connections_timeout,
+    waitForConnections: true,
     connectTimeout: rdsConfigVal.rds_connections_timeout
 });
 
-/*const write_pool = mysql.createPool({
-    connectionLimit: rdsConfigVal.rds_no_of_connections, //important
-    host: rdsConfigVal.rds_host,
-    user: rdsConfigVal.rds_user,
-    password: rdsConfigVal.rds_password,
-    database: rdsConfigVal.rds_data_base,
-    debug: false,
-    acquireTimeout: rdsConfigVal.rds_connections_timeout,
-    waitForConnection: true,
-    connectTimeout: rdsConfigVal.rds_connections_timeout
-});*/
+
 const failover_read_pool = mysql.createPool({
     connectionLimit: rdsConfigVal.rds_no_of_connections, //important
     host: rdsConfigVal.rds_host,
@@ -44,8 +34,8 @@ const failover_read_pool = mysql.createPool({
     password: rdsConfigVal.rds_password,
     database: rdsConfigVal.rds_data_base,
     debug: false,
-    acquireTimeout: rdsConfigVal.rds_connections_timeout,
-    waitForConnection: true,
+    //acquireTimeout: rdsConfigVal.rds_connections_timeout,
+    waitForConnections: true,
     connectTimeout: rdsConfigVal.rds_failover_no_of_connection
 });
 
@@ -146,42 +136,12 @@ function getFailoverReadConnection(callback) {
     });
 }
 
-/*function getWriteConnection(callback) {
-
-    write_pool.getConnection(function (err, conn) {
-        if (err) {
-            callback(err, null);
-        }
-        callback(null, conn);
-    });
-
-}*/
 
 exports.getReadConnection = getReadConnection;
-// exports.getWriteConnection = getReadConnection;
-
-/*** to Use for GET requests */
-
-exports.queryWithParams = function (string, params, callback) {
-    getReadConnection(function (err, con) {
-        if (err) {
-            callback(err, null);
-        } else {
-            con.query(string, params, function (err, rows) {
-                releaseConnection(con);
-
-                if (err) {
-                    callback(err, null);
-                } else {
-                    callback(null, rows);
-                }
-            });
-        }
-    });
-};
 
 
 /*** to Use for GET requests */
+
 
 exports.queryWithOptions = function (options, callback) {
     getReadConnection(function (err, con) {
@@ -202,117 +162,6 @@ exports.queryWithOptions = function (options, callback) {
     });
 };
 
-
-/*** to Use for POST,PUT, DELETE requests */
-
-exports.executeWithParams = function (string, params, callback) {
-    getWriteConnection(function (err, con) {
-        if (err) {
-            callback(err, null);
-        } else {
-            con.query(string, params, function (err, rows) {
-
-                releaseConnection(con);
-
-                if (err) {
-                    callback(err, null);
-                } else {
-                    callback(null, rows);
-                }
-            });
-        }
-    });
-};
-
-/*** to Use for POST,PUT,DELETE requests */
-
-exports.executeWithOptions = function (options, callback) {
-    getWriteConnection(function (err, con) {
-        if (err) {
-            callback(err, null);
-        } else {
-            con.query(options, function (err, rows) {
-
-                releaseConnection(con);
-
-                if (err) {
-                    callback(err, null);
-                } else {
-                    callback(null, rows);
-                }
-            });
-        }
-    });
-};
-
-/** Multiple sequeneced updates/inserts with/without transaction support */
-
-exports.executeMultipleWithOptions = function (mOptions, isTransaction, callback) {
-
-    if (!mOptions || (!(mOptions instanceof Array)) || mOptions.length <= 0) {
-        callback(null, null);
-    } else {
-        getReadConnection(function (err, con) {
-            if (err) {
-                callback(err, null);
-            } else {
-                if (isTransaction) {
-                    con.beginTransaction(function (err) {
-                        if (err) {
-                            callback(err, null);
-                        } else {
-                            var resultList = new Array(mOptions.length);
-                            executeSequencedQuery(mOptions, 0, con, resultList, function (err) {
-                                if (err) {
-                                    rollbackTransaction(con, err, callback);
-                                } else {
-                                    commitTransaction(con, resultList, callback);
-                                }
-                            });
-                        }
-                    });
-                } else {
-                    var resultList = new Array(mOptions.length);
-                    executeSequencedQuery(mOptions, 0, con, resultList, function (err) {
-                        releaseConnection(con);
-                        if (err) {
-                            callback(err, null);
-                        } else {
-                            callback(null, resultList);
-                        }
-                    });
-                }
-            }
-        });
-    }
-};
-
-
-exports.escape = mysql.escape;
-
-
-function rollbackTransaction(con, err, callback) {
-    con.rollback(function () {
-        releaseConnection(con);
-        callback(err, null);
-    });
-}
-
-function commitTransaction(con, result, callback) {
-    con.commit(function (err) {
-        if (err) {
-            rollbackTransaction(con, err, callback);
-        } else {
-            try {
-                con.release();
-            } catch (e) {
-            }
-            callback(null, result);
-        }
-
-    });
-}
-
 function releaseConnection(con) {
     try {
         con.release();
@@ -320,89 +169,22 @@ function releaseConnection(con) {
     }
 }
 
-function executeSequencedQuery(mOptions, i, con, resultList, callback) {
+/*** to Use for GET requests */
 
-    var options = mOptions[i];
-    con.query(options, function (err, rows) {
-        if (err) {
-            callback(err);
-        } else {
-            resultList[i] = rows;
-            if ((i + 1) < mOptions.length) {
-                executeSequencedQuery(mOptions, i + 1, con, resultList, function (err) {
-                    if (err) {
-                        callback(err);
-                    } else {
-                        callback(null);
-                    }
-                });
-            } else {
-                callback(null);
-            }
-        }
-    });
-
-}
-
-exports.customeTransactions = function (mOptions, transactionOpt, callback) {
-
-    if (!mOptions || (!(mOptions instanceof Array)) || mOptions.length <= 0) {
-        callback(null, null);
-    } else {
-        getWriteConnection(function (err, con) {
-            if (err) {
-                callback(err, null);
-            } else {
-                con.beginTransaction(function (err) {
-                    if (err) {
-                        callback(err, null);
-                    } else {
-                        var resultList = new Array(mOptions.length);
-                        executeSequencedQueryForCustome(mOptions, 0, con, resultList, transactionOpt, function (err) {
-                            if (err) {
-                                rollbackTransaction(con, err, callback);
-                            } else {
-                                commitTransaction(con, resultList, callback);
-                            }
-                        });
-
-
-                    }
-
-                });
-            }
-        });
-    }
-
-};
-
-function executeSequencedQueryForCustome(mOptions, i, con, resultList, transactionOpt, callback) {
-
-    var options = mOptions[i];
-    if (transactionOpt && transactionOpt.length > 0) {
-        transactionOpt.forEach(function (singleObject) {
-            if (singleObject.ResultForQuery === i) {
-                options.values.push(resultList[singleObject.ResultFromQuery].insertId)
-            }
-        });
-    }
-    con.query(options, function (err, rows) {
-        if (err) {
-            callback(err);
-        } else {
-            resultList[i] = rows;
-            if ((i + 1) < mOptions.length) {
-                executeSequencedQueryForCustome(mOptions, i + 1, con, resultList, transactionOpt, function (err) {
-                    if (err) {
-                        callback(err);
-                    } else {
-                        callback(null);
-                    }
-                });
-            } else {
-                callback(null);
-            }
-        }
-    });
-
-}
+// exports.queryWithParams = function (string, params, callback) {
+//     getReadConnection(function (err, con) {
+//         if (err) {
+//             callback(err, null);
+//         } else {
+//             con.query(string, params, function (err, rows) {
+//                 releaseConnection(con);
+//
+//                 if (err) {
+//                     callback(err, null);
+//                 } else {
+//                     callback(null, rows);
+//                 }
+//             });
+//         }
+//     });
+// };
