@@ -1,7 +1,3 @@
-/**
- * Created by Avinash on 01/04/19.
- */
-
 var ErrorMode = require("../error_node_module/errors");
 var errors = new ErrorMode();
 const {v1: uuidv1} = require('uuid');
