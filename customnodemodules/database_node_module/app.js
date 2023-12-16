@@ -168,23 +168,3 @@ function releaseConnection(con) {
     } catch (e) {
     }
 }
-
-/*** to Use for GET requests */
-
-// exports.queryWithParams = function (string, params, callback) {
-//     getReadConnection(function (err, con) {
-//         if (err) {
-//             callback(err, null);
-//         } else {
-//             con.query(string, params, function (err, rows) {
-//                 releaseConnection(con);
-//
-//                 if (err) {
-//                     callback(err, null);
-//                 } else {
-//                     callback(null, rows);
-//                 }
-//             });
-//         }
-//     });
-// };
