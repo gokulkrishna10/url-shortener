@@ -9,10 +9,10 @@
     "RDS_CONNECTION_TIMEOUT": 10000
   },
   "main": {
-    "RDS_HOST": "berry.db.elephantsql.com",
-    "RDS_USER": "mmfrhiim",
-    "RDS_PASSWORD": "vlCBRJCNpP2VPitDIPkbIdXQYbh3AG0J",
-    "RDS_SCHEMA": "public",
+    "RDS_HOST": "sql5.freesqldatabase.com",
+    "RDS_USER": "sql5670865",
+    "RDS_PASSWORD": "VxFHPUIQnf",
+    "RDS_SCHEMA": "sql5670865",
     "RDS_NO_OF_CONNECTIONS": 20,
     "RDS_FAILOVER_NO_OF_CONNECTIONS": 5,
     "RDS_CONNECTION_TIMEOUT": 10000
