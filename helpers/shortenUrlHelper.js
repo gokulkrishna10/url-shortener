@@ -1,5 +1,7 @@
 const constants = require('../constants/constants')
 const crypto = require('crypto')
+const config = require('../config.json')
+const envFile = require('../env.json')
 
 function generateRandomString(length, chars) {
     let result = '';
@@ -18,7 +20,8 @@ exports.requestUrlMapping = function (longUrl) {
     requestUrlObject['urlHash'] = getHashForUrl(longUrl)
     requestUrlObject.token = generateRandomString(constants.randomTokenLength, constants.alphaNumericChars)
     requestUrlObject.longUrl = longUrl
-    requestUrlObject.shortUrl = longUrl.split("//")[0] + "//" + constants.shortUrlBase + requestUrlObject.token
+    // requestUrlObject.shortUrl = longUrl.split("//")[0] + "//" + constants.shortUrlBase + requestUrlObject.token
+    requestUrlObject.shortUrl = config[envFile.stage]["SERVER_PROTOCOL_WITH_SUBDOMAIN"] + constants.shortUrlBase + requestUrlObject.token
 
     return requestUrlObject
 }

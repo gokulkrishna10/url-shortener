@@ -21,7 +21,7 @@ exports.getShortUrl = function (req, callback) {
 }
 
 exports.createAndAddShortUrl = function (req, callback) {
-    let url = req.body.url, base = constants.shortUrlBase
+    let url = req.body.url
     let urlMappingObject = apiUsageAttributesHelper.requestUrlMapping(url)
     let shortUrl = urlMappingObject['shortUrl']
 

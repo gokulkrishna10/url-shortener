@@ -5,7 +5,7 @@ const util = require("../customnodemodules/util_node_module/utils");
 exports.shortenUrl = function (req, res) {
     apiUsage.shortenUrl(req, (err, response) => {
         if (err) {
-            res.status(err.code ? err.code : 500).send(err)
+            res.status(err.code?err.code:500).send(err)
         } else {
             res.status(response.code).send({"shortURl": response.shortUrl, "longUrl": response.longUrl})
         }
