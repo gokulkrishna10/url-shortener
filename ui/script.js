@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault();
 
         const longUrl = document.getElementById('longUrl').value;
-        fetch('https://url-shortener-1hk1.onrender.com/shorten-url', {
+        fetch('https://tinyurl-fok9.onrender.com/shorten-url', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
