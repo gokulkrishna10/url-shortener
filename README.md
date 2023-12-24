@@ -1,3 +1,3 @@
 # url-shortener
-
-A service to shorten the input urls and provide a short url for the same. 
+Website: https://shorturl-cjgz.onrender.com
+This site offers a service to condense long URLs into shorter versions, providing users with compact URLs.
