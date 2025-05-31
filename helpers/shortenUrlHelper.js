@@ -20,8 +20,7 @@ exports.requestUrlMapping = function (longUrl) {
     requestUrlObject['urlHash'] = getHashForUrl(longUrl)
     requestUrlObject.token = generateRandomString(constants.randomTokenLength, constants.alphaNumericChars)
     requestUrlObject.longUrl = longUrl
-    // requestUrlObject.shortUrl = longUrl.split("//")[0] + "//" + constants.shortUrlBase + requestUrlObject.token
-    requestUrlObject.shortUrl = config[envFile.stage]["SERVER_PROTOCOL_WITH_SUBDOMAIN"] + constants.shortUrlBase + requestUrlObject.token
+    requestUrlObject.shortUrl = constants.shortUrlBase + requestUrlObject.token
 
     return requestUrlObject
 }
@@ -30,7 +29,7 @@ exports.responseUrlMapping = function (longUrl, shortUrl) {
     let responseUrlObject = {}
 
     responseUrlObject.longUrl = longUrl
-    responseUrlObject.shortUrl = shortUrl
+    responseUrlObject.shortUrl = config[envFile.stage]["SERVER_PROTOCOL_WITH_SUBDOMAIN"] + shortUrl
     responseUrlObject.code = constants.created
 
     return responseUrlObject
